@@ -12,35 +12,41 @@
   </ion-side-menu-content>
   <ion-side-menu side="left">
     <ion-header-bar class="bar-stable">
-      <h1 class="title">Left</h1>
+      <h1 class="title">Login Name</h1>
     </ion-header-bar>
     <ion-content>
       <ion-list>
-        <ion-item nav-clear menu-close href="#/home"">
-          Home
+        <ion-item>
+          Rounds
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/search">
+        <ion-item nav-clear menu-close ui-sref="create-round">
           New Round
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/browse">
-          My Rounds
+        <ion-item nav-clear menu-close ui-sref="list-rounds">
+          Find Round
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
-          Round Stats
+        <ion-item>
+          Statistics
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
-          Teeball Stats
+        <ion-item nav-clear menu-close ui-sref="round-stats">
+          By Rounds
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
-          Approach Shot Stats
+        <ion-item nav-clear menu-close ui-sref="teeball-stats">
+          Teeball
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
-          Short Game Stats
+        <ion-item nav-clear menu-close ui-sref="approach-stats">
+          Approach Shots
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
+        <ion-item nav-clear menu-close ui-sref="shortgame-stats">
+          Short Game
+        </ion-item>
+        <ion-item>
+          Set Up
+        </ion-item>
+        <ion-item nav-clear menu-close ui-sref="preferences">
           Preferences
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
+        <ion-item nav-clear menu-close ui-sref="my-bag">
           My Bag
         </ion-item>
       </ion-list>
