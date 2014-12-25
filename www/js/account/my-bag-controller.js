@@ -1,4 +1,4 @@
-angular.module('statracker').controller('HomeCtrl', [
+angular.module('statracker').controller('MyBagController', [
     '$scope',
     function ($scope) {
         'use strict';
