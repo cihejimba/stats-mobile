@@ -1,22 +1,30 @@
 angular.module('statracker').config([
     '$stateProvider',
     '$urlRouterProvider',
-    function ($stateProvider, $urlRouterProvider) {
+    '$ionicConfigProvider',
+    function ($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
         'use strict';
+
+        $ionicConfigProvider.tabs.position('bottom');
 
         $stateProvider
 
-            .state('home', {
-                url: '/',
+            .state('app', {
+                url: '/app',
+                abstract: true,
+                templateUrl: 'templates/menu.html',
+                controller: 'HomeController'
+            })
+
+            .state('app.home', {
+                url: '/home',
                 views: {
                     'menuContent': {
-                        templateUrl: 'templates/home.html',
-                        controller: 'HomeController'
+                        templateUrl: 'templates/home.html'
                     }
                 }
             })
-
-            .state('login', {
+            .state('app.login', {
                 url: '/login',
                 views: {
                     'menuContent': {
@@ -26,7 +34,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('register', {
+            .state('app.register', {
                 url: '/register',
                 views: {
                     'menuContent': {
@@ -36,7 +44,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('preferences', {
+            .state('app.preferences', {
                 url: '/preferences',
                 views: {
                     'menuContent': {
@@ -46,7 +54,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('my-bag', {
+            .state('app.my-bag', {
                 url: '/my-bag',
                 views: {
                     'menuContent': {
@@ -56,7 +64,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('create-round', {
+            .state('app.create-round', {
                 url: '/create-round',
                 views: {
                     'menuContent': {
@@ -66,7 +74,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('list-rounds', {
+            .state('app.list-rounds', {
                 url: '/list-rounds',
                 views: {
                     'menuContent': {
@@ -76,7 +84,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('round', {
+            .state('app.round', {
                 url: '/round',
                 abstract: true,
                 views: {
@@ -86,24 +94,24 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('round.summary', {
-                url: '/round/summary',
+            .state('app.round.summary', {
+                url: '/round-summary',
                 views: {
                     'round-summary': {
                         templateUrl: 'templates/rounds/round-summary.html'
                     }
                 }
             })
-            .state('round.teeball-summary', {
-                url: '/round/teeball-summary',
+            .state('app.round.teeball-summary', {
+                url: '/teeball-summary',
                 views: {
                     'teeball-summary': {
                         templateUrl: 'templates/rounds/teeball-summary.html'
                     }
                 }
             })
-            .state('round.approach-summary', {
-                url: '/round/approach-summary',
+            .state('app.round.approach-summary', {
+                url: '/approach-summary',
                 views: {
                     'approach-summary': {
                         templateUrl: 'templates/rounds/approach-summary.html'
@@ -111,7 +119,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('hole', {
+            .state('app.hole', {
                 url: '/hole',
                 abstract: true,
                 views: {
@@ -121,24 +129,24 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('hole.teeball', {
-                url: '/hole/teeball',
+            .state('app.hole.teeball', {
+                url: '/teeball',
                 views: {
                     'teeball': {
                         templateUrl: 'templates/rounds/teeball.html'
                     }
                 }
             })
-            .state('hole.approach', {
-                url: '/hole/approach',
+            .state('app.hole.approach', {
+                url: '/approach',
                 views: {
                     'approach': {
                         templateUrl: 'templates/rounds/approach.html'
                     }
                 }
             })
-            .state('hole.shortgame', {
-                url: '/hole/shortgame',
+            .state('app.hole.shortgame', {
+                url: '/shortgame',
                 views: {
                     'shortgame': {
                         templateUrl: 'templates/rounds/shortgame.html'
@@ -146,7 +154,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('round-stats', {
+            .state('app.round-stats', {
                 url: '/round-stats',
                 abstract: true,
                 views: {
@@ -156,16 +164,16 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('round-stats.summary', {
-                url: '/round-stats/summary',
+            .state('app.round-stats.summary', {
+                url: '/round-stats-summary',
                 views: {
                     'round-stats-summary': {
                         templateUrl: 'templates/stats/round-stats-summary.html'
                     }
                 }
             })
-            .state('round-stats.trends', {
-                url: '/round-stats/trends',
+            .state('app.round-stats.trends', {
+                url: '/round-stats-trends',
                 views: {
                     'round-stats-trends': {
                         templateUrl: 'templates/stats/round-stats-trends.html'
@@ -173,7 +181,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('teeball-stats', {
+            .state('app.teeball-stats', {
                 url: '/teeball-stats',
                 abstract: true,
                 views: {
@@ -183,24 +191,24 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('teeball-stats.summary', {
-                url: '/teeball-stats/summary',
+            .state('app.teeball-stats.summary', {
+                url: '/teeball-stats-summary',
                 views: {
                     'teeball-stats-summary': {
                         templateUrl: 'templates/stats/teeball-stats-summary.html'
                     }
                 }
             })
-            .state('teeball-stats.map', {
-                url: '/teeball-stats/map',
+            .state('app.teeball-stats.map', {
+                url: '/teeball-stats-map',
                 views: {
                     'teeball-stats-map': {
                         templateUrl: 'templates/stats/teeball-stats-map.html'
                     }
                 }
             })
-            .state('teeball-stats.trends', {
-                url: '/teeball-stats/trends',
+            .state('app.teeball-stats.trends', {
+                url: '/teeball-stats-trends',
                 views: {
                     'teeball-stats-trends': {
                         templateUrl: 'templates/stats/teeball-stats-trends.html'
@@ -208,7 +216,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('approach-stats', {
+            .state('app.approach-stats', {
                 url: '/approach-stats',
                 abstract: true,
                 views: {
@@ -218,24 +226,24 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('approach-stats.summary', {
-                url: '/approach-stats/summary',
+            .state('app.approach-stats.summary', {
+                url: '/approach-stats-summary',
                 views: {
                     'approach-stats-summary': {
                         templateUrl: 'templates/stats/approach-stats-summary.html'
                     }
                 }
             })
-            .state('approach-stats.map', {
-                url: '/approach-stats/map',
+            .state('app.approach-stats.map', {
+                url: '/approach-stats-map',
                 views: {
                     'approach-stats-map': {
                         templateUrl: 'templates/stats/approach-stats-map.html'
                     }
                 }
             })
-            .state('approach-stats.trends', {
-                url: '/approach-stats/trends',
+            .state('app.approach-stats.trends', {
+                url: '/approach-stats-trends',
                 views: {
                     'approach-stats-trends': {
                         templateUrl: 'templates/stats/approach-stats-trends.html'
@@ -243,7 +251,7 @@ angular.module('statracker').config([
                 }
             })
 
-            .state('shortgame-stats', {
+            .state('app.shortgame-stats', {
                 url: '/shortgame-stats',
                 abstract: true,
                 views: {
@@ -253,16 +261,16 @@ angular.module('statracker').config([
                     }
                 }
             })
-            .state('shortgame-stats.summary', {
-                url: '/shortgame-stats/summary',
+            .state('app.shortgame-stats.summary', {
+                url: '/shortgame-stats-summary',
                 views: {
                     'shortgame-stats-summary': {
                         templateUrl: 'templates/stats/shortgame-stats-summary.html'
                     }
                 }
             })
-            .state('shortgame-stats.trends', {
-                url: '/shortgame-stats/trends',
+            .state('app.shortgame-stats.trends', {
+                url: '/shortgame-stats-trends',
                 views: {
                     'shortgame-stats-trends': {
                         templateUrl: 'templates/stats/shortgame-stats-trends.html'
@@ -270,6 +278,6 @@ angular.module('statracker').config([
                 }
             });
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/');
+        $urlRouterProvider.otherwise('/app/home');
     }
 ]);
