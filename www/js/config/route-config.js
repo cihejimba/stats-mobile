@@ -1,283 +1,166 @@
 angular.module('statracker').config([
     '$stateProvider',
     '$urlRouterProvider',
-    '$ionicConfigProvider',
-    function ($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
+    function ($stateProvider, $urlRouterProvider) {
         'use strict';
-
-        $ionicConfigProvider.tabs.position('bottom');
 
         $stateProvider
 
-            .state('app', {
-                url: '/app',
+            .state('tab', {
+                url: '/tab',
                 abstract: true,
-                templateUrl: 'templates/menu.html',
-                controller: 'HomeController'
+                templateUrl: 'templates/tabs.html'
             })
 
-            .state('app.home', {
-                url: '/home',
+            .state('tab.settings', {
+                url: '/settings',
                 views: {
-                    'menuContent': {
-                        templateUrl: 'templates/home.html'
+                    'settings': {
+                        templateUrl: 'templates/account/settings.html'
                     }
                 }
             })
-            .state('app.login', {
-                url: '/login',
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/account/login.html',
-                        controller: 'LoginController'
-                    }
-                }
-            })
-
-            .state('app.register', {
-                url: '/register',
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/account/register.html',
-                        controller: 'RegisterController'
-                    }
-                }
-            })
-
-            .state('app.preferences', {
+            .state('tab.preferences', {
                 url: '/preferences',
                 views: {
-                    'menuContent': {
+                    'settings': {
                         templateUrl: 'templates/account/preferences.html',
                         controller: 'PreferencesController'
                     }
                 }
             })
-
-            .state('app.my-bag', {
+            .state('tab.my-bag', {
                 url: '/my-bag',
                 views: {
-                    'menuContent': {
+                    'settings': {
                         templateUrl: 'templates/account/my-bag.html',
                         controller: 'MyBagController'
                     }
                 }
             })
 
-            .state('app.create-round', {
-                url: '/create-round',
+            .state('tab.rounds', {
+                url: '/rounds',
                 views: {
-                    'menuContent': {
-                        templateUrl: 'templates/rounds/create.html',
-                        controller: 'CreateRoundController'
-                    }
-                }
-            })
-
-            .state('app.list-rounds', {
-                url: '/list-rounds',
-                views: {
-                    'menuContent': {
+                    'rounds': {
                         templateUrl: 'templates/rounds/list.html',
                         controller: 'ListRoundsController'
                     }
                 }
             })
-
-            .state('app.round', {
-                url: '/round',
-                abstract: true,
+            .state('tab.new-round', {
+                url: '/new-round',
                 views: {
-                    'menuContent': {
-                        templateUrl: 'templates/rounds/round.html',
+                    'rounds': {
+                        templateUrl: 'templates/rounds/create.html',
+                        controller: 'CreateRoundController'
+                    }
+                }
+            })
+            .state('tab.round-summary', {
+                url: '/round-summary',
+                params: {id: 0},
+                views: {
+                    'rounds': {
+                        templateUrl: 'templates/rounds/round-summary.html',
                         controller: 'RoundController'
                     }
                 }
             })
-            .state('app.round.summary', {
-                url: '/round-summary',
-                views: {
-                    'round-summary': {
-                        templateUrl: 'templates/rounds/round-summary.html'
-                    }
-                }
-            })
-            .state('app.round.teeball-summary', {
+            .state('tab.teeball-summary', {
                 url: '/teeball-summary',
+                params: {id: 0},
                 views: {
-                    'teeball-summary': {
-                        templateUrl: 'templates/rounds/teeball-summary.html'
+                    'rounds': {
+                        templateUrl: 'templates/rounds/teeball-summary.html',
+                        controller: 'RoundController'
                     }
                 }
             })
-            .state('app.round.approach-summary', {
+            .state('tab.approach-summary', {
                 url: '/approach-summary',
+                params: {id: 0},
                 views: {
-                    'approach-summary': {
-                        templateUrl: 'templates/rounds/approach-summary.html'
+                    'rounds': {
+                        templateUrl: 'templates/rounds/approach-summary.html',
+                        controller: 'RoundController'
                     }
                 }
             })
-
-            .state('app.hole', {
-                url: '/hole',
-                abstract: true,
+            .state('tab.round-detail-teeball', {
+                url: '/round-detail-teeball',
+                params: {id: 0, hole: 0},
                 views: {
-                    'menuContent': {
-                        templateUrl: 'templates/rounds/hole.html',
+                    'rounds': {
+                        templateUrl: 'templates/rounds/teeball.html',
                         controller: 'HoleController'
                     }
                 }
             })
-            .state('app.hole.teeball', {
+            .state('tab.round-detail-approach', {
+                url: '/round-detail-approach',
+                params: {id: 0, hole: 0},
+                views: {
+                    'rounds': {
+                        templateUrl: 'templates/rounds/approach.html',
+                        controller: 'HoleController'
+                    }
+                }
+            })
+            .state('tab.round-detail-shortgame', {
+                url: '/round-detail-shortgame',
+                params: {id: 0, hole: 0},
+                views: {
+                    'rounds': {
+                        templateUrl: 'templates/rounds/shortgame.html',
+                        controller: 'HoleController'
+                    }
+                }
+            })
+
+            .state('tab.stats', {
+                url: '/stats',
+                views: {
+                    'stats': {
+                        templateUrl: 'templates/stats/stats.html',
+                        controller: 'StatsController'
+                    }
+                }
+            })
+            .state('tab.stats.overall', {
+                url: '/overall',
+                views: {
+                    'stats-detail': {
+                        templateUrl: 'templates/stats/overall.html'
+                    }
+                }
+            })
+            .state('tab.stats.teeball', {
                 url: '/teeball',
                 views: {
-                    'teeball': {
-                        templateUrl: 'templates/rounds/teeball.html'
+                    'stats-detail': {
+                        templateUrl: 'templates/stats/teeball.html'
                     }
                 }
             })
-            .state('app.hole.approach', {
+            .state('tab.stats.approach', {
                 url: '/approach',
                 views: {
-                    'approach': {
-                        templateUrl: 'templates/rounds/approach.html'
+                    'stats-detail': {
+                        templateUrl: 'templates/stats/approach.html'
                     }
                 }
             })
-            .state('app.hole.shortgame', {
+            .state('tab.stats.shortgame', {
                 url: '/shortgame',
                 views: {
-                    'shortgame': {
-                        templateUrl: 'templates/rounds/shortgame.html'
-                    }
-                }
-            })
-
-            .state('app.round-stats', {
-                url: '/round-stats',
-                abstract: true,
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/stats/round-stats.html',
-                        controller: 'RoundStatsController'
-                    }
-                }
-            })
-            .state('app.round-stats.summary', {
-                url: '/round-stats-summary',
-                views: {
-                    'round-stats-summary': {
-                        templateUrl: 'templates/stats/round-stats-summary.html'
-                    }
-                }
-            })
-            .state('app.round-stats.trends', {
-                url: '/round-stats-trends',
-                views: {
-                    'round-stats-trends': {
-                        templateUrl: 'templates/stats/round-stats-trends.html'
-                    }
-                }
-            })
-
-            .state('app.teeball-stats', {
-                url: '/teeball-stats',
-                abstract: true,
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/stats/teeball-stats.html',
-                        controller: 'TeeballStatsController'
-                    }
-                }
-            })
-            .state('app.teeball-stats.summary', {
-                url: '/teeball-stats-summary',
-                views: {
-                    'teeball-stats-summary': {
-                        templateUrl: 'templates/stats/teeball-stats-summary.html'
-                    }
-                }
-            })
-            .state('app.teeball-stats.map', {
-                url: '/teeball-stats-map',
-                views: {
-                    'teeball-stats-map': {
-                        templateUrl: 'templates/stats/teeball-stats-map.html'
-                    }
-                }
-            })
-            .state('app.teeball-stats.trends', {
-                url: '/teeball-stats-trends',
-                views: {
-                    'teeball-stats-trends': {
-                        templateUrl: 'templates/stats/teeball-stats-trends.html'
-                    }
-                }
-            })
-
-            .state('app.approach-stats', {
-                url: '/approach-stats',
-                abstract: true,
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/stats/approach-stats.html',
-                        controller: 'ApproachStatsController'
-                    }
-                }
-            })
-            .state('app.approach-stats.summary', {
-                url: '/approach-stats-summary',
-                views: {
-                    'approach-stats-summary': {
-                        templateUrl: 'templates/stats/approach-stats-summary.html'
-                    }
-                }
-            })
-            .state('app.approach-stats.map', {
-                url: '/approach-stats-map',
-                views: {
-                    'approach-stats-map': {
-                        templateUrl: 'templates/stats/approach-stats-map.html'
-                    }
-                }
-            })
-            .state('app.approach-stats.trends', {
-                url: '/approach-stats-trends',
-                views: {
-                    'approach-stats-trends': {
-                        templateUrl: 'templates/stats/approach-stats-trends.html'
-                    }
-                }
-            })
-
-            .state('app.shortgame-stats', {
-                url: '/shortgame-stats',
-                abstract: true,
-                views: {
-                    'menuContent': {
-                        templateUrl: 'templates/stats/shortgame-stats.html',
-                        controller: 'ShortgameStatsController'
-                    }
-                }
-            })
-            .state('app.shortgame-stats.summary', {
-                url: '/shortgame-stats-summary',
-                views: {
-                    'shortgame-stats-summary': {
-                        templateUrl: 'templates/stats/shortgame-stats-summary.html'
-                    }
-                }
-            })
-            .state('app.shortgame-stats.trends', {
-                url: '/shortgame-stats-trends',
-                views: {
-                    'shortgame-stats-trends': {
-                        templateUrl: 'templates/stats/shortgame-stats-trends.html'
+                    'stats-detail': {
+                        templateUrl: 'templates/stats/shortgame.html'
                     }
                 }
             });
+
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/app/home');
+        $urlRouterProvider.otherwise('/tab/rounds');
     }
 ]);

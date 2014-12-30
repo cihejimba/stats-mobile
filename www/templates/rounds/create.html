@@ -1,6 +1,9 @@
-<ion-view>
+<ion-view view-title="New Round">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear icon icon-left ion-ios7-arrow-back" ui-sref="^.rounds">Back</button>
+    </ion-nav-buttons>
     <ion-content>
-        <h1>Create Round</h1>
-        <a class="button-assertive" ui-sref="hole/1">Start</a>
+        <p>Form to create a new round and go directly to data-entry.</p>
+        <a class="button button-assertive" ui-sref="^.round-detail-teeball({id: 400, hole: 1})">Start</a>
     </ion-content>
 </ion-view>
