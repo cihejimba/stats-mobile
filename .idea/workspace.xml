@@ -2,53 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8db3e757-84cc-4a64-a423-58e64a1883b3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/stats/approach.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/js/config/ionic-config.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/js/rounds/nav-next.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/js/rounds/nav-prev.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/stats/overall.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/account/settings.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/stats/shortgame.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/js/config/state-event-listeners.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/stats/stats.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/tabs.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/www/templates/stats/teeball.html" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\js\stats\approach-stats-controller.js" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\js\stats\shortgame-stats-controller.js" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\js\stats\teeball-stats-controller.js" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\menu.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\rounds\round.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\approach-stats-map.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\approach-stats-summary.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\approach-stats-trends.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\approach-stats.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\round-stats-summary.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\round-stats-trends.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\round-stats.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\shortgame-stats-summary.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\shortgame-stats-trends.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\shortgame-stats.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\teeball-stats-map.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\teeball-stats-summary.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\teeball-stats-trends.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\Projects\StaTracker\StatsMobile\www\templates\stats\teeball-stats.html" afterPath="" />
-      <change type="MOVED" beforePath="C:\Projects\StaTracker\StatsMobile\www\js\stats\round-stats-controller.js" afterPath="$PROJECT_DIR$/www/js/stats/stats-controller.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/app.js" afterPath="$PROJECT_DIR$/www/js/app.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/approach-summary.html" afterPath="$PROJECT_DIR$/www/templates/rounds/approach-summary.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/approach.html" afterPath="$PROJECT_DIR$/www/templates/rounds/approach.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/create.html" afterPath="$PROJECT_DIR$/www/templates/rounds/create.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/rounds/hole-controller.js" afterPath="$PROJECT_DIR$/www/js/rounds/hole-controller.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/hole.html" afterPath="$PROJECT_DIR$/www/templates/rounds/hole.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/index.html" afterPath="$PROJECT_DIR$/www/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/list.html" afterPath="$PROJECT_DIR$/www/templates/rounds/list.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/account/my-bag.html" afterPath="$PROJECT_DIR$/www/templates/account/my-bag.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/account/preferences.html" afterPath="$PROJECT_DIR$/www/templates/account/preferences.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/rounds/round-controller.js" afterPath="$PROJECT_DIR$/www/js/rounds/round-controller.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/round-summary.html" afterPath="$PROJECT_DIR$/www/templates/rounds/round-summary.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/config/route-config.js" afterPath="$PROJECT_DIR$/www/js/config/route-config.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/shortgame.html" afterPath="$PROJECT_DIR$/www/templates/rounds/shortgame.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/teeball-summary.html" afterPath="$PROJECT_DIR$/www/templates/rounds/teeball-summary.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/templates/rounds/teeball.html" afterPath="$PROJECT_DIR$/www/templates/rounds/teeball.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="StatsMobile.iws" />
