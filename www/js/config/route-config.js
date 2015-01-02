@@ -1,4 +1,4 @@
-angular.module('statracker').config([
+statracker.config([
     '$stateProvider',
     '$urlRouterProvider',
     function ($stateProvider, $urlRouterProvider) {
@@ -6,10 +6,24 @@ angular.module('statracker').config([
 
         $stateProvider
 
+            .state('login', {
+                url: '/login',
+                templateUrl: 'templates/account/login.html',
+                controller: 'LoginController'
+            })
+            .state('register', {
+                url: '/register',
+                templateUrl: 'templates/account/register.html',
+                controller: 'RegisterController'
+            })
+
             .state('tab', {
                 url: '/tab',
                 abstract: true,
-                templateUrl: 'templates/tabs.html'
+                templateUrl: 'templates/tabs.html',
+                data: {
+                    secure: true
+                }
             })
 
             .state('tab.settings', {
@@ -161,6 +175,6 @@ angular.module('statracker').config([
             });
 
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/tab/rounds');
+        $urlRouterProvider.otherwise('/login');
     }
 ]);

@@ -1,4 +1,4 @@
-angular.module('statracker').config([
+statracker.config([
     '$ionicConfigProvider',
     function ($ionicConfigProvider) {
         'use strict';

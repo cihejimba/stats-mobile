@@ -1,5 +1,5 @@
 // StaTracker Mobile App
-angular.module('statracker', ['ionic'])
+var statracker = angular.module('statracker', ['ionic', 'angular-storage', 'angular-jwt'])
 
     .run(function ($ionicPlatform) {
         $ionicPlatform.ready(function () {
@@ -14,7 +14,7 @@ angular.module('statracker', ['ionic'])
             }
         });
     });
-
+//TODO: move to a polyfill file
 if (!String.prototype.endsWith) {
     Object.defineProperty(String.prototype, 'endsWith', {
         value: function(searchString, position) {
