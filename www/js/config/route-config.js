@@ -30,7 +30,8 @@ statracker.config([
                 url: '/settings',
                 views: {
                     'settings': {
-                        templateUrl: 'templates/account/settings.html'
+                        templateUrl: 'templates/account/settings.html',
+                        controller: 'AccountController'
                     }
                 }
             })

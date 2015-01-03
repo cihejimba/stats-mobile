@@ -13,7 +13,7 @@ statracker.factory('accountService', [
             clientId = '73788e966f4c4c289a3a8f12f9aae744'; //TODO: move to config outside source control
 
         var login = function (credentials) {
-            var data = 'grant_type=password&username=' + credentials.userName + '&password=' + credentials.password + '&client_id=' + clientId;
+            var data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
             return $http({
                 url: serviceBase + 'token',
                 method: 'POST',
@@ -56,7 +56,8 @@ statracker.factory('accountService', [
         };
 
         var getUser = function () {
-            return store.get('user');
+            var user = store.get('user');
+            return (user === undefined || user === null) ? undefined :user;
         };
 
         var refresh = function () {

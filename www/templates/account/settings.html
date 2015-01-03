@@ -2,5 +2,7 @@
     <ion-content>
         <button class="button button-block" ui-sref="^.my-bag">My Clubs</button>
         <button class="button button-block" ui-sref="^.preferences">Preferences</button>
+        <p>You are logged in as {{user.name}}</p>
+        <button class="button button-block" ng-click="doLogout()">Log Out</button>
     </ion-content>
 </ion-view>

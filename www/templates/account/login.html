@@ -1,10 +1,4 @@
-<ion-view>
-  <ion-header-bar>
-    <h1 class="title">Login</h1>
-    <div class="buttons">
-      <button class="button button-clear" ng-click="closeLogin()">Close</button>
-    </div>
-  </ion-header-bar>
+<ion-view view-title="Login">
   <ion-content>
     <div class="row">
       <div class="col">
@@ -27,11 +21,19 @@
     </div>
     <div class="row">
       <div class="col">
+        <p>New to StaTracker?</p>
+      </div>
+      <div class="col">
+        <button class="button button-calm" ui-sref="register">Register</button>
+      </div>
+    </div>
+    <!--<div class="row">
+      <div class="col">
         <button class="button button-block button-assertive">Login with Facebook</button>
       </div>
       <div class="col">
         <button class="button button-block button-energized">Login with Google</button>
       </div>
-    </div>
+    </div>-->
   </ion-content>
 </ion-view>

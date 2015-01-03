@@ -1,5 +1,30 @@
-<ion-view>
+<ion-view view-title="Register">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear icon icon-left ion-ios7-arrow-back" ui-sref="login">Back</button>
+    </ion-nav-buttons>
     <ion-content>
-        <h1>Register</h1>
+        <div class="row">
+            <div class="col">
+                <form ng-submit="doRegister()">
+                    <div class="list">
+                        <label class="item item-input">
+                            <span class="input-label">Email</span>
+                            <input type="email" ng-model="registration.email">
+                        </label>
+                        <label class="item item-input">
+                            <span class="input-label">Password</span>
+                            <input type="password" ng-model="registration.password">
+                        </label>
+                        <label class="item item-input">
+                            <span class="input-label">Confirm Password</span>
+                            <input type="password" ng-model="registration.confirmPassword">
+                        </label>
+                        <label class="item">
+                            <button class="button button-block button-positive" type="submit">Register</button>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
     </ion-content>
 </ion-view>

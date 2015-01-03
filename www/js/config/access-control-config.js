@@ -4,6 +4,7 @@ statracker.config([
     function ($httpProvider, jwtInterceptorProvider) {
         'use strict';
 
+        //TODO: make sure we aren't intercepting calls we shouldn't be
         //the tokenGetter function returns a bearer token, which the angular-jwt
         //interceptor will attach to the request header on every request (unless
         //we tell it not to)
@@ -31,9 +32,14 @@ statracker.config([
         }];
         $httpProvider.interceptors.push('jwtInterceptor');
     }
-]).run(['$rootscope', '$state', 'accountService', function ($rootscope, $state, accountService) {
-    $rootscope.$on('stateChangeStart', function (event, toState) {
-        if (toState.data.secure && !accountService.user().authenticated) {
+]);
+
+statracker.run(['$rootScope', '$state', 'accountService', function ($rootScope, $state, accountService) {
+    $rootScope.$on('$stateChangeStart', function (event, toState) {
+        var user = accountService.user(),
+            secure = toState && toState.data && toState.data.secure;
+
+        if (secure && (user === undefined || !user.authenticated)) {
             event.preventDefault();
             $state.go('login');
         }
