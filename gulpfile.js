@@ -4,14 +4,31 @@ var bower = require('bower');
 var concat = require('gulp-concat');
 var sass = require('gulp-sass');
 var minifyCss = require('gulp-minify-css');
+var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
+var templateCache = require('gulp-angular-templatecache');
 
 var paths = {
   sass: ['./scss/**/*.scss']
 };
 
-gulp.task('default', ['sass']);
+gulp.task('default', ['html', 'bundle']);
+
+gulp.task('html', function () {
+  gulp.src('www/templates/**/*.html')
+      .pipe(templateCache('templates.js', {module: 'statracker', root: 'templates/'}))
+      .pipe(gulp.dest('www/js'));
+});
+
+gulp.task('bundle', function() {
+  return gulp.src('www/js/**/*.js')
+      .pipe(concat('statracker.js'))
+      .pipe(gulp.dest('www/dist'))
+      .pipe(rename({ extname: '.min.js' }))
+      .pipe(uglify())
+      .pipe(gulp.dest('www/dist'));
+});
 
 gulp.task('sass', function(done) {
   gulp.src('./scss/ionic.app.scss')
