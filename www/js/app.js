@@ -1,5 +1,5 @@
 // StaTracker Mobile App
-var statracker = angular.module('statracker', ['ionic', 'angular-storage', 'angular-jwt'])
+var statracker = angular.module('statracker', ['ionic', 'angular-storage', 'angular-jwt', 'ngMessages'])
 
     .run(function ($ionicPlatform) {
         $ionicPlatform.ready(function () {

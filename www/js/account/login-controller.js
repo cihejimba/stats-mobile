@@ -7,13 +7,22 @@ statracker.controller('LoginController', [
 
         $scope.login = {
             email: '',
-            password: ''
+            password: '',
+            hasError: false,
+            error: ''
         };
 
         $scope.doLogin = function () {
-            accountService.login($scope.login).then(function () {
-                $state.go('tab.rounds');
-            });
+            $scope.login.hasError = false;
+            $scope.login.error = '';
+            accountService.login($scope.login)
+                .success(function (response) {
+                    $state.go('tab.rounds');
+                })
+                .error(function (error) {
+                    $scope.login.hasError = true;
+                    $scope.login.error = error.error_description;
+                });
         }
     }
 ]);

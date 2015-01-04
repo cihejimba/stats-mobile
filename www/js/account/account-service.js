@@ -1,11 +1,13 @@
 statracker.factory('accountService', [
     '$http',
     'store',
-    function ($http, store) {
+    'jwtHelper',
+    function ($http, store, jwtHelper) {
         'use strict';
 
         var user = {
                 authenticated: false,
+                id: '',
                 name: '',
                 email: ''
             },
@@ -22,10 +24,13 @@ statracker.factory('accountService', [
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
             })
             .success(function (response) {
+                //decode the token
+                var claims = jwtHelper.decodeToken(response.access_token);
                 //populate our user object
                 user.authenticated = true;
-                user.name = response.userName; //TODO: would like to separate these, maybe?
-                user.email = response.userName;
+                user.id = claims.nameid;
+                user.name = claims.sub; //TODO: would like to separate these, maybe?
+                user.email = claims.sub;
                 //store the tokens
                 store.set('user', user);
                 store.set('access_token', response.access_token);
@@ -37,7 +42,9 @@ statracker.factory('accountService', [
         };
 
         var logout = function () {
-            $http.post(serviceBase + 'api/account/logout');
+            if (user.authenticated) {
+                $http.post(serviceBase + 'api/account/logout');
+            }
             store.remove('access_token');
             store.remove('refresh_token');
             store.remove('user');

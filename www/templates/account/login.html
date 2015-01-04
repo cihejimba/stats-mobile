@@ -19,6 +19,11 @@
         </form>
       </div>
     </div>
+    <div class="row" ng-show="login.hasError">
+      <div class="col">
+        <p>{{login.error}}</p>
+      </div>
+    </div>
     <div class="row">
       <div class="col">
         <p>New to StaTracker?</p>
