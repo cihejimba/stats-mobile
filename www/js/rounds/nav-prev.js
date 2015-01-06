@@ -1,10 +1,8 @@
-angular.module('statracker').directive('navPrev', [
+statracker.directive('navPrev', [
     '$state',
     '$ionicGesture',
     '$ionicViewSwitcher',
     function ($state, $ionicGesture, $ionicViewSwitcher) {
-        'use strict';
-
         return {
             restrict: 'A',
             link: function(scope, elem, attrs) {

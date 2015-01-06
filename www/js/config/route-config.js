@@ -2,7 +2,6 @@ statracker.config([
     '$stateProvider',
     '$urlRouterProvider',
     function ($stateProvider, $urlRouterProvider) {
-        'use strict';
 
         $stateProvider
 

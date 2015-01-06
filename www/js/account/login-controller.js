@@ -3,7 +3,6 @@ statracker.controller('LoginController', [
     '$state',
     'accountService',
     function ($scope, $state, accountService) {
-        'use strict';
 
         $scope.login = {
             email: '',

@@ -1,6 +1,4 @@
-'use strict';
-
-angular.module('statracker').controller('HoleController', [
+statracker.controller('HoleController', [
     '$scope',
     '$state',
     function ($scope, $state) {

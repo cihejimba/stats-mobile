@@ -1,6 +1,4 @@
-'use strict';
-
-angular.module('statracker').controller('RoundController', [
+statracker.controller('RoundController', [
     '$scope',
     '$state',
     function ($scope, $state) {

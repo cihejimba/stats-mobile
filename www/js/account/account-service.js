@@ -1,24 +1,22 @@
-'use strict';
-
 statracker.factory('accountService', [
     '$http',
     'store',
     'jwtHelper',
-    function ($http, store, jwtHelper) {
+    'apiUrl',
+    'clientId',
+    function ($http, store, jwtHelper, apiUrl, clientId) {
 
         var user = {
                 authenticated: false,
                 id: '',
                 name: '',
                 email: ''
-            },
-            serviceBase = 'https://localhost:44300/', //https://statsapi.azurewebsites.net/
-            clientId = '73788e966f4c4c289a3a8f12f9aae744'; //TODO: move to config outside source control
+            };
 
         var login = function (credentials) {
             var data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
             return $http({
-                url: serviceBase + 'token',
+                url: apiUrl + 'token',
                 method: 'POST',
                 data: data,
                 skipAuthorization: true,
@@ -44,7 +42,7 @@ statracker.factory('accountService', [
 
         var logout = function () {
             if (user.authenticated) {
-                $http.post(serviceBase + 'api/account/logout');
+                $http.post(apiUrl + 'api/account/logout');
             }
             store.remove('access_token');
             store.remove('refresh_token');
@@ -56,7 +54,7 @@ statracker.factory('accountService', [
         var register = function (registration) {
             logout();
             return $http({
-                url: serviceBase + 'api/account/register',
+                url: apiUrl + 'api/account/register',
                 method: 'POST',
                 data: registration,
                 skipAuthorization: true
@@ -73,7 +71,7 @@ statracker.factory('accountService', [
                 data = 'grant_type=refresh_token&refresh_token=' + token + '&client_id=' + clientId;
             if (token) {
                 return $http({
-                    url: serviceBase + 'token',
+                    url: apiUrl + 'token',
                     method: 'POST',
                     skipAuthorization: true,
                     data: data,

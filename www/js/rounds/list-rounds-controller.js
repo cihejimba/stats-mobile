@@ -1,6 +1,4 @@
-'use strict';
-
-angular.module('statracker').controller('ListRoundsController', [
+statracker.controller('ListRoundsController', [
     function () {
 
     }

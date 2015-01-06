@@ -2,11 +2,13 @@
   <dictionary name="G517329">
     <words>
       <w>cordova</w>
+      <w>minify</w>
       <w>phantomjs</w>
       <w>rootscope</w>
       <w>shortgame</w>
       <w>statracker</w>
       <w>statusbar</w>
+      <w>templatecache</w>
     </words>
   </dictionary>
 </component>

@@ -1,9 +1,8 @@
-angular.module('statracker').controller('RegisterController', [
+statracker.controller('RegisterController', [
     '$scope',
     '$state',
     'accountService',
     function ($scope, $state, accountService) {
-        'use strict';
 
         $scope.registration = {
             email: '',

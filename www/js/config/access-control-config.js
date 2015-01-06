@@ -1,5 +1,3 @@
-'use strict';
-
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',

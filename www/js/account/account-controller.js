@@ -1,5 +1,3 @@
-'use strict';
-
 statracker.controller('AccountController', [
     '$scope',
     '$state',

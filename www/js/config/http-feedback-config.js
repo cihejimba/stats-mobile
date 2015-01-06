@@ -1,5 +1,3 @@
-'use strict';
-
 statracker.config([
     '$httpProvider',
     function ($httpProvider) {
@@ -23,8 +21,10 @@ statracker.config([
             };
         });
     }
-    //register listeners to the http start and end events we configured above
-]).run(['$rootScope', '$ionicLoading', function ($rootScope, $ionicLoading) {
+]);
+
+//register listeners to the http start and end events we configured above
+statracker.run(['$rootScope', '$ionicLoading', function ($rootScope, $ionicLoading) {
     $rootScope.$on('loading:show', function() {
         $ionicLoading.show({template: 'Loading...', noBackdrop: true}); //TODO: something nicer
     });

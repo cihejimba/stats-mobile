@@ -1,6 +1,4 @@
-'use strict';
-
-angular.module('statracker').controller('MyBagController', [
+statracker.controller('MyBagController', [
     function () {
 
     }
