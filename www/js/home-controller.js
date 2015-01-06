@@ -1,7 +1,6 @@
-angular.module('statracker').controller('HomeController', [
-    '$scope',
-    function ($scope) {
-        'use strict';
+'use strict';
 
+angular.module('statracker').controller('HomeController', [
+    function () {
     }
 ]);

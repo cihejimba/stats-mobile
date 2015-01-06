@@ -1,9 +1,9 @@
+'use strict';
+
 angular.module('statracker').controller('StatsController', [
     '$scope',
     '$state',
-    function ($scope, $state) {
-        'use strict';
-
+    function ($state) {
         if ($state.is('tab.stats')) {
             $state.go('.overall');
         }

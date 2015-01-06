@@ -1,9 +1,10 @@
+'use strict';
+
 statracker.factory('accountService', [
     '$http',
     'store',
     'jwtHelper',
     function ($http, store, jwtHelper) {
-        'use strict';
 
         var user = {
                 authenticated: false,
@@ -38,7 +39,7 @@ statracker.factory('accountService', [
             })
             .error(function () {
                 logout();
-            })
+            });
         };
 
         var logout = function () {

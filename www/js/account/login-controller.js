@@ -16,13 +16,13 @@ statracker.controller('LoginController', [
             $scope.login.hasError = false;
             $scope.login.error = '';
             accountService.login($scope.login)
-                .success(function (response) {
+                .success(function () {
                     $state.go('tab.rounds');
                 })
                 .error(function (error) {
                     $scope.login.hasError = true;
                     $scope.login.error = error.error_description;
                 });
-        }
+        };
     }
 ]);

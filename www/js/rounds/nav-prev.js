@@ -17,7 +17,7 @@ angular.module('statracker').directive('navPrev', [
                         if ($state.is('tab.round-detail-teeball'))
                         {
                             $ionicViewSwitcher.nextDirection('swap');
-                            if ($state.params.hole !== undefined && $state.params.hole == 1) {
+                            if ($state.params.hole !== undefined && $state.params.hole == 1) { // jshint ignore:line
                                 $state.params.hole = 3;
                             } else {
                                 $state.params.hole -= 1;
@@ -27,6 +27,6 @@ angular.module('statracker').directive('navPrev', [
                     }
                 }, elem);
             }
-        }
+        };
     }
 ]);

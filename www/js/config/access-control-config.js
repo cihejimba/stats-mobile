@@ -1,8 +1,9 @@
+'use strict';
+
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',
     function ($httpProvider, jwtInterceptorProvider) {
-        'use strict';
 
         //TODO: make sure we aren't intercepting calls we shouldn't be
         //the tokenGetter function returns a bearer token, which the angular-jwt
@@ -43,5 +44,5 @@ statracker.run(['$rootScope', '$state', 'accountService', function ($rootScope, 
             event.preventDefault();
             $state.go('login');
         }
-    })
+    });
 }]);

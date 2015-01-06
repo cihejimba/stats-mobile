@@ -1,3 +1,5 @@
+'use strict';
+
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var bower = require('bower');
@@ -8,12 +10,16 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
 var templateCache = require('gulp-angular-templatecache');
+var karma = require('karma').server;
+var jshint = require('gulp-jshint');
+//var ignore = require('gulp-ignore');
 
 var paths = {
-  sass: ['./scss/**/*.scss']
+  sass: ['./scss/**/*.scss'],
+  source: ['www/js/**/*.js']
 };
 
-gulp.task('default', ['html', 'bundle']);
+gulp.task('default', ['lint', 'html', 'bundle']);
 
 gulp.task('html', function () {
   gulp.src('www/templates/**/*.html')
@@ -28,6 +34,20 @@ gulp.task('bundle', function() {
       .pipe(rename({ extname: '.min.js' }))
       .pipe(uglify())
       .pipe(gulp.dest('www/dist'));
+});
+
+gulp.task('lint', function() {
+  return gulp.src(paths.source)
+      .pipe(jshint())
+      .pipe(jshint.reporter('jshint-stylish'))
+      .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('test', function (done) {
+  karma.start({
+    configFile: __dirname + '/karma.config.js',
+    singleRun: true
+  }, done);
 });
 
 gulp.task('sass', function(done) {

@@ -4,7 +4,7 @@ module.exports = function(config) {
     config.set({
 
         // base path, set so our root is the root directory
-        basePath: '../',
+        basePath: '',
 
         // frameworks to use
         frameworks: ['jasmine'],
@@ -17,9 +17,9 @@ module.exports = function(config) {
             'karma-phantomjs-launcher'
         ],
 
-        preprocessors: {
-            'src/**/*.js': ['coverage']
-        },
+        //preprocessors: {
+        //    'www/js/**/*.js': ['coverage']
+        //},
 
         // list of files / patterns to load in the browser
         files: [
@@ -28,28 +28,26 @@ module.exports = function(config) {
             'www/lib/angular-jwt/dist/angular-jwt.js',
             'www/lib/angular-messages/angular-messages.js',
             'www/lib/angular-mocks/angular-mocks.js',
-            'www/js/app.js',
-            //'src/templates.js',
             'www/js/*.js',
             'www/js/**/*.js',
-            'test/*.js',
+            //'test/*.js',
             'test/**/*.js'
         ],
 
         exclude: [ ],
 
-        reporters: ['progress', 'coverage', 'junit'],
+        reporters: ['dots', 'coverage', 'junit'],
 
         junitReporter: {
             outputFile: 'test/js-test-results.xml'
         },
 
-        coverageReporter: {
-            reporters: [
-                { type: 'lcov', dir: 'test/coverage/' },
-                { type: 'cobertura', dir: 'test/coverage/' }
-            ]
-        },
+        //coverageReporter: {
+        //    reporters: [
+        //        { type: 'lcov', dir: 'test/coverage/' },
+        //        { type: 'cobertura', dir: 'test/coverage/' }
+        //    ]
+        //},
 
         // web server port
         port: 9876,
@@ -62,7 +60,7 @@ module.exports = function(config) {
         logLevel: config.LOG_INFO,
 
         // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: true,
+        autoWatch: false,
 
         // Start these browsers, currently available:
         // - Chrome
@@ -75,10 +73,6 @@ module.exports = function(config) {
         browsers: ['PhantomJS'],//['PhantomJS'],
 
         // If browser does not capture in given timeout [ms], kill it
-        captureTimeout: 60000,
-
-        // Continuous Integration mode
-        // if true, it capture browsers, run tests and exit
-        singleRun: false
+        captureTimeout: 60000
     });
 };

@@ -1,8 +1,9 @@
+'use strict';
+
 angular.module('statracker').controller('HoleController', [
     '$scope',
     '$state',
     function ($scope, $state) {
-        'use strict';
 
         if (!$scope.round) {
             $scope.round = {};

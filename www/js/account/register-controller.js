@@ -18,7 +18,7 @@ angular.module('statracker').controller('RegisterController', [
             $scope.registration.error = '';
             if ($scope.validate()) {
                 accountService.register($scope.registration)
-                    .success(function (response) {
+                    .success(function () {
                         accountService.login($scope.registration).then(function () {
                             $state.go('tab.rounds');
                         });
@@ -53,6 +53,6 @@ angular.module('statracker').controller('RegisterController', [
                 return false;
             }
             return true;
-        }
+        };
     }
 ]);
