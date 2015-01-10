@@ -20,9 +20,8 @@ var fs            = require('fs');
 
 var paths = {
   sass: ['./scss/**/*.scss'],
-  app:  ['www/js/app.js'],
-  js:   ['www/js/**/*.js','!www/js/app.js'],
-  html: ['www/templates/**/*.html']
+  app:  ['www/src/app.js'],
+  html: ['www/src/**/*.html']
 };
 
 gulp.task('default', ['lint', 'html', 'bundle', 'constants']);
@@ -30,8 +29,8 @@ gulp.task('default', ['lint', 'html', 'bundle', 'constants']);
 gulp.task('html', function () {
   gulp.src(paths.html)
       .pipe(minifyHtml({empty:true}))
-      .pipe(templateCache('templates.js', {module: 'statracker', root: 'templates/'}))
-      .pipe(gulp.dest('www/js'));
+      .pipe(templateCache('templates.js', {module: 'statracker', root: 'src/'}))
+      .pipe(gulp.dest('www/src'));
 });
 
 //gulp constants --env production
@@ -47,7 +46,7 @@ gulp.task('constants', function () {
 });
 
 gulp.task('bundle', function() {
-  return gulp.src(paths.js)
+  return gulp.src(['www/src/**/*.js','!www/src/app.js'])
       .pipe(concat('statracker.js'))
       .pipe(header('\'use strict\';\n'))
       .pipe(gulp.dest('www/dist'))
@@ -57,7 +56,7 @@ gulp.task('bundle', function() {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(paths.js)
+  return gulp.src(['www/src/**/*.js','!www/src/app.js'])
       .pipe(jshint())
       .pipe(jshint.reporter('jshint-stylish'));
 });

@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <testsuites>
-  <testsuite name="PhantomJS 1.9.8 (Windows 7)" package="" timestamp="2015-01-06T01:22:30" id="0" hostname="ISDEVL-G517329" tests="3" errors="0" failures="0" time="0.09">
+  <testsuite name="PhantomJS 1.9.8 (Windows 7)" package="" timestamp="2015-01-10T03:00:14" id="0" hostname="ISDEVL-G517329" tests="4" errors="0" failures="0" time="0.082">
     <properties>
       <property name="browser.fullName" value="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.34 (KHTML, like Gecko) PhantomJS/1.9.8 Safari/534.34"/>
     </properties>
-    <testcase name="should pass the correct data to POST" time="0.057" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
-    <testcase name="should store the tokens and user object on success" time="0.015" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
-    <testcase name="should call logout on failure" time="0.018" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
+    <testcase name="should pass the correct data to POST" time="0.047" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
+    <testcase name="should store the tokens and user object on success" time="0.017" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
+    <testcase name="should call logout on failure" time="0.011" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
+    <testcase name="should have a credentials object" time="0.007" classname="PhantomJS 1.9.8 (Windows 7).login-controller setup"/>
     <system-out><![CDATA[
 ]]></system-out>
     <system-err/>

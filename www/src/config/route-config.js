@@ -7,19 +7,19 @@ statracker.config([
 
             .state('login', {
                 url: '/login',
-                templateUrl: 'templates/account/login.html',
+                templateUrl: 'src/account/login-page.html',
                 controller: 'LoginController'
             })
             .state('register', {
                 url: '/register',
-                templateUrl: 'templates/account/register.html',
+                templateUrl: 'src/account/register.html',
                 controller: 'RegisterController'
             })
 
             .state('tab', {
                 url: '/tab',
                 abstract: true,
-                templateUrl: 'templates/tabs.html',
+                templateUrl: 'src/tabs.html',
                 data: {
                     secure: true
                 }
@@ -29,7 +29,7 @@ statracker.config([
                 url: '/settings',
                 views: {
                     'settings': {
-                        templateUrl: 'templates/account/settings.html',
+                        templateUrl: 'src/account/settings.html',
                         controller: 'AccountController'
                     }
                 }
@@ -38,7 +38,7 @@ statracker.config([
                 url: '/preferences',
                 views: {
                     'settings': {
-                        templateUrl: 'templates/account/preferences.html',
+                        templateUrl: 'src/account/preferences.html',
                         controller: 'PreferencesController'
                     }
                 }
@@ -47,7 +47,7 @@ statracker.config([
                 url: '/my-bag',
                 views: {
                     'settings': {
-                        templateUrl: 'templates/account/my-bag.html',
+                        templateUrl: 'src/account/my-bag.html',
                         controller: 'MyBagController'
                     }
                 }
@@ -57,7 +57,7 @@ statracker.config([
                 url: '/rounds',
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/list.html',
+                        templateUrl: 'src/rounds/list.html',
                         controller: 'ListRoundsController'
                     }
                 }
@@ -66,7 +66,7 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/create.html',
+                        templateUrl: 'src/rounds/create.html',
                         controller: 'CreateRoundController'
                     }
                 }
@@ -76,7 +76,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/round-summary.html',
+                        templateUrl: 'src/rounds/round-summary.html',
                         controller: 'RoundController'
                     }
                 }
@@ -86,7 +86,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/teeball-summary.html',
+                        templateUrl: 'src/rounds/teeball-summary.html',
                         controller: 'RoundController'
                     }
                 }
@@ -96,7 +96,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/approach-summary.html',
+                        templateUrl: 'src/rounds/approach-summary.html',
                         controller: 'RoundController'
                     }
                 }
@@ -106,7 +106,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/teeball.html',
+                        templateUrl: 'src/rounds/teeball.html',
                         controller: 'HoleController'
                     }
                 }
@@ -116,7 +116,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/approach.html',
+                        templateUrl: 'src/rounds/approach.html',
                         controller: 'HoleController'
                     }
                 }
@@ -126,7 +126,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'templates/rounds/shortgame.html',
+                        templateUrl: 'src/rounds/shortgame.html',
                         controller: 'HoleController'
                     }
                 }
@@ -136,7 +136,7 @@ statracker.config([
                 url: '/stats',
                 views: {
                     'stats': {
-                        templateUrl: 'templates/stats/stats.html',
+                        templateUrl: 'src/stats/stats.html',
                         controller: 'StatsController'
                     }
                 }
@@ -145,7 +145,7 @@ statracker.config([
                 url: '/overall',
                 views: {
                     'stats-detail': {
-                        templateUrl: 'templates/stats/overall.html'
+                        templateUrl: 'src/stats/overall.html'
                     }
                 }
             })
@@ -153,7 +153,7 @@ statracker.config([
                 url: '/teeball',
                 views: {
                     'stats-detail': {
-                        templateUrl: 'templates/stats/teeball.html'
+                        templateUrl: 'src/stats/teeball.html'
                     }
                 }
             })
@@ -161,7 +161,7 @@ statracker.config([
                 url: '/approach',
                 views: {
                     'stats-detail': {
-                        templateUrl: 'templates/stats/approach.html'
+                        templateUrl: 'src/stats/approach.html'
                     }
                 }
             })
@@ -169,7 +169,7 @@ statracker.config([
                 url: '/shortgame',
                 views: {
                     'stats-detail': {
-                        templateUrl: 'templates/stats/shortgame.html'
+                        templateUrl: 'src/stats/shortgame.html'
                     }
                 }
             });

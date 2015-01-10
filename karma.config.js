@@ -28,8 +28,8 @@ module.exports = function(config) {
             'www/lib/angular-jwt/dist/angular-jwt.js',
             'www/lib/angular-messages/angular-messages.js',
             'www/lib/angular-mocks/angular-mocks.js',
-            'www/js/*.js',
-            'www/js/**/*.js',
+            'www/dist/app.js',
+            'www/dist/statracker.js',
             //'test/*.js',
             'test/**/*.js'
         ],

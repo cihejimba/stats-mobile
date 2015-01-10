@@ -1,0 +1,42 @@
+<ion-content>
+    <div class="row">
+        <div class="col">
+            <form ng-submit="ctrl.doLogin()">
+                <div class="list">
+                    <label class="item item-input">
+                        <span class="input-label">Email</span>
+                        <input type="email" ng-model="login.email">
+                    </label>
+                    <label class="item item-input">
+                        <span class="input-label">Password</span>
+                        <input type="password" ng-model="login.password">
+                    </label>
+                    <label class="item">
+                        <button class="button button-block button-positive" type="submit">Log in</button>
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" ng-show="ctrl.credentials.hasError">
+        <div class="col">
+            <p>{{ctrl.credentials.error}}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p>New to StaTracker?</p>
+        </div>
+        <div class="col">
+            <button class="button button-calm" ui-sref="register">Register</button>
+        </div>
+    </div>
+    <!--<div class="row">
+      <div class="col">
+        <button class="button button-block button-assertive">Login with Facebook</button>
+      </div>
+      <div class="col">
+        <button class="button button-block button-energized">Login with Google</button>
+      </div>
+    </div>-->
+</ion-content>
