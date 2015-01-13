@@ -30,7 +30,12 @@ statracker.config([
                 views: {
                     'settings': {
                         templateUrl: 'src/account/settings.html',
-                        controller: 'AccountController'
+                        controller: 'AccountController',
+                        resolve: {
+                            userData: ['userData', function (userData) {
+                                return userData.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -58,7 +63,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/list.html',
-                        controller: 'ListRoundsController'
+                        controller: 'ListRoundsController',
+                        resolve: {
+                            userData: ['userData', function (userData) {
+                                return userData.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -66,7 +76,7 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create.html',
+                        templateUrl: 'src/rounds/create-page.html',
                         controller: 'CreateRoundController'
                     }
                 }

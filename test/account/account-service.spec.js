@@ -17,7 +17,7 @@
                 decodeToken: function () {}
             };
             module(function ($provide) {
-                $provide.value('store', my_store);
+                $provide.value('localStore', my_store);
                 $provide.value('jwtHelper', my_jwtHelper);
             });
         });

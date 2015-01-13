@@ -1,10 +1,10 @@
 statracker.factory('accountService', [
     '$http',
-    'store',
+    'localStore',
     'jwtHelper',
     'apiUrl',
     'clientId',
-    function ($http, store, jwtHelper, apiUrl, clientId) {
+    function ($http, localStore, jwtHelper, apiUrl, clientId) {
 
         var user = {
                 authenticated: false,
@@ -31,9 +31,9 @@ statracker.factory('accountService', [
                 user.name = claims.sub; //TODO: would like to separate these, maybe?
                 user.email = claims.sub;
                 //store the tokens
-                store.set('user', user);
-                store.set('access_token', response.access_token);
-                store.set('refresh_token', response.refresh_token);
+                localStore.set('user', user);
+                localStore.set('access_token', response.access_token);
+                localStore.set('refresh_token', response.refresh_token);
             })
             .error(function () {
                 logout();
@@ -44,9 +44,9 @@ statracker.factory('accountService', [
             if (user.authenticated) {
                 $http.post(apiUrl + 'api/account/logout');
             }
-            store.remove('access_token');
-            store.remove('refresh_token');
-            store.remove('user');
+            localStore.remove('access_token');
+            localStore.remove('refresh_token');
+            localStore.remove('user');
             user = {};
             return user;
         };
@@ -62,12 +62,12 @@ statracker.factory('accountService', [
         };
 
         var getUser = function () {
-            var user = store.get('user');
+            var user = localStore.get('user');
             return (user === undefined || user === null) ? undefined :user;
         };
 
         var refresh = function () {
-            var token = store.get('refresh_token'),
+            var token = localStore.get('refresh_token'),
                 data = 'grant_type=refresh_token&refresh_token=' + token + '&client_id=' + clientId;
             if (token) {
                 return $http({
@@ -78,8 +78,8 @@ statracker.factory('accountService', [
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 })
                 .success(function (response) {
-                    store.set('access_token', response.access_token);
-                    store.set('refresh_token', response.refresh_token);
+                    localStore.set('access_token', response.access_token);
+                    localStore.set('refresh_token', response.refresh_token);
                 })
                 .error(function () {
                     logout();

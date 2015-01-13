@@ -1,0 +1,18 @@
+<ion-view view-title="My Rounds" ng-controller="ListRoundsController as ctrl">
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear icon ion-plus" ui-sref="^.new-round"></button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div>
+            <p>graph of the last N rounds</p>
+        </div>
+        <div>
+            <p>average score for those last N rounds</p>
+        </div>
+        <ion-list>
+            <ion-item ng-repeat="round in ctrl.rounds" ui-sref="tab.round-summary({id: {{round.key}}})">
+                {{round.datePlayed}} - ({{round.scoreNumber}}): {{round.description}}
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>

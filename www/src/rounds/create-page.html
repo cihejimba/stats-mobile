@@ -1,0 +1,36 @@
+<ion-view view-title="New Round" ng-controller="CreateRoundController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear icon icon-left ion-ios7-arrow-back" ui-sref="^.rounds">Back</button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="row">
+            <div class="col">
+                <form ng-submit="ctrl.startRound()">
+                    <div class="list">
+                        <label class="item item-input">
+                            <span class="input-label">Date</span>
+                            <input type="date" ng-model="ctrl.round.date" />
+                        </label>
+                        <label class="item item-input">
+                            <span class="input-label">Course</span>
+                            <my-courses ng-model="ctrl.round.course" />
+                        </label>
+                        <label class="item item-input">
+                            <span class="input-label">Holes</span>
+                            <input type="tel" ng-model="ctrl.round.holes" />
+                        </label>
+                        <label class="item">
+                            <button class="button button-block button-positive" type="submit"
+                                    ng-disabled="!ctrl.canStart()">Start</button>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row" ng-show="ctrl.round.hasError">
+            <div class="col">
+                <p>{{ctrl.round.error}}</p>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

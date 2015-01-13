@@ -43,11 +43,11 @@ statracker.controller('AccountController', [
 
 statracker.factory('accountService', [
     '$http',
-    'store',
+    'localStore',
     'jwtHelper',
     'apiUrl',
     'clientId',
-    function ($http, store, jwtHelper, apiUrl, clientId) {
+    function ($http, localStore, jwtHelper, apiUrl, clientId) {
 
         var user = {
                 authenticated: false,
@@ -74,9 +74,9 @@ statracker.factory('accountService', [
                 user.name = claims.sub; //TODO: would like to separate these, maybe?
                 user.email = claims.sub;
                 //store the tokens
-                store.set('user', user);
-                store.set('access_token', response.access_token);
-                store.set('refresh_token', response.refresh_token);
+                localStore.set('user', user);
+                localStore.set('access_token', response.access_token);
+                localStore.set('refresh_token', response.refresh_token);
             })
             .error(function () {
                 logout();
@@ -87,9 +87,9 @@ statracker.factory('accountService', [
             if (user.authenticated) {
                 $http.post(apiUrl + 'api/account/logout');
             }
-            store.remove('access_token');
-            store.remove('refresh_token');
-            store.remove('user');
+            localStore.remove('access_token');
+            localStore.remove('refresh_token');
+            localStore.remove('user');
             user = {};
             return user;
         };
@@ -105,12 +105,12 @@ statracker.factory('accountService', [
         };
 
         var getUser = function () {
-            var user = store.get('user');
+            var user = localStore.get('user');
             return (user === undefined || user === null) ? undefined :user;
         };
 
         var refresh = function () {
-            var token = store.get('refresh_token'),
+            var token = localStore.get('refresh_token'),
                 data = 'grant_type=refresh_token&refresh_token=' + token + '&client_id=' + clientId;
             if (token) {
                 return $http({
@@ -121,8 +121,8 @@ statracker.factory('accountService', [
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 })
                 .success(function (response) {
-                    store.set('access_token', response.access_token);
-                    store.set('refresh_token', response.refresh_token);
+                    localStore.set('access_token', response.access_token);
+                    localStore.set('refresh_token', response.refresh_token);
                 })
                 .error(function () {
                     logout();
@@ -218,6 +218,123 @@ statracker.controller('MyBagController', [
 
     }
 ]);
+statracker.directive('myCourses', [
+    '$ionicTemplateLoader',
+    '$ionicBackdrop',
+    '$timeout',
+    '$rootScope',
+    '$document',
+    'userData',
+    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document, userData) {
+        return {
+            require: '?ngModel',
+            restrict: 'E',
+            template: '<input type="text" readonly="readonly" class="course-control" autocomplete="off">',
+            replace: true,
+            link: function (scope, element, attrs, ngModel) {
+
+                scope.courses = userData.courses;
+
+                var searchEventTimeout = undefined;
+
+                var POPUP_TPL = [
+                    '<div class="ion-google-place-container">',
+                    '<div class="bar bar-header item-input-inset">',
+                    '<label class="item-input-wrapper">',
+                    '<i class="icon ion-ios7-search placeholder-icon"></i>',
+                    '<input class="google-place-search" type="search" ng-model="searchQuery" placeholder="' + (attrs.searchPlaceholder || 'Enter a course description') + '">',
+                    '</label>',
+                    '<button class="button button-clear">',
+                    attrs.labelCancel || 'Cancel',
+                    '</button>',
+                    '</div>',
+                    '<ion-content class="has-header">',
+                    '<ion-list>',
+                    '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                    '{{course.description}}',
+                    '</ion-item>',
+                    '</ion-list>',
+                    '</ion-content>',
+                    '</div>'
+                ].join('');
+
+                var popupPromise = $ionicTemplateLoader.compile({
+                    template: POPUP_TPL,
+                    scope: scope,
+                    appendTo: $document[0].body
+                });
+
+                popupPromise.then(function (el) {
+                    var searchInputElement = angular.element(el.element.find('input'));
+
+                    scope.selectCourse = function (course) {
+                        ngModel.$setViewValue(course);
+                        ngModel.$render();
+                        el.element.css('display', 'none');
+                        $ionicBackdrop.release();
+                    };
+
+                    scope.$watch('searchQuery', function (query) {
+                        if (searchEventTimeout) $timeout.cancel(searchEventTimeout);
+                        searchEventTimeout = $timeout(function () {
+                            if (!query) return;
+                            scope.$apply(function () {
+                                scope.courses = userData.courses.filter(function (course) {
+                                    if (course.startsWith(query)) {
+                                        return course;
+                                    }
+                                });
+                            });
+                        }, 0);
+                    });
+
+                    var onClick = function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        $ionicBackdrop.retain();
+                        el.element.css('display', 'block');
+                        searchInputElement[0].focus();
+                        setTimeout(function () {
+                            searchInputElement[0].focus();
+                        }, 0);
+                    };
+
+                    var onCancel = function (e) {
+                        scope.searchQuery = '';
+                        $ionicBackdrop.release();
+                        el.element.css('display', 'none');
+                    };
+
+                    element.bind('click', onClick);
+                    element.bind('touchend', onClick);
+
+                    el.element.find('button').bind('click', onCancel);
+                });
+
+                if (attrs.placeholder) {
+                    element.attr('placeholder', attrs.placeholder);
+                }
+
+                ngModel.$formatters.unshift(function (modelValue) {
+                    if (!modelValue) return '';
+                    return modelValue;
+                });
+
+                ngModel.$parsers.unshift(function (viewValue) {
+                    return viewValue;
+                });
+
+                ngModel.$render = function () {
+                    if (!ngModel.$viewValue) {
+                        element.val('');
+                    } else {
+                        element.val(ngModel.$viewValue.description || '');
+                    }
+                };
+            }
+        };
+    }
+]);
 statracker.controller('PreferencesController', [
     function () {
 
@@ -281,6 +398,46 @@ statracker.controller('RegisterController', [
     }
 ]);
 
+statracker.factory('userData', [
+    '$http',
+    '$q',
+    'apiUrl',
+    function ($http, $q, apiUrl) {
+
+        var clubs, courses;
+
+        var loadUserData = function () {
+            var p1 = $q.defer(),
+                p2 = $q.defer();
+
+            if (clubs) {
+                p1.resolve(clubs);
+            } else {
+                $http.get(apiUrl + '/api/users/clubs').then(function (response) {
+                    clubs = response.data;
+                    p1.resolve(clubs);
+                });
+            }
+
+            if (courses) {
+                p2.resolve(courses);
+            } else {
+                $http.get(apuUrl + '/api/users/courses').then(function (response) {
+                    courses = response.data;
+                    p2.resolve(courses);
+                });
+            }
+
+            return $q.all([p1,p2]);
+        };
+
+        return {
+            get clubs() { return clubs; },
+            get courses() { return courses; },
+            loadUserData: loadUserData
+        };
+    }
+]);
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',
@@ -383,6 +540,18 @@ statracker.config([
         }
     });
 });
+if (!String.prototype.startsWith) {
+    Object.defineProperty(String.prototype, 'startsWith', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: function(searchString, position) {
+            position = position || 0;
+            return this.lastIndexOf(searchString, position) === position;
+        }
+    });
+}
+
 statracker.config([
     '$stateProvider',
     '$urlRouterProvider',
@@ -415,7 +584,12 @@ statracker.config([
                 views: {
                     'settings': {
                         templateUrl: 'src/account/settings.html',
-                        controller: 'AccountController'
+                        controller: 'AccountController',
+                        resolve: {
+                            userData: ['userData', function (userData) {
+                                return userData.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -443,7 +617,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/list.html',
-                        controller: 'ListRoundsController'
+                        controller: 'ListRoundsController',
+                        resolve: {
+                            userData: ['userData', function (userData) {
+                                return userData.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -451,7 +630,7 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create.html',
+                        templateUrl: 'src/rounds/create-page.html',
                         controller: 'CreateRoundController'
                     }
                 }
@@ -564,8 +743,80 @@ statracker.config([
     }
 ]);
 
+statracker.factory('localStore', ['store', function(store) {
+    return store.getNamespacedStore('stk');
+}]);
+
+(function (st) {
+
+    var importShot, exportShot, shot;
+
+    importShot = function (s) {
+        this.key = s.key;
+        this.hole = s.holeNumber;
+        this.clubKey = s.clubKey;
+        this.yardage = s.yardageNumber;
+        this.result = s.resultId;
+        this.coordinates = {
+            x: s.resultXNumber,
+            y: s.resultYNumber
+        };
+    };
+
+    exportShot = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            clubKey: this.clubKey,
+            yardageNumber: this.yardage,
+            resultId: this.result,
+            resultXNumber: this.coordinates.x,
+            resultYNumber: this.coordinates.y
+        };
+    };
+
+    shot = function (hole) {
+        this.key = undefined;
+        this.hole = hole;
+        this.clubKey = undefined;
+        this.yardage = undefined;
+        this.result = undefined;
+        this.coordinates = undefined;
+    };
+
+    shot.prototype = {
+        constructor: shot,
+        importShot: importShot,
+        exportShot: exportShot
+    };
+
+    st.ApproachShot = shot;
+
+}(statracker));
 statracker.controller('CreateRoundController', [
-    function () {
+    '$state',
+    'userData',
+    'roundService',
+    function ($state, userData, roundService) {
+
+        this.round = {
+            date: Date.now(),
+            holes: 18,
+            course: {},
+            hasError: false,
+            error: ''
+        };
+
+        this.canStart = function () {
+            return true;
+        };
+
+        this.startRound = function () {
+            var newRound = roundService.create(round.course, round.date, round.holes);
+            roundService.update(newRound, true).then(function (r) {
+                $state.go('^.round-detail-teeball({id: ' + r.key + ', hole: 1})');
+            });
+        };
     }
 ]);
 
@@ -677,6 +928,274 @@ statracker.controller('RoundController', [
     }
 ]);
 
+statracker.factory('roundService', [
+    '$http',
+    '$q',
+    'localStore',
+    'apiUrl',
+    function ($http, $q, localStore, apiUrl) {
+
+        var currentRound;
+
+        var getCurrentRound = function () {
+            if (currentRound) {
+                return currentRound;
+            }
+            currentRound = localStore.get('round');
+            return currentRound;
+        };
+
+        var getRound = function (key) {
+            var defer = $q.defer();
+            $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
+                currentRound = statracker.Round.import(response.data);
+                localStore.set('round', currentRound);
+                defer.resolve(currentRound);
+            });
+            return defer.promise();
+        };
+
+        var getRounds = function () {
+            return $http.get(apiUrl + '/api/rounds');
+        };
+
+        var createRound = function (course, datePlayed, holes) {
+            currentRound = new statracker.Round(course, datePlayed, holes);
+            localStore.set('round', currentRound);
+            return currentRound;
+        };
+
+        var updateRound = function (round, doSynch) {
+            var defer = $q.defer();
+            currentRound = round;
+            if (doSynch) {
+                var updated = statracker.Round.export(round);
+                if (currentRound.key && currentRound.key > 0) {
+                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, updated).then(function () {
+                        localStore.set('round', currentRound);
+                        defer.resolve(currentRound);
+                    });
+                } else {
+                    $http.post(apiUrl + '/api/rounds', updated).then(function (response) {
+                        currentRound.key = response.data.id;
+                        localStore.set('round', currentRound);
+                        defer.resolve(currentRound);
+                    });
+                }
+            } else {
+                localStore.set('round', currentRound);
+                defer.resolve(currentRound);
+            }
+            return defer.promise();
+        };
+
+        var completeRound = function (round) {
+            updateRound(round);
+            localStore.remove('round');
+        };
+
+        var deleteRound = function (key) {
+            $http.delete(apiUrl + '/api/rounds/' + key).then(function () {
+                if (currentRound && currentRound.key === key) {
+                    currentRound = undefined;
+                    localStore.remove('round');
+                }
+            });
+        };
+
+        return {
+            getCurrent: getCurrentRound,
+            getOne: getRound,
+            getAll: getRounds,
+            create: createRound,
+            update: updateRound,
+            complete: completeRound,
+            delete: deleteRound
+        };
+    }
+]);
+
+(function (st) {
+
+    var importRound, exportRound, round;
+
+    importRound = function (r) {
+        this.key = r.key;
+        this.datePlayed = r.roundDate;
+        this.courseKey = r.courseKey;
+        this.holes = r.holesCount;
+        this.score = r.scoreNumber;
+        this.greens = r.greensNumber;
+        this.fairways = r.fairwaysNumber;
+        this.penalties = r.penaltiesNumber;
+        this.sandSaveAttempts = r.sandSaveAttemptsNumber;
+        this.sandSaveConversions = r.sandSaveConvertedNumber;
+        this.upAndDownAttempts = r.upAndDownAttemptsNumber;
+        this.upAndDownConversions = r.upAndDownConvertedNumber;
+        var i;
+        for (i = 0; i < r.holesCount; i++) {
+            this.teeShots.push(st.TeeShot.importShot(r.teeShots[i]));
+            this.approachShots.push(st.ApproachShot.importShot(r.approachShots[i]));
+            this.shortGameShots.push(st.ShortGame.importShots(r.shortGameShots[i]));
+        }
+    };
+
+    exportRound = function () {
+        var outbound = {
+            key: this.key,
+            roundDate: this.datePlayed,
+            courseKey: this.courseKey,
+            holesCount: this.holes,
+            scoreNumber: this.score,
+            greensNumber: this.greens,
+            fairwaysNumber: this.fairways,
+            penaltiesNumber: this.penalties,
+            sandSaveAttemptsNumber: this.sandSaveAttempts,
+            sandSaveConvertedNumber: this.sandSaveConversions,
+            upAndDownAttemptsNumber: this.upAndDownAttempts,
+            upAndDownConvertedNumber: this.upAndDownConversions,
+            teeShots: [],
+            approachShots: [],
+            shortGameShots: []
+        };
+        var i;
+        for (i = 0; i < this.holes; i++) {
+            outbound.teeShots.push(st.TeeShot.exportShot(this.teeShots[i]));
+            outbound.approachShots.push(st.ApproachShot.exportShot(this.approachShots[i]));
+            outbound.shortGameShots.push(st.ShortGame.exportShots(this.shortGameShots[i]));
+        }
+    };
+
+    round = function (course, datePlayed, holes) {
+        this.key = undefined;
+        this.courseKey = course.key;
+        this.courseName = course.description;
+        this.datePlayed = datePlayed;
+        this.holes = holes;
+        this.score = undefined;
+        this.greens = undefined;
+        this.fairways = undefined;
+        this.penalties = undefined;
+        this.sandSaveAttempts = undefined;
+        this.sandSaveConversions = undefined;
+        this.upAndDownAttempts = undefined;
+        this.upAndDownConversions = undefined;
+
+        this.teeShots = [];
+        this.approachShots = [];
+        this.shortGameShots = [];
+
+        var hole;
+        for (hole = 1; hole <= holes; hole++) {
+            this.teeShots.push(new st.TeeShot(hole));
+            this.approachShots.push(new st.ApproachShot(hole));
+            this.shortGameShots.push(new st.ShortGame(hole));
+        }
+    };
+
+    round.prototype = {
+        constructor: round,
+        import: importRound,
+        export: exportRound
+    };
+
+    st.Round = round;
+
+}(statracker));
+(function (st) {
+
+    var importShots, exportShots, shortgame;
+
+    importShots = function (s) {
+        this.key = s.key;
+        this.hole = s.holeNumber;
+        this.initialPuttLength = s.initialLengthNumber;
+        this.puttMadeLength = s.finalLengthNumber;
+        this.putts = s.puttsCount;
+        this.upAndDown = s.upAndDownFlag;
+        this.sandSave = s.sandSaveFlag;
+        this.holeOut = s.holeOutFlag;
+    };
+
+    exportShots = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            initialLengthNumber: this.initialPuttLength,
+            finalLengthNumber: this.puttMadeLength,
+            puttsCount: this.putts,
+            upAndDownFlag: this.upAndDown,
+            sandSaveFlag: this.sandSave,
+            holeOutFlag: this.holeOut
+        };
+    };
+
+    shortgame = function (hole) {
+        this.key = undefined;
+        this.hole = hole;
+        this.initialPuttLength = undefined;
+        this.puttMadeLength = undefined;
+        this.putts = undefined;
+        this.upAndDown = undefined;
+        this.sandSave = undefined;
+        this.holeOut = undefined;
+    };
+
+    shortgame.prototype = {
+        constructor: shortgame,
+        importShots: importShots,
+        exportShots: exportShots
+    };
+
+    st.ShortGame = shortgame;
+
+}(statracker));
+(function (st) {
+
+    var importShot, exportShot, shot;
+
+    importShot = function (s) {
+        this.key = s.key;
+        this.hole = s.holeNumber;
+        this.clubKey = s.clubKey;
+        this.distance = s.distanceNumber;
+        this.result = s.resultId;
+        this.coordinates = {
+            x: s.resultXNumber,
+            y: s.resultYNumber
+        };
+    };
+
+    exportShot = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            clubKey: this.clubKey,
+            distanceNumber: this.distance,
+            resultId: this.result,
+            resultXNumber: this.coordinates.x,
+            resultYNumber: this.coordinates.y
+        };
+    };
+
+    shot = function (hole) {
+        this.key = undefined;
+        this.hole = hole;
+        this.clubKey = undefined;
+        this.distance = undefined;
+        this.result = undefined;
+        this.coordinates = undefined;
+    };
+
+    shot.prototype = {
+        constructor: shot,
+        importShot: importShot,
+        exportShot: exportShot
+    };
+
+    st.TeeShot = shot;
+
+}(statracker));
 statracker.controller('StatsController', [
     '$scope',
     '$state',
