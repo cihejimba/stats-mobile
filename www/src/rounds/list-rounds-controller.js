@@ -2,10 +2,12 @@ statracker.controller('ListRoundsController', [
     'roundService',
     function (roundService) {
 
-        this.rounds = [];
+        var vm = this;
+
+        vm.rounds = [];
 
         roundService.getAll().then(function (response) {
-           this.rounds = response.data;
+            vm.rounds = response.data;
         });
     }
 ]);

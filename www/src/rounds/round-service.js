@@ -16,13 +16,13 @@ statracker.factory('roundService', [
         };
 
         var getRound = function (key) {
-            var defer = $q.defer();
+            var deferred = $q.defer();
             $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
                 currentRound = statracker.Round.import(response.data);
                 localStore.set('round', currentRound);
-                defer.resolve(currentRound);
+                deferred.resolve(currentRound);
             });
-            return defer.promise();
+            return deferred.promise;
         };
 
         var getRounds = function () {
@@ -36,27 +36,27 @@ statracker.factory('roundService', [
         };
 
         var updateRound = function (round, doSynch) {
-            var defer = $q.defer();
+            var deferred = $q.defer();
             currentRound = round;
             if (doSynch) {
                 var updated = statracker.Round.export(round);
                 if (currentRound.key && currentRound.key > 0) {
                     $http.put(apiUrl + '/api/rounds/' + currentRound.key, updated).then(function () {
                         localStore.set('round', currentRound);
-                        defer.resolve(currentRound);
+                        deferred.resolve(currentRound);
                     });
                 } else {
                     $http.post(apiUrl + '/api/rounds', updated).then(function (response) {
                         currentRound.key = response.data.id;
                         localStore.set('round', currentRound);
-                        defer.resolve(currentRound);
+                        deferred.resolve(currentRound);
                     });
                 }
             } else {
                 localStore.set('round', currentRound);
-                defer.resolve(currentRound);
+                deferred.resolve(currentRound);
             }
-            return defer.promise();
+            return deferred.promise;
         };
 
         var completeRound = function (round) {

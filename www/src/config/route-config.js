@@ -7,13 +7,11 @@ statracker.config([
 
             .state('login', {
                 url: '/login',
-                templateUrl: 'src/account/login-page.html',
-                controller: 'LoginController'
+                templateUrl: 'src/account/login-page.html'
             })
             .state('register', {
                 url: '/register',
-                templateUrl: 'src/account/register.html',
-                controller: 'RegisterController'
+                templateUrl: 'src/account/register.html'
             })
 
             .state('tab', {
@@ -62,8 +60,7 @@ statracker.config([
                 url: '/rounds',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/list.html',
-                        controller: 'ListRoundsController',
+                        templateUrl: 'src/rounds/list-page.html',
                         resolve: {
                             userData: ['userData', function (userData) {
                                 return userData.loadUserData();
@@ -76,8 +73,7 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create-page.html',
-                        controller: 'CreateRoundController'
+                        templateUrl: 'src/rounds/create-page.html'
                     }
                 }
             })

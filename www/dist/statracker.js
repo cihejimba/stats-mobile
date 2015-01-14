@@ -5,17 +5,16 @@ statracker.controller('HomeController', [
 ]);
 angular.module("statracker").run(["$templateCache", function($templateCache) {$templateCache.put("src/tabs.html","<ion-view><ion-tabs class=tabs-stable><ion-tab title=Rounds icon=ion-flag ui-sref=tab.rounds><ion-nav-view name=rounds></ion-nav-view></ion-tab><ion-tab title=Statistics icon=ion-stats-bars ui-sref=tab.stats><ion-nav-view name=stats></ion-nav-view></ion-tab><ion-tab title=Settings icon=ion-gear-b ui-sref=tab.settings><ion-nav-view name=settings></ion-nav-view></ion-tab></ion-tabs></ion-view>");
 $templateCache.put("src/account/login-page.html","<ion-view view-title=Login ng-controller=\"LoginController as ctrl\"><ion-content><div class=row><div class=col><form ng-submit=ctrl.doLogin()><div class=list><label class=\"item item-input\"><span class=input-label>Email</span> <input type=email ng-model=ctrl.credentials.email></label> <label class=\"item item-input\"><span class=input-label>Password</span> <input type=password ng-model=ctrl.credentials.password></label> <label class=item><button class=\"button button-block button-positive\" type=submit ng-disabled=!ctrl.canLogin()>Log in</button></label></div></form></div></div><div class=row ng-show=ctrl.credentials.hasError><div class=col><p>{{ctrl.credentials.error}}</p></div></div><div class=row><div class=col><p>New to StaTracker?</p></div><div class=col><button class=\"button button-calm\" ui-sref=register>Register</button></div></div></ion-content></ion-view>");
-$templateCache.put("src/account/login.html","<ion-content><div class=row><div class=col><form ng-submit=ctrl.doLogin()><div class=list><label class=\"item item-input\"><span class=input-label>Email</span> <input type=email ng-model=login.email></label> <label class=\"item item-input\"><span class=input-label>Password</span> <input type=password ng-model=login.password></label> <label class=item><button class=\"button button-block button-positive\" type=submit>Log in</button></label></div></form></div></div><div class=row ng-show=ctrl.credentials.hasError><div class=col><p>{{ctrl.credentials.error}}</p></div></div><div class=row><div class=col><p>New to StaTracker?</p></div><div class=col><button class=\"button button-calm\" ui-sref=register>Register</button></div></div></ion-content>");
 $templateCache.put("src/account/my-bag.html","<ion-view view-title=\"My Bag\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear icon icon-left ion-ios7-arrow-back\" ui-sref=^.settings>Back</button></ion-nav-buttons><ion-nav-buttons side=secondary><button class=\"button button-clear\">Edit</button></ion-nav-buttons><ion-content><p>List of clubs for the logged in user, with a way to add, edit, remove clubs from the list. Each club also has editable attributes.</p></ion-content></ion-view>");
 $templateCache.put("src/account/preferences.html","<ion-view view-title=Preferences><ion-nav-buttons side=primary><button class=\"button button-small button-clear icon icon-left ion-ios7-arrow-back\" ui-sref=^.settings>Back</button></ion-nav-buttons><ion-content><p>Preference settings governing app behavior</p></ion-content></ion-view>");
 $templateCache.put("src/account/register.html","<ion-view view-title=Register><ion-nav-buttons side=primary><button class=\"button button-small button-clear icon icon-left ion-ios7-arrow-back\" ui-sref=login>Back</button></ion-nav-buttons><ion-content><div class=row><div class=col><form ng-submit=doRegister() novalidate><div class=list><label class=\"item item-input\"><span class=input-label>Email</span> <input type=email name=email ng-model=registration.email></label> <label class=\"item item-input\"><span class=input-label>Password</span> <input type=password name=password ng-model=registration.password></label> <label class=\"item item-input\"><span class=input-label>Confirm Password</span> <input type=password name=confirm ng-model=registration.confirmPassword></label> <label class=item><button class=\"button button-block button-positive\" type=submit>Register</button></label></div><div class=row ng-show=registration.hasError><div class=col><p>{{ registration.error }}</p></div></div></form></div></div></ion-content></ion-view>");
 $templateCache.put("src/account/settings.html","<ion-view view-title=Settings><ion-content><button class=\"button button-block\" ui-sref=^.my-bag>My Clubs</button> <button class=\"button button-block\" ui-sref=^.preferences>Preferences</button><p>You are logged in as {{user.name}}</p><button class=\"button button-block\" ng-click=doLogout()>Log Out</button></ion-content></ion-view>");
 $templateCache.put("src/rounds/approach-summary.html","<ion-view view-title=\"Approach Shots\"><ion-content scroll=false has-bouncing=false nav-prev=^.teeball-summary><p>Round id: {{ round.id }}</p><p>The green SVG image with all approach shots charted.</p></ion-content></ion-view>");
 $templateCache.put("src/rounds/approach.html","<ion-view view-title=\"Approach Shot\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear\" ng-click=gotoSummary()>Back</button></ion-nav-buttons><ion-nav-buttons side=secondary><button class=\"button button-small\" ng-click=openHoleNav()>{{hole.number}}</button></ion-nav-buttons><ion-content scroll=false has-bouncing=false nav-next=^.round-detail-shortgame nav-prev=^.round-detail-teeball><p>Round id: {{ round.id }}</p><p>Custom SVG control to capture the approach shot for hole {{hole.number}}</p></ion-content></ion-view>");
-$templateCache.put("src/rounds/create.html","<ion-view view-title=\"New Round\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear icon icon-left ion-ios7-arrow-back\" ui-sref=^.rounds>Back</button></ion-nav-buttons><ion-content><p>Form to create a new round and go directly to data-entry.</p><a class=\"button button-assertive\" ui-sref=\"^.round-detail-teeball({id: 400, hole: 1})\">Start</a></ion-content></ion-view>");
+$templateCache.put("src/rounds/create-page.html","<ion-view view-title=\"New Round\" ng-controller=\"CreateRoundController as ctrl\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear icon icon-left ion-ios7-arrow-back\" ui-sref=^.rounds>Back</button></ion-nav-buttons><ion-content><div class=row><div class=col><form ng-submit=ctrl.startRound()><div class=list><label class=\"item item-input\"><span class=input-label>Date</span> <input type=date ng-model=ctrl.round.date></label> <label class=\"item item-input\"><span class=input-label>Course</span><my-courses ng-model=ctrl.round.course></my-courses></label> <label class=\"item item-input\"><span class=input-label>Holes</span> <input type=tel ng-model=ctrl.round.holes></label> <label class=item><button class=\"button button-block button-positive\" type=submit ng-disabled=!ctrl.canStart()>Start</button></label></div></form></div></div><div class=row ng-show=ctrl.round.hasError><div class=col><p>{{ctrl.round.error}}</p></div></div></ion-content></ion-view>");
 $templateCache.put("src/rounds/goto.html","<ion-popover-view><ion-pane><h1>Go To Specific Hole</h1></ion-pane></ion-popover-view>");
 $templateCache.put("src/rounds/hole.html","<ion-view view-title=\"Round Detail\"><ion-tabs class=\"tabs-top tabs-stable\"><ion-tab title=\"Tee Ball\" ui-sref=tab.round-detail.teeball><ion-nav-view name=teeball></ion-nav-view></ion-tab><ion-tab title=Approach ui-sref=tab.round-detail.approach><ion-nav-view name=approach></ion-nav-view></ion-tab><ion-tab title=\"Short Game\" ui-sref=tab.round-detail.shortgame><ion-nav-view name=shortgame></ion-nav-view></ion-tab></ion-tabs></ion-view>");
-$templateCache.put("src/rounds/list.html","<ion-view view-title=\"My Rounds\"><ion-nav-buttons side=secondary><button class=\"button button-small button-clear icon ion-plus\" ui-sref=^.new-round></button></ion-nav-buttons><ion-content><ion-list><ion-item ui-sref=\"tab.round-summary({id: 100})\">6/2/2015: Bunker Hills North to East Blue</ion-item><ion-item ui-sref=\"tab.round-summary({id: 200})\">6/5/2015: Bunker Hills North League</ion-item><ion-item ui-sref=\"tab.round-summary({id: 300})\">6/9/2015: Bunker Hills East to West White</ion-item></ion-list></ion-content></ion-view>");
+$templateCache.put("src/rounds/list-page.html","<ion-view view-title=\"My Rounds\" ng-controller=\"ListRoundsController as ctrl\"><ion-nav-buttons side=secondary><button class=\"button button-small button-clear icon ion-plus\" ui-sref=^.new-round></button></ion-nav-buttons><ion-content><div><p>graph of the last N rounds</p></div><div><p>average score for those last N rounds</p></div><ion-list><ion-item ng-repeat=\"round in ctrl.rounds\" ui-sref=\"tab.round-summary({id: {{round.key}}})\">{{round.date}} - ({{round.score}}): {{round.course.description}}</ion-item></ion-list></ion-content></ion-view>");
 $templateCache.put("src/rounds/round-summary.html","<ion-view view-title=\"Round Overview\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear\" ui-sref=^.rounds>Back</button></ion-nav-buttons><ion-nav-buttons side=secondary><button class=\"button button-small button-clear\" ng-click=gotoDetails()>Details</button></ion-nav-buttons><ion-content scroll=false has-bouncing=false nav-next=^.teeball-summary><p>Round id: {{ round.id }}</p><p>Controls to enter the basic round statistics (fairways hit, gir, putts, etc.)</p></ion-content></ion-view>");
 $templateCache.put("src/rounds/shortgame.html","<ion-view view-title=\"Short Game\"><ion-nav-buttons side=primary><button class=\"button button-small button-clear\" ng-click=gotoSummary()>Back</button></ion-nav-buttons><ion-nav-buttons side=secondary><button class=\"button button-small\" ng-click=openHoleNav()>{{hole.number}}</button></ion-nav-buttons><ion-content scroll=false has-bouncing=false nav-next=^.round-detail-teeball nav-prev=^.round-detail-approach><p>Round id: {{ round.id }}</p><p>Controls to capture short game information for hole {{hole.number}}</p></ion-content></ion-view>");
 $templateCache.put("src/rounds/teeball-summary.html","<ion-view view-title=\"Tee Shots\"><ion-content scroll=false has-bouncing=false nav-next=^.approach-summary nav-prev=^.round-summary><p>Round id: {{ round.id }}</p><p>The fairway SVG image with all tee shots charted.</p></ion-content></ion-view>");
@@ -145,36 +144,37 @@ statracker.controller('LoginController', [
     'accountService',
     function ($state, accountService) {
 
-        this.credentials = {
+        var vm = this;
+
+        vm.credentials = {
             email: '',
             password: '',
             hasError: false,
             error: ''
         };
 
-        this.canLogin = function () {
+        vm.canLogin = function () {
             return (
-                this.credentials.email && //email will be undefined until is looks valid
-                this.credentials.email.length > 0 &&
-                this.credentials.password &&
-                this.credentials.password.length > 0
+                vm.credentials.email && //email will be undefined until is looks valid
+                vm.credentials.email.length > 0 &&
+                vm.credentials.password &&
+                vm.credentials.password.length > 0
             );
         };
 
         this.doLogin = function () {
-            var that = this;
-            that.credentials.hasError = false;
-            that.credentials.error = '';
+            vm.credentials.hasError = false;
+            vm.credentials.error = '';
             accountService.login(this.credentials)
                 .success(function () {
                     $state.go('tab.rounds');
                 })
                 .error(function (error) {
-                    that.credentials.hasError = true;
+                    vm.credentials.hasError = true;
                     if (error === null) {
-                        that.credentials.error = 'Cannot reach the StaTracker authorization server';
+                        vm.credentials.error = 'Cannot reach the StaTracker authorization server';
                     } else {
-                        that.credentials.error = error.error_description;
+                        vm.credentials.error = error.error_description;
                     }
                 });
         };
@@ -229,42 +229,37 @@ statracker.directive('myCourses', [
         return {
             require: '?ngModel',
             restrict: 'E',
-            template: '<input type="text" readonly="readonly" class="course-control" autocomplete="off">',
+            template: '<input type="text" class="my-courses-control" autocomplete="off">',
             replace: true,
             link: function (scope, element, attrs, ngModel) {
 
                 scope.courses = userData.courses;
 
-                var searchEventTimeout = undefined;
-
-                var POPUP_TPL = [
-                    '<div class="ion-google-place-container">',
-                    '<div class="bar bar-header item-input-inset">',
-                    '<label class="item-input-wrapper">',
-                    '<i class="icon ion-ios7-search placeholder-icon"></i>',
-                    '<input class="google-place-search" type="search" ng-model="searchQuery" placeholder="' + (attrs.searchPlaceholder || 'Enter a course description') + '">',
-                    '</label>',
-                    '<button class="button button-clear">',
-                    attrs.labelCancel || 'Cancel',
-                    '</button>',
-                    '</div>',
-                    '<ion-content class="has-header">',
-                    '<ion-list>',
-                    '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
-                    '{{course.description}}',
-                    '</ion-item>',
-                    '</ion-list>',
-                    '</ion-content>',
+                var searchEventTimeout,
+                    POPUP_TPL = [
+                    '<div class="my-courses-container">',
+                        '<div class="bar bar-header item-input-inset">',
+                            '<label class="item-input-wrapper">',
+                                '<i class="icon ion-ios7-search placeholder-icon"></i>',
+                                '<input type="search" ng-model="searchQuery" placeholder="Enter a course description">',
+                            '</label>',
+                            '<button class="button button-clear">Save</button>',
+                        '</div>',
+                        '<ion-content class="has-header">',
+                            '<ion-list>',
+                                '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                                    '{{course.courseDescription}}',
+                                '</ion-item>',
+                            '</ion-list>',
+                        '</ion-content>',
                     '</div>'
                 ].join('');
 
-                var popupPromise = $ionicTemplateLoader.compile({
+                $ionicTemplateLoader.compile({
                     template: POPUP_TPL,
                     scope: scope,
                     appendTo: $document[0].body
-                });
-
-                popupPromise.then(function (el) {
+                }).then(function (el) {
                     var searchInputElement = angular.element(el.element.find('input'));
 
                     scope.selectCourse = function (course) {
@@ -279,13 +274,15 @@ statracker.directive('myCourses', [
                         searchEventTimeout = $timeout(function () {
                             if (!query) return;
                             scope.$apply(function () {
-                                scope.courses = userData.courses.filter(function (course) {
-                                    if (course.startsWith(query)) {
-                                        return course;
-                                    }
-                                });
+                                if (userData.courses && userData.courses.length > 0) {
+                                    scope.courses = userData.courses.filter(function (course) {
+                                        if (query === '' || course.courseDescription.startsWith(query)) {
+                                            return course;
+                                        }
+                                    });
+                                }
                             });
-                        }, 0);
+                        }, 100);
                     });
 
                     var onClick = function (e) {
@@ -299,16 +296,23 @@ statracker.directive('myCourses', [
                         }, 0);
                     };
 
-                    var onCancel = function (e) {
+                    var onSave = function () {
+                        var newCourse = {
+                            key: 0,
+                            courseDescription: searchInputElement[0].value
+                        };
+                        ngModel.$setViewValue(newCourse);
+                        ngModel.$render();
                         scope.searchQuery = '';
                         $ionicBackdrop.release();
                         el.element.css('display', 'none');
+                        scope.$emit('new-course', searchInputElement[0].value);
                     };
 
                     element.bind('click', onClick);
                     element.bind('touchend', onClick);
 
-                    el.element.find('button').bind('click', onCancel);
+                    el.element.find('button').bind('click', onSave);
                 });
 
                 if (attrs.placeholder) {
@@ -328,7 +332,7 @@ statracker.directive('myCourses', [
                     if (!ngModel.$viewValue) {
                         element.val('');
                     } else {
-                        element.val(ngModel.$viewValue.description || '');
+                        element.val(ngModel.$viewValue.courseDescription || '');
                     }
                 };
             }
@@ -404,26 +408,30 @@ statracker.factory('userData', [
     'apiUrl',
     function ($http, $q, apiUrl) {
 
-        var clubs, courses;
+        var clubs = [], courses = [];
 
         var loadUserData = function () {
             var p1 = $q.defer(),
                 p2 = $q.defer();
 
-            if (clubs) {
+            if (clubs && clubs.length > 0) {
                 p1.resolve(clubs);
             } else {
                 $http.get(apiUrl + '/api/users/clubs').then(function (response) {
-                    clubs = response.data;
+                    if (response.data) {
+                        clubs = response.data;
+                    } //TODO: else load default clubs for new user
                     p1.resolve(clubs);
                 });
             }
 
-            if (courses) {
+            if (courses && courses.length > 0) {
                 p2.resolve(courses);
             } else {
-                $http.get(apuUrl + '/api/users/courses').then(function (response) {
-                    courses = response.data;
+                $http.get(apiUrl + '/api/users/courses').then(function (response) {
+                    if (response.data) {
+                        courses = response.data;
+                    }
                     p2.resolve(courses);
                 });
             }
@@ -431,10 +439,27 @@ statracker.factory('userData', [
             return $q.all([p1,p2]);
         };
 
+        var addCourse = function (description) {
+            var deferred = $q.defer(),
+                existing = courses && courses.find(function (c) {
+                    return c.courseDescription.toLowerCase() === description.toLowerCase();
+                });
+            if (existing) {
+                deferred.resolve(undefined);
+            } else {
+                $http.post(apiUrl + '/api/users/courses', { courseDescription: description }).then(function (response) {
+                    courses.push(response.data);
+                    deferred.resolve(response.data);
+                });
+            }
+            return deferred.promise;
+        };
+
         return {
             get clubs() { return clubs; },
             get courses() { return courses; },
-            loadUserData: loadUserData
+            loadUserData: loadUserData,
+            addCourse: addCourse
         };
     }
 ]);
@@ -447,9 +472,9 @@ statracker.config([
         //the tokenGetter function returns a bearer token, which the angular-jwt
         //interceptor will attach to the request header on every request (unless
         //we tell it not to)
-        jwtInterceptorProvider.tokenGetter = ['store', 'jwtHelper', 'accountService', function(store, jwtHelper, accountService) {
-            var access_token = store.get('access_token'),
-                refresh_token = store.get('refresh_token');
+        jwtInterceptorProvider.tokenGetter = ['localStore', 'jwtHelper', 'accountService', function(localStore, jwtHelper, accountService) {
+            var access_token = localStore.get('access_token'),
+                refresh_token = localStore.get('refresh_token');
 
             //user is logged out, so we have no bearer token to attach to the request
             if (!access_token || !refresh_token) {
@@ -461,7 +486,7 @@ statracker.config([
                 return accountService.refresh()
                     .then(function (response) {
                         var new_token = response.data.access_token;
-                        store.set('access_token', new_token);
+                        localStore.set('access_token', new_token);
                         return new_token;
                     });
             } else {
@@ -552,6 +577,28 @@ if (!String.prototype.startsWith) {
     });
 }
 
+if (!Array.prototype.find) {
+    Array.prototype.find = function(predicate) {
+        if (this == null) { // jshint ignore:line
+            throw new TypeError('Array.prototype.find called on null or undefined');
+        }
+        if (typeof predicate !== 'function') {
+            throw new TypeError('predicate must be a function');
+        }
+        var list = Object(this);
+        var length = list.length >>> 0;
+        var thisArg = arguments[1];
+        var value;
+
+        for (var i = 0; i < length; i++) {
+            value = list[i];
+            if (predicate.call(thisArg, value, i, list)) {
+                return value;
+            }
+        }
+        return undefined;
+    };
+}
 statracker.config([
     '$stateProvider',
     '$urlRouterProvider',
@@ -561,13 +608,11 @@ statracker.config([
 
             .state('login', {
                 url: '/login',
-                templateUrl: 'src/account/login-page.html',
-                controller: 'LoginController'
+                templateUrl: 'src/account/login-page.html'
             })
             .state('register', {
                 url: '/register',
-                templateUrl: 'src/account/register.html',
-                controller: 'RegisterController'
+                templateUrl: 'src/account/register.html'
             })
 
             .state('tab', {
@@ -616,8 +661,7 @@ statracker.config([
                 url: '/rounds',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/list.html',
-                        controller: 'ListRoundsController',
+                        templateUrl: 'src/rounds/list-page.html',
                         resolve: {
                             userData: ['userData', function (userData) {
                                 return userData.loadUserData();
@@ -630,8 +674,7 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create-page.html',
-                        controller: 'CreateRoundController'
+                        templateUrl: 'src/rounds/create-page.html'
                     }
                 }
             })
@@ -794,29 +837,40 @@ statracker.factory('localStore', ['store', function(store) {
 
 }(statracker));
 statracker.controller('CreateRoundController', [
+    '$scope',
     '$state',
     'userData',
     'roundService',
-    function ($state, userData, roundService) {
+    function ($scope, $state, userData, roundService) {
 
-        this.round = {
-            date: Date.now(),
+        var vm = this;
+
+        vm.round = {
+            date: new Date(),
             holes: 18,
-            course: {},
+            course: { key: 0, courseDescription: '' },
             hasError: false,
             error: ''
         };
 
-        this.canStart = function () {
+        vm.canStart = function () {
             return true;
         };
 
-        this.startRound = function () {
-            var newRound = roundService.create(round.course, round.date, round.holes);
+        vm.startRound = function () {
+            var newRound = roundService.create(vm.round.course, vm.round.date, vm.round.holes);
             roundService.update(newRound, true).then(function (r) {
                 $state.go('^.round-detail-teeball({id: ' + r.key + ', hole: 1})');
             });
         };
+
+        $scope.$on('new-course', function (e, courseName) {
+            userData.addCourse(courseName).then(function (data) {
+                if (data) {
+                    vm.round.course.key = data.key;
+                }
+            });
+        });
     }
 ]);
 
@@ -843,8 +897,16 @@ statracker.controller('HoleController', [
     }
 ]);
 statracker.controller('ListRoundsController', [
-    function () {
+    'roundService',
+    function (roundService) {
 
+        var vm = this;
+
+        vm.rounds = [];
+
+        roundService.getAll().then(function (response) {
+            vm.rounds = response.data;
+        });
     }
 ]);
 
@@ -946,13 +1008,13 @@ statracker.factory('roundService', [
         };
 
         var getRound = function (key) {
-            var defer = $q.defer();
+            var deferred = $q.defer();
             $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
                 currentRound = statracker.Round.import(response.data);
                 localStore.set('round', currentRound);
-                defer.resolve(currentRound);
+                deferred.resolve(currentRound);
             });
-            return defer.promise();
+            return deferred.promise;
         };
 
         var getRounds = function () {
@@ -966,27 +1028,27 @@ statracker.factory('roundService', [
         };
 
         var updateRound = function (round, doSynch) {
-            var defer = $q.defer();
+            var deferred = $q.defer();
             currentRound = round;
             if (doSynch) {
                 var updated = statracker.Round.export(round);
                 if (currentRound.key && currentRound.key > 0) {
                     $http.put(apiUrl + '/api/rounds/' + currentRound.key, updated).then(function () {
                         localStore.set('round', currentRound);
-                        defer.resolve(currentRound);
+                        deferred.resolve(currentRound);
                     });
                 } else {
                     $http.post(apiUrl + '/api/rounds', updated).then(function (response) {
                         currentRound.key = response.data.id;
                         localStore.set('round', currentRound);
-                        defer.resolve(currentRound);
+                        deferred.resolve(currentRound);
                     });
                 }
             } else {
                 localStore.set('round', currentRound);
-                defer.resolve(currentRound);
+                deferred.resolve(currentRound);
             }
-            return defer.promise();
+            return deferred.promise;
         };
 
         var completeRound = function (round) {

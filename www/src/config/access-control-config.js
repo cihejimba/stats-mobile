@@ -7,9 +7,9 @@ statracker.config([
         //the tokenGetter function returns a bearer token, which the angular-jwt
         //interceptor will attach to the request header on every request (unless
         //we tell it not to)
-        jwtInterceptorProvider.tokenGetter = ['store', 'jwtHelper', 'accountService', function(store, jwtHelper, accountService) {
-            var access_token = store.get('access_token'),
-                refresh_token = store.get('refresh_token');
+        jwtInterceptorProvider.tokenGetter = ['localStore', 'jwtHelper', 'accountService', function(localStore, jwtHelper, accountService) {
+            var access_token = localStore.get('access_token'),
+                refresh_token = localStore.get('refresh_token');
 
             //user is logged out, so we have no bearer token to attach to the request
             if (!access_token || !refresh_token) {
@@ -21,7 +21,7 @@ statracker.config([
                 return accountService.refresh()
                     .then(function (response) {
                         var new_token = response.data.access_token;
-                        store.set('access_token', new_token);
+                        localStore.set('access_token', new_token);
                         return new_token;
                     });
             } else {

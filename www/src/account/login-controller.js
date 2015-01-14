@@ -3,36 +3,37 @@ statracker.controller('LoginController', [
     'accountService',
     function ($state, accountService) {
 
-        this.credentials = {
+        var vm = this;
+
+        vm.credentials = {
             email: '',
             password: '',
             hasError: false,
             error: ''
         };
 
-        this.canLogin = function () {
+        vm.canLogin = function () {
             return (
-                this.credentials.email && //email will be undefined until is looks valid
-                this.credentials.email.length > 0 &&
-                this.credentials.password &&
-                this.credentials.password.length > 0
+                vm.credentials.email && //email will be undefined until is looks valid
+                vm.credentials.email.length > 0 &&
+                vm.credentials.password &&
+                vm.credentials.password.length > 0
             );
         };
 
         this.doLogin = function () {
-            var that = this;
-            that.credentials.hasError = false;
-            that.credentials.error = '';
+            vm.credentials.hasError = false;
+            vm.credentials.error = '';
             accountService.login(this.credentials)
                 .success(function () {
                     $state.go('tab.rounds');
                 })
                 .error(function (error) {
-                    that.credentials.hasError = true;
+                    vm.credentials.hasError = true;
                     if (error === null) {
-                        that.credentials.error = 'Cannot reach the StaTracker authorization server';
+                        vm.credentials.error = 'Cannot reach the StaTracker authorization server';
                     } else {
-                        that.credentials.error = error.error_description;
+                        vm.credentials.error = error.error_description;
                     }
                 });
         };

@@ -9,42 +9,37 @@ statracker.directive('myCourses', [
         return {
             require: '?ngModel',
             restrict: 'E',
-            template: '<input type="text" readonly="readonly" class="course-control" autocomplete="off">',
+            template: '<input type="text" class="my-courses-control" autocomplete="off">',
             replace: true,
             link: function (scope, element, attrs, ngModel) {
 
                 scope.courses = userData.courses;
 
-                var searchEventTimeout;
-
-                var POPUP_TPL = [
-                    '<div class="ion-google-place-container">',
-                    '<div class="bar bar-header item-input-inset">',
-                    '<label class="item-input-wrapper">',
-                    '<i class="icon ion-ios7-search placeholder-icon"></i>',
-                    '<input class="google-place-search" type="search" ng-model="searchQuery" placeholder="' + (attrs.searchPlaceholder || 'Enter a course description') + '">',
-                    '</label>',
-                    '<button class="button button-clear">',
-                    attrs.labelCancel || 'Cancel',
-                    '</button>',
-                    '</div>',
-                    '<ion-content class="has-header">',
-                    '<ion-list>',
-                    '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
-                    '{{course.description}}',
-                    '</ion-item>',
-                    '</ion-list>',
-                    '</ion-content>',
+                var searchEventTimeout,
+                    POPUP_TPL = [
+                    '<div class="my-courses-container">',
+                        '<div class="bar bar-header item-input-inset">',
+                            '<label class="item-input-wrapper">',
+                                '<i class="icon ion-ios7-search placeholder-icon"></i>',
+                                '<input type="search" ng-model="searchQuery" placeholder="Enter a course description">',
+                            '</label>',
+                            '<button class="button button-clear">Save</button>',
+                        '</div>',
+                        '<ion-content class="has-header">',
+                            '<ion-list>',
+                                '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                                    '{{course.courseDescription}}',
+                                '</ion-item>',
+                            '</ion-list>',
+                        '</ion-content>',
                     '</div>'
                 ].join('');
 
-                var popupPromise = $ionicTemplateLoader.compile({
+                $ionicTemplateLoader.compile({
                     template: POPUP_TPL,
                     scope: scope,
                     appendTo: $document[0].body
-                });
-
-                popupPromise.then(function (el) {
+                }).then(function (el) {
                     var searchInputElement = angular.element(el.element.find('input'));
 
                     scope.selectCourse = function (course) {
@@ -59,13 +54,15 @@ statracker.directive('myCourses', [
                         searchEventTimeout = $timeout(function () {
                             if (!query) return;
                             scope.$apply(function () {
-                                scope.courses = userData.courses.filter(function (course) {
-                                    if (course.startsWith(query)) {
-                                        return course;
-                                    }
-                                });
+                                if (userData.courses && userData.courses.length > 0) {
+                                    scope.courses = userData.courses.filter(function (course) {
+                                        if (query === '' || course.courseDescription.startsWith(query)) {
+                                            return course;
+                                        }
+                                    });
+                                }
                             });
-                        }, 0);
+                        }, 100);
                     });
 
                     var onClick = function (e) {
@@ -79,16 +76,23 @@ statracker.directive('myCourses', [
                         }, 0);
                     };
 
-                    var onCancel = function () {
+                    var onSave = function () {
+                        var newCourse = {
+                            key: 0,
+                            courseDescription: searchInputElement[0].value
+                        };
+                        ngModel.$setViewValue(newCourse);
+                        ngModel.$render();
                         scope.searchQuery = '';
                         $ionicBackdrop.release();
                         el.element.css('display', 'none');
+                        scope.$emit('new-course', searchInputElement[0].value);
                     };
 
                     element.bind('click', onClick);
                     element.bind('touchend', onClick);
 
-                    el.element.find('button').bind('click', onCancel);
+                    el.element.find('button').bind('click', onSave);
                 });
 
                 if (attrs.placeholder) {
@@ -108,7 +112,7 @@ statracker.directive('myCourses', [
                     if (!ngModel.$viewValue) {
                         element.val('');
                     } else {
-                        element.val(ngModel.$viewValue.description || '');
+                        element.val(ngModel.$viewValue.courseDescription || '');
                     }
                 };
             }
