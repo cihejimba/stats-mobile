@@ -3,6 +3,8 @@
     var importRound, exportRound, round;
 
     importRound = function (r) {
+        var hole;
+
         this.key = r.key;
         this.datePlayed = r.roundDate;
         this.courseKey = r.courseKey;
@@ -15,11 +17,47 @@
         this.sandSaveConversions = r.sandSaveConvertedNumber;
         this.upAndDownAttempts = r.upAndDownAttemptsNumber;
         this.upAndDownConversions = r.upAndDownConvertedNumber;
-        var i;
-        for (i = 0; i < r.holesCount; i++) {
-            this.teeShots.push(st.TeeShot.importShot(r.teeShots[i]));
-            this.approachShots.push(st.ApproachShot.importShot(r.approachShots[i]));
-            this.shortGameShots.push(st.ShortGame.importShots(r.shortGameShots[i]));
+
+        this.teeShots = [];
+        this.approachShots = [];
+        this.shortGameShots = [];
+
+        for (hole = 0; hole < r.holesCount; hole++) {
+            this.teeShots.push(new st.TeeShot(hole+1, r.teeShots[hole]));
+            this.approachShots.push(new st.ApproachShot(hole+1, r.approachShots[hole]));
+            this.shortGameShots.push(new st.ShortGame(hole+1, r.shortGameShots[hole]));
+        }
+    };
+
+    round = function (course, datePlayed, holes, api) {
+        var hole;
+
+        if (api) {
+            importRound(api);
+        } else {
+            this.key = undefined;
+            this.courseKey = course.key;
+            this.courseName = course.description;
+            this.datePlayed = datePlayed;
+            this.holes = holes;
+            this.score = undefined;
+            this.greens = undefined;
+            this.fairways = undefined;
+            this.penalties = undefined;
+            this.sandSaveAttempts = undefined;
+            this.sandSaveConversions = undefined;
+            this.upAndDownAttempts = undefined;
+            this.upAndDownConversions = undefined;
+
+            this.teeShots = [];
+            this.approachShots = [];
+            this.shortGameShots = [];
+
+            for (hole = 1; hole <= holes; hole++) {
+                this.teeShots.push(new st.TeeShot(hole));
+                this.approachShots.push(new st.ApproachShot(hole));
+                this.shortGameShots.push(new st.ShortGame(hole));
+            }
         }
     };
 
@@ -43,43 +81,16 @@
         };
         var i;
         for (i = 0; i < this.holes; i++) {
-            outbound.teeShots.push(st.TeeShot.exportShot(this.teeShots[i]));
-            outbound.approachShots.push(st.ApproachShot.exportShot(this.approachShots[i]));
-            outbound.shortGameShots.push(st.ShortGame.exportShots(this.shortGameShots[i]));
+            outbound.teeShots.push(this.teeShots[i].toApi());
+            outbound.approachShots.push(this.approachShots[i].toApi());
+            outbound.shortGameShots.push(this.shortGameShots[i].toApi());
         }
-    };
-
-    round = function (course, datePlayed, holes) {
-        this.key = undefined;
-        this.courseKey = course.key;
-        this.courseName = course.description;
-        this.datePlayed = datePlayed;
-        this.holes = holes;
-        this.score = undefined;
-        this.greens = undefined;
-        this.fairways = undefined;
-        this.penalties = undefined;
-        this.sandSaveAttempts = undefined;
-        this.sandSaveConversions = undefined;
-        this.upAndDownAttempts = undefined;
-        this.upAndDownConversions = undefined;
-
-        this.teeShots = [];
-        this.approachShots = [];
-        this.shortGameShots = [];
-
-        var hole;
-        for (hole = 1; hole <= holes; hole++) {
-            this.teeShots.push(new st.TeeShot(hole));
-            this.approachShots.push(new st.ApproachShot(hole));
-            this.shortGameShots.push(new st.ShortGame(hole));
-        }
+        return outbound;
     };
 
     round.prototype = {
         constructor: round,
-        import: importRound,
-        export: exportRound
+        toApi: exportRound
     };
 
     st.Round = round;

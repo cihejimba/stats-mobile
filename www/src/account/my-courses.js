@@ -4,8 +4,8 @@ statracker.directive('myCourses', [
     '$timeout',
     '$rootScope',
     '$document',
-    'userData',
-    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document, userData) {
+    'userDataService',
+    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document, userDataService) {
         return {
             require: '?ngModel',
             restrict: 'E',
@@ -13,6 +13,7 @@ statracker.directive('myCourses', [
             replace: true,
             link: function (scope, element, attrs, ngModel) {
 
+                var userData = userDataService.loadUserData(); //TODO: pass in via scope
                 scope.courses = userData.courses;
 
                 var searchEventTimeout,

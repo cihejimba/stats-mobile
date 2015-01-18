@@ -1,19 +1,27 @@
 (function (st) {
 
-    var importShots, exportShots, shortgame;
-
-    importShots = function (s) {
-        this.key = s.key;
-        this.hole = s.holeNumber;
-        this.initialPuttLength = s.initialLengthNumber;
-        this.puttMadeLength = s.finalLengthNumber;
-        this.putts = s.puttsCount;
-        this.upAndDown = s.upAndDownFlag;
-        this.sandSave = s.sandSaveFlag;
-        this.holeOut = s.holeOutFlag;
-    };
-
-    exportShots = function () {
+    var shortgame = function (hole, api) {
+        if (api) {
+            this.key = api.key;
+            this.hole = api.holeNumber;
+            this.initialPuttLength = api.initialLengthNumber;
+            this.puttMadeLength = api.finalLengthNumber;
+            this.putts = api.puttsCount;
+            this.upAndDown = api.upAndDownFlag;
+            this.sandSave = api.sandSaveFlag;
+            this.holeOut = api.holeOutFlag;
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.initialPuttLength = undefined;
+            this.puttMadeLength = undefined;
+            this.putts = undefined;
+            this.upAndDown = undefined;
+            this.sandSave = undefined;
+            this.holeOut = undefined;
+        }
+    },
+    toApi = function () {
         return {
             key: this.key,
             holeNumber: this.hole,
@@ -26,21 +34,9 @@
         };
     };
 
-    shortgame = function (hole) {
-        this.key = undefined;
-        this.hole = hole;
-        this.initialPuttLength = undefined;
-        this.puttMadeLength = undefined;
-        this.putts = undefined;
-        this.upAndDown = undefined;
-        this.sandSave = undefined;
-        this.holeOut = undefined;
-    };
-
     shortgame.prototype = {
         constructor: shortgame,
-        importShots: importShots,
-        exportShots: exportShots
+        toApi: toApi
     };
 
     st.ShortGame = shortgame;

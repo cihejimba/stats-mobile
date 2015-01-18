@@ -11,13 +11,18 @@ statracker.config([
             })
             .state('register', {
                 url: '/register',
-                templateUrl: 'src/account/register.html'
+                templateUrl: 'src/account/register-page.html'
             })
 
             .state('tab', {
                 url: '/tab',
                 abstract: true,
                 templateUrl: 'src/tabs.html',
+                resolve: {
+                    userData: ['userDataService', function(userDataService) {
+                        return userDataService.loadUserData();
+                    }]
+                },
                 data: {
                     secure: true
                 }
@@ -28,12 +33,7 @@ statracker.config([
                 views: {
                     'settings': {
                         templateUrl: 'src/account/settings.html',
-                        controller: 'AccountController',
-                        resolve: {
-                            userData: ['userData', function (userData) {
-                                return userData.loadUserData();
-                            }]
-                        }
+                        controller: 'AccountController'
                     }
                 }
             })
@@ -50,8 +50,14 @@ statracker.config([
                 url: '/my-bag',
                 views: {
                     'settings': {
-                        templateUrl: 'src/account/my-bag.html',
-                        controller: 'MyBagController'
+                        templateUrl: 'src/account/my-bag-page.html',
+                        controller: 'MyBagController as vm',
+                        //controllerAs: 'vm',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -60,12 +66,7 @@ statracker.config([
                 url: '/rounds',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/list-page.html',
-                        resolve: {
-                            userData: ['userData', function (userData) {
-                                return userData.loadUserData();
-                            }]
-                        }
+                        templateUrl: 'src/rounds/list-page.html'
                     }
                 }
             })

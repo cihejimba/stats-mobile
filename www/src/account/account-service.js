@@ -42,11 +42,12 @@ statracker.factory('accountService', [
 
         var logout = function () {
             if (user.authenticated) {
-                $http.post(apiUrl + 'api/account/logout');
+                $http.post(apiUrl + 'api/account/logout').then(function () {
+                    localStore.remove('access_token');
+                    localStore.remove('refresh_token');
+                    localStore.remove('user');
+                });
             }
-            localStore.remove('access_token');
-            localStore.remove('refresh_token');
-            localStore.remove('user');
             user = {};
             return user;
         };

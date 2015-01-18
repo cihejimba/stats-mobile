@@ -18,7 +18,7 @@ statracker.factory('roundService', [
         var getRound = function (key) {
             var deferred = $q.defer();
             $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
-                currentRound = statracker.Round.import(response.data);
+                currentRound = new statracker.Round(null, null, null, response.data);
                 localStore.set('round', currentRound);
                 deferred.resolve(currentRound);
             });
@@ -39,15 +39,15 @@ statracker.factory('roundService', [
             var deferred = $q.defer();
             currentRound = round;
             if (doSynch) {
-                var updated = statracker.Round.export(round);
+                var postRound = currentRound.toApi();
                 if (currentRound.key && currentRound.key > 0) {
-                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, updated).then(function () {
+                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, postRound).then(function () {
                         localStore.set('round', currentRound);
                         deferred.resolve(currentRound);
                     });
                 } else {
-                    $http.post(apiUrl + '/api/rounds', updated).then(function (response) {
-                        currentRound.key = response.data.id;
+                    $http.post(apiUrl + '/api/rounds', postRound).then(function (response) {
+                        currentRound.key = response.data.key; //TODO: import the response?
                         localStore.set('round', currentRound);
                         deferred.resolve(currentRound);
                     });

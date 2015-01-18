@@ -11,6 +11,7 @@ var minifyHtml    = require('gulp-minify-html');
 var uglify        = require('gulp-uglify');
 var rename        = require('gulp-rename');
 var sh            = require('shelljs');
+var seq           = require('run-sequence');
 var templateCache = require('gulp-angular-templatecache');
 var karma         = require('karma').server;
 var jshint        = require('gulp-jshint');
@@ -24,13 +25,15 @@ var paths = {
   html: ['www/src/**/*.html']
 };
 
-gulp.task('default', ['lint', 'html', 'bundle', 'constants']);
+gulp.task('default', function() {
+    seq('lint', 'html', 'bundle', 'constants');
+});
 
 gulp.task('html', function () {
   gulp.src(paths.html)
       .pipe(minifyHtml({empty:true}))
       .pipe(templateCache('templates.js', {module: 'statracker', root: 'src/'}))
-      .pipe(gulp.dest('www/src'));
+      .pipe(gulp.dest('www/dist'));
 });
 
 //gulp constants --env production

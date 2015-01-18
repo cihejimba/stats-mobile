@@ -1,0 +1,43 @@
+<ion-modal-view>
+    <ion-header-bar class="bar-balanced" align-title="center">
+        <div class="buttons">
+            <button class="button" ng-click="cancel()">Cancel</button>
+        </div>
+        <div class="h1 title" ng-show="!inEditMode">Add Club</div>
+        <div class="h1 title" ng-show="inEditMode">Edit Club</div>
+        <div class="buttons">
+            <button class="button button-positive" ng-click="save()">Save</button>
+        </div>
+    </ion-header-bar>
+    <ion-content>
+        <div class="list">
+            <div class="item">
+                <label class="item-input item-select">
+                    <div class="input-label">
+                        Club
+                    </div>
+                    <select ng-model="currentClub.clubKey" ng-options="club.key as club.name for club in clubs" ng-disabled="inEditMode">
+                    </select>
+                </label>
+            </div>
+            <div class="item item-toggle">
+                Use for tee shots
+                <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="currentClub.teeballFlag">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="item item-toggle">
+                Use for approach shots
+                <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="currentClub.approachFlag">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </ion-content>
+</ion-modal-view>

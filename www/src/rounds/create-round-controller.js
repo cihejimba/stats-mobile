@@ -1,9 +1,9 @@
 statracker.controller('CreateRoundController', [
     '$scope',
     '$state',
-    'userData',
+    'userDataService',
     'roundService',
-    function ($scope, $state, userData, roundService) {
+    function ($scope, $state, userDataService, roundService) {
 
         var vm = this;
 
@@ -27,7 +27,7 @@ statracker.controller('CreateRoundController', [
         };
 
         $scope.$on('new-course', function (e, courseName) {
-            userData.addCourse(courseName).then(function (data) {
+            userDataService.addCourse(courseName).then(function (data) {
                 if (data) {
                     vm.round.course.key = data.key;
                 }

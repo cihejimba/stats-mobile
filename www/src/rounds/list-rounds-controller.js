@@ -1,6 +1,7 @@
 statracker.controller('ListRoundsController', [
+    '$state',
     'roundService',
-    function (roundService) {
+    function ($state, roundService) {
 
         var vm = this;
 

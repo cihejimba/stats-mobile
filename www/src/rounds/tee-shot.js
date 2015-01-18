@@ -1,44 +1,40 @@
 (function (st) {
 
-    var importShot, exportShot, shot;
-
-    importShot = function (s) {
-        this.key = s.key;
-        this.hole = s.holeNumber;
-        this.clubKey = s.clubKey;
-        this.distance = s.distanceNumber;
-        this.result = s.resultId;
-        this.coordinates = {
-            x: s.resultXNumber,
-            y: s.resultYNumber
-        };
-    };
-
-    exportShot = function () {
+    var shot = function (hole, apiShot) {
+        if (apiShot) {
+            this.key = apiShot.key;
+            this.hole = apiShot.holeNumber;
+            this.clubKey = apiShot.clubKey;
+            this.distance = apiShot.distanceNumber;
+            this.result = apiShot.resultId;
+            this.coordinates = {
+                x: apiShot.resultXNumber,
+                y: apiShot.resultYNumber
+            };
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.clubKey = undefined;
+            this.distance = undefined;
+            this.result = undefined;
+            this.coordinates = undefined;
+        }
+    },
+    toApi = function () {
         return {
             key: this.key,
             holeNumber: this.hole,
             clubKey: this.clubKey,
             distanceNumber: this.distance,
             resultId: this.result,
-            resultXNumber: this.coordinates.x,
-            resultYNumber: this.coordinates.y
+            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
+            resultYNumber: this.coordinates ? this.coordinates.y : undefined
         };
-    };
-
-    shot = function (hole) {
-        this.key = undefined;
-        this.hole = hole;
-        this.clubKey = undefined;
-        this.distance = undefined;
-        this.result = undefined;
-        this.coordinates = undefined;
     };
 
     shot.prototype = {
         constructor: shot,
-        importShot: importShot,
-        exportShot: exportShot
+        toApi: toApi
     };
 
     st.TeeShot = shot;
