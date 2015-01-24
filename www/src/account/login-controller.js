@@ -13,22 +13,22 @@ statracker.controller('LoginController', [
         };
 
         vm.canLogin = function () {
-            return (
-                vm.credentials.email && //email will be undefined until is looks valid
+            if (vm.credentials.email && //email will be undefined until is looks valid
                 vm.credentials.email.length > 0 &&
                 vm.credentials.password &&
-                vm.credentials.password.length > 0
-            );
+                vm.credentials.password.length > 0) {
+                return true;
+            }
+            return false;
         };
 
         this.doLogin = function () {
             vm.credentials.hasError = false;
             vm.credentials.error = '';
             accountService.login(this.credentials)
-                .success(function () {
+                .then(function () {
                     $state.go('tab.rounds');
-                })
-                .error(function (error) {
+                }, function (error) {
                     vm.credentials.hasError = true;
                     if (error === null) {
                         vm.credentials.error = 'Cannot reach the StaTracker authorization server';

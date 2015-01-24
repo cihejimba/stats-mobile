@@ -3,15 +3,6 @@ statracker.controller('HomeController', [
     function () {
     }
 ]);
-statracker.controller('StatsController', [
-    '$scope',
-    '$state',
-    function ($state) {
-        if ($state.is('tab.stats')) {
-            $state.go('.overall');
-        }
-    }
-]);
 statracker.controller('AccountController', [
     '$scope',
     '$state',
@@ -29,22 +20,22 @@ statracker.controller('AccountController', [
 
 statracker.factory('accountService', [
     '$http',
+    '$q',
     'localStore',
     'jwtHelper',
     'apiUrl',
     'clientId',
-    function ($http, localStore, jwtHelper, apiUrl, clientId) {
+    function ($http, $q, localStore, jwtHelper, apiUrl, clientId) {
 
         var user = {
-                authenticated: false,
-                id: '',
-                name: '',
-                email: ''
+                authenticated: false
             };
 
         var login = function (credentials) {
-            var data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
-            return $http({
+            var deferred = $q.defer(),
+                data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
+
+            $http({
                 url: apiUrl + 'token',
                 method: 'POST',
                 data: data,
@@ -63,10 +54,14 @@ statracker.factory('accountService', [
                 localStore.set('user', user);
                 localStore.set('access_token', response.access_token);
                 localStore.set('refresh_token', response.refresh_token);
+                deferred.resolve();
             })
-            .error(function () {
+            .error(function (error) {
                 logout();
+                deferred.reject(error);
             });
+
+            return deferred.promise;
         };
 
         var logout = function () {
@@ -77,7 +72,9 @@ statracker.factory('accountService', [
                     localStore.remove('user');
                 });
             }
-            user = {};
+            user = {
+                authenticated: false
+            };
             return user;
         };
 
@@ -92,8 +89,15 @@ statracker.factory('accountService', [
         };
 
         var getUser = function () {
-            var user = localStore.get('user');
-            return (user === undefined || user === null) ? undefined :user;
+            if (user.id !== undefined) {
+                return user;
+            } else {
+                var storedUser = localStore.get('user');
+                if (storedUser !== undefined && storedUser !== null){
+                    user = storedUser;
+                }
+            }
+            return user;
         };
 
         var refresh = function () {
@@ -142,22 +146,22 @@ statracker.controller('LoginController', [
         };
 
         vm.canLogin = function () {
-            return (
-                vm.credentials.email && //email will be undefined until is looks valid
+            if (vm.credentials.email && //email will be undefined until is looks valid
                 vm.credentials.email.length > 0 &&
                 vm.credentials.password &&
-                vm.credentials.password.length > 0
-            );
+                vm.credentials.password.length > 0) {
+                return true;
+            }
+            return false;
         };
 
         this.doLogin = function () {
             vm.credentials.hasError = false;
             vm.credentials.error = '';
             accountService.login(this.credentials)
-                .success(function () {
+                .then(function () {
                     $state.go('tab.rounds');
-                })
-                .error(function (error) {
+                }, function (error) {
                     vm.credentials.hasError = true;
                     if (error === null) {
                         vm.credentials.error = 'Cannot reach the StaTracker authorization server';
@@ -279,17 +283,18 @@ statracker.directive('myCourses', [
     '$timeout',
     '$rootScope',
     '$document',
-    'userDataService',
-    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document, userDataService) {
+    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document) {
         return {
             require: '?ngModel',
             restrict: 'E',
             template: '<input type="text" class="my-courses-control" autocomplete="off">',
             replace: true,
+            scope: {
+                courses: '='
+            },
             link: function (scope, element, attrs, ngModel) {
 
-                var userData = userDataService.loadUserData(); //TODO: pass in via scope
-                scope.courses = userData.courses;
+                scope.filteredCourses = scope.courses; //TODO: copy
 
                 var searchEventTimeout,
                     POPUP_TPL = [
@@ -303,7 +308,7 @@ statracker.directive('myCourses', [
                         '</div>',
                         '<ion-content class="has-header">',
                             '<ion-list>',
-                                '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                                '<ion-item ng-repeat="course in filteredCourses" type="item-text-wrap" ng-click="selectCourse(course)">',
                                     '{{course.courseDescription}}',
                                 '</ion-item>',
                             '</ion-list>',
@@ -330,8 +335,8 @@ statracker.directive('myCourses', [
                         searchEventTimeout = $timeout(function () {
                             if (!query) return;
                             scope.$apply(function () {
-                                if (userData.courses && userData.courses.length > 0) {
-                                    scope.courses = userData.courses.filter(function (course) {
+                                if (scope.courses && scope.courses.length > 0) {
+                                    scope.filteredCourses = scope.courses.filter(function (course) {
                                         if (query === '' || course.courseDescription.startsWith(query)) {
                                             return course;
                                         }
@@ -653,474 +658,6 @@ statracker.factory('userDataService', [
         };
     }
 ]);
-(function (st) {
-
-    var shot = function (hole, apiShot) {
-        if (apiShot) {
-            this.key = apiShot.key;
-            this.hole = apiShot.holeNumber;
-            this.clubKey = apiShot.clubKey;
-            this.yardage = apiShot.yardageNumber;
-            this.result = apiShot.resultId;
-            this.coordinates = {
-                x: apiShot.resultXNumber,
-                y: apiShot.resultYNumber
-            };
-        } else {
-            this.key = undefined;
-            this.hole = hole;
-            this.clubKey = undefined;
-            this.yardage = undefined;
-            this.result = undefined;
-            this.coordinates = undefined;
-        }
-    },
-    toApi = function () {
-        return {
-            key: this.key,
-            holeNumber: this.hole,
-            clubKey: this.clubKey,
-            yardageNumber: this.yardage,
-            resultId: this.result,
-            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
-            resultYNumber: this.coordinates ? this.coordinates.y : undefined
-        };
-    };
-
-    shot.prototype = {
-        constructor: shot,
-        toApi: toApi
-    };
-
-    st.ApproachShot = shot;
-
-}(statracker));
-statracker.controller('CreateRoundController', [
-    '$scope',
-    '$state',
-    'userDataService',
-    'roundService',
-    function ($scope, $state, userDataService, roundService) {
-
-        var vm = this;
-
-        vm.round = {
-            date: new Date(),
-            holes: 18,
-            course: { key: 0, courseDescription: '' },
-            hasError: false,
-            error: ''
-        };
-
-        vm.canStart = function () {
-            return true;
-        };
-
-        vm.startRound = function () {
-            var newRound = roundService.create(vm.round.course, vm.round.date, vm.round.holes);
-            roundService.update(newRound, true).then(function (r) {
-                $state.go('^.round-detail-teeball({id: ' + r.key + ', hole: 1})');
-            });
-        };
-
-        $scope.$on('new-course', function (e, courseName) {
-            userDataService.addCourse(courseName).then(function (data) {
-                if (data) {
-                    vm.round.course.key = data.key;
-                }
-            });
-        });
-    }
-]);
-
-statracker.controller('HoleController', [
-    '$scope',
-    '$state',
-    function ($scope, $state) {
-
-        if (!$scope.round) {
-            $scope.round = {};
-        }
-        $scope.round.id = $state.params.id;
-
-        if (!$scope.hole) {
-            $scope.hole = {};
-        }
-        $scope.hole.number = $state.params.hole;
-
-        $scope.gotoSummary = function () {
-            var params = $state.params;
-            params.hole = undefined;
-            $state.go('^.round-summary', params);
-        };
-    }
-]);
-statracker.controller('ListRoundsController', [
-    '$state',
-    'roundService',
-    function ($state, roundService) {
-
-        var vm = this;
-
-        vm.rounds = [];
-
-        roundService.getAll().then(function (response) {
-            vm.rounds = response.data;
-        });
-    }
-]);
-
-statracker.directive('navNext', [
-    '$state',
-    '$ionicGesture',
-    '$ionicViewSwitcher',
-    function ($state, $ionicGesture, $ionicViewSwitcher) {
-        return {
-            restrict: 'A',
-            link: function(scope, elem, attrs) {
-                var destination = attrs.navNext;
-                $ionicGesture.on('swipe', function(event) {
-                    if (event.gesture.direction === 'left') {
-                        event.preventDefault();
-                        $ionicViewSwitcher.nextDirection('forward');
-                        //very specific to hole by hole navigation
-                        if ($state.is('tab.round-detail-shortgame'))
-                        {
-                            $ionicViewSwitcher.nextDirection('swap');
-                            if ($state.params.hole !== undefined && $state.params.hole == 3) { // jshint ignore:line
-                                $state.params.hole = 1;
-                            } else {
-                                $state.params.hole += 1;
-                            }
-                        }
-                        $state.go(destination, $state.params, {location: 'replace'});
-                    }
-                }, elem);
-            }
-        };
-    }
-]);
-
-statracker.directive('navPrev', [
-    '$state',
-    '$ionicGesture',
-    '$ionicViewSwitcher',
-    function ($state, $ionicGesture, $ionicViewSwitcher) {
-        return {
-            restrict: 'A',
-            link: function(scope, elem, attrs) {
-                var destination = attrs.navPrev;
-                $ionicGesture.on('swipe', function(event) {
-                    if (event.gesture.direction === 'right') {
-                        event.preventDefault();
-                        $ionicViewSwitcher.nextDirection('back');
-                        //very specific to hole by hole navigation
-                        if ($state.is('tab.round-detail-teeball'))
-                        {
-                            $ionicViewSwitcher.nextDirection('swap');
-                            if ($state.params.hole !== undefined && $state.params.hole == 1) { // jshint ignore:line
-                                $state.params.hole = 3;
-                            } else {
-                                $state.params.hole -= 1;
-                            }
-                        }
-                        $state.go(destination, $state.params, {location: 'replace'});
-                    }
-                }, elem);
-            }
-        };
-    }
-]);
-
-statracker.controller('RoundController', [
-    '$scope',
-    '$state',
-    function ($scope, $state) {
-
-        if (!$scope.round) {
-            $scope.round = {};
-        }
-        $scope.round.id = $state.params.id;
-
-        $scope.gotoDetails = function () {
-            var params = $state.params;
-            params.hole = 1;
-            $state.go('^.round-detail-teeball', params);
-        };
-    }
-]);
-
-statracker.factory('roundService', [
-    '$http',
-    '$q',
-    'localStore',
-    'apiUrl',
-    function ($http, $q, localStore, apiUrl) {
-
-        var currentRound;
-
-        var getCurrentRound = function () {
-            if (currentRound) {
-                return currentRound;
-            }
-            currentRound = localStore.get('round');
-            return currentRound;
-        };
-
-        var getRound = function (key) {
-            var deferred = $q.defer();
-            $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
-                currentRound = new statracker.Round(null, null, null, response.data);
-                localStore.set('round', currentRound);
-                deferred.resolve(currentRound);
-            });
-            return deferred.promise;
-        };
-
-        var getRounds = function () {
-            return $http.get(apiUrl + '/api/rounds');
-        };
-
-        var createRound = function (course, datePlayed, holes) {
-            currentRound = new statracker.Round(course, datePlayed, holes);
-            localStore.set('round', currentRound);
-            return currentRound;
-        };
-
-        var updateRound = function (round, doSynch) {
-            var deferred = $q.defer();
-            currentRound = round;
-            if (doSynch) {
-                var postRound = currentRound.toApi();
-                if (currentRound.key && currentRound.key > 0) {
-                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, postRound).then(function () {
-                        localStore.set('round', currentRound);
-                        deferred.resolve(currentRound);
-                    });
-                } else {
-                    $http.post(apiUrl + '/api/rounds', postRound).then(function (response) {
-                        currentRound.key = response.data.id;
-                        localStore.set('round', currentRound);
-                        deferred.resolve(currentRound);
-                    });
-                }
-            } else {
-                localStore.set('round', currentRound);
-                deferred.resolve(currentRound);
-            }
-            return deferred.promise;
-        };
-
-        var completeRound = function (round) {
-            updateRound(round);
-            localStore.remove('round');
-        };
-
-        var deleteRound = function (key) {
-            $http.delete(apiUrl + '/api/rounds/' + key).then(function () {
-                if (currentRound && currentRound.key === key) {
-                    currentRound = undefined;
-                    localStore.remove('round');
-                }
-            });
-        };
-
-        return {
-            getCurrent: getCurrentRound,
-            getOne: getRound,
-            getAll: getRounds,
-            create: createRound,
-            update: updateRound,
-            complete: completeRound,
-            delete: deleteRound
-        };
-    }
-]);
-
-(function (st) {
-
-    var importRound, exportRound, round;
-
-    importRound = function (r) {
-        var hole;
-
-        this.key = r.key;
-        this.datePlayed = r.roundDate;
-        this.courseKey = r.courseKey;
-        this.holes = r.holesCount;
-        this.score = r.scoreNumber;
-        this.greens = r.greensNumber;
-        this.fairways = r.fairwaysNumber;
-        this.penalties = r.penaltiesNumber;
-        this.sandSaveAttempts = r.sandSaveAttemptsNumber;
-        this.sandSaveConversions = r.sandSaveConvertedNumber;
-        this.upAndDownAttempts = r.upAndDownAttemptsNumber;
-        this.upAndDownConversions = r.upAndDownConvertedNumber;
-
-        this.teeShots = [];
-        this.approachShots = [];
-        this.shortGameShots = [];
-
-        for (hole = 0; hole < r.holesCount; hole++) {
-            this.teeShots.push(new st.TeeShot(hole+1, r.teeShots[hole]));
-            this.approachShots.push(new st.ApproachShot(hole+1, r.approachShots[hole]));
-            this.shortGameShots.push(new st.ShortGame(hole+1, r.shortGameShots[hole]));
-        }
-    };
-
-    round = function (course, datePlayed, holes, api) {
-        var hole;
-
-        if (api) {
-            importRound(api);
-        } else {
-            this.key = undefined;
-            this.courseKey = course.key;
-            this.courseName = course.description;
-            this.datePlayed = datePlayed;
-            this.holes = holes;
-            this.score = undefined;
-            this.greens = undefined;
-            this.fairways = undefined;
-            this.penalties = undefined;
-            this.sandSaveAttempts = undefined;
-            this.sandSaveConversions = undefined;
-            this.upAndDownAttempts = undefined;
-            this.upAndDownConversions = undefined;
-
-            this.teeShots = [];
-            this.approachShots = [];
-            this.shortGameShots = [];
-
-            for (hole = 1; hole <= holes; hole++) {
-                this.teeShots.push(new st.TeeShot(hole));
-                this.approachShots.push(new st.ApproachShot(hole));
-                this.shortGameShots.push(new st.ShortGame(hole));
-            }
-        }
-    };
-
-    exportRound = function () {
-        var outbound = {
-            key: this.key,
-            roundDate: this.datePlayed,
-            courseKey: this.courseKey,
-            holesCount: this.holes,
-            scoreNumber: this.score,
-            greensNumber: this.greens,
-            fairwaysNumber: this.fairways,
-            penaltiesNumber: this.penalties,
-            sandSaveAttemptsNumber: this.sandSaveAttempts,
-            sandSaveConvertedNumber: this.sandSaveConversions,
-            upAndDownAttemptsNumber: this.upAndDownAttempts,
-            upAndDownConvertedNumber: this.upAndDownConversions,
-            teeShots: [],
-            approachShots: [],
-            shortGameShots: []
-        };
-        var i;
-        for (i = 0; i < this.holes; i++) {
-            outbound.teeShots.push(this.teeShots[i].toApi());
-            outbound.approachShots.push(this.approachShots[i].toApi());
-            outbound.shortGameShots.push(this.shortGameShots[i].toApi());
-        }
-        return outbound;
-    };
-
-    round.prototype = {
-        constructor: round,
-        toApi: exportRound
-    };
-
-    st.Round = round;
-
-}(statracker));
-(function (st) {
-
-    var shortgame = function (hole, api) {
-        if (api) {
-            this.key = api.key;
-            this.hole = api.holeNumber;
-            this.initialPuttLength = api.initialLengthNumber;
-            this.puttMadeLength = api.finalLengthNumber;
-            this.putts = api.puttsCount;
-            this.upAndDown = api.upAndDownFlag;
-            this.sandSave = api.sandSaveFlag;
-            this.holeOut = api.holeOutFlag;
-        } else {
-            this.key = undefined;
-            this.hole = hole;
-            this.initialPuttLength = undefined;
-            this.puttMadeLength = undefined;
-            this.putts = undefined;
-            this.upAndDown = undefined;
-            this.sandSave = undefined;
-            this.holeOut = undefined;
-        }
-    },
-    toApi = function () {
-        return {
-            key: this.key,
-            holeNumber: this.hole,
-            initialLengthNumber: this.initialPuttLength,
-            finalLengthNumber: this.puttMadeLength,
-            puttsCount: this.putts,
-            upAndDownFlag: this.upAndDown,
-            sandSaveFlag: this.sandSave,
-            holeOutFlag: this.holeOut
-        };
-    };
-
-    shortgame.prototype = {
-        constructor: shortgame,
-        toApi: toApi
-    };
-
-    st.ShortGame = shortgame;
-
-}(statracker));
-(function (st) {
-
-    var shot = function (hole, apiShot) {
-        if (apiShot) {
-            this.key = apiShot.key;
-            this.hole = apiShot.holeNumber;
-            this.clubKey = apiShot.clubKey;
-            this.distance = apiShot.distanceNumber;
-            this.result = apiShot.resultId;
-            this.coordinates = {
-                x: apiShot.resultXNumber,
-                y: apiShot.resultYNumber
-            };
-        } else {
-            this.key = undefined;
-            this.hole = hole;
-            this.clubKey = undefined;
-            this.distance = undefined;
-            this.result = undefined;
-            this.coordinates = undefined;
-        }
-    },
-    toApi = function () {
-        return {
-            key: this.key,
-            holeNumber: this.hole,
-            clubKey: this.clubKey,
-            distanceNumber: this.distance,
-            resultId: this.result,
-            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
-            resultYNumber: this.coordinates ? this.coordinates.y : undefined
-        };
-    };
-
-    shot.prototype = {
-        constructor: shot,
-        toApi: toApi
-    };
-
-    st.TeeShot = shot;
-
-}(statracker));
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',
@@ -1348,7 +885,6 @@ statracker.config([
                     'settings': {
                         templateUrl: 'src/account/my-bag-page.html',
                         controller: 'MyBagController as vm',
-                        //controllerAs: 'vm',
                         resolve: {
                             userData: ['userDataService', function(userDataService) {
                                 return userDataService.loadUserData();
@@ -1370,7 +906,13 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create-page.html'
+                        templateUrl: 'src/rounds/create-page.html',
+                        controller: 'CreateRoundController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -1410,7 +952,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/teeball.html',
-                        controller: 'HoleController'
+                        controller: 'TeeShotController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -1420,7 +967,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/approach.html',
-                        controller: 'HoleController'
+                        controller: 'ApproachShotController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -1485,3 +1037,900 @@ statracker.config([
 statracker.factory('localStore', ['store', function(store) {
     return store.getNamespacedStore('stk');
 }]);
+
+statracker.controller('CreateRoundController', [
+    '$scope',
+    '$state',
+    'userDataService',
+    'roundService',
+    'userData',
+    function ($scope, $state, userDataService, roundService, userData) {
+
+        var vm = this;
+
+        vm.courses = userData.courses;
+
+        vm.round = {
+            date: new Date(),
+            holes: 18,
+            course: { key: 0, courseDescription: '' },
+            hasError: false,
+            error: ''
+        };
+
+        vm.canStart = function () {
+            return true;
+        };
+
+        vm.startRound = function () {
+            var newRound = roundService.create(vm.round.course, vm.round.date, vm.round.holes);
+            roundService.update(newRound, true).then(function (r) {
+                $state.go('^.round-detail-teeball({id: ' + r.key + ', hole: 1})');
+            });
+        };
+
+        $scope.$on('new-course', function (e, courseName) {
+            userDataService.addCourse(courseName).then(function (data) {
+                if (data) {
+                    vm.round.course.key = data.key;
+                }
+            });
+        });
+    }
+]);
+
+statracker.controller('HoleController', [
+    '$scope',
+    '$state',
+    function ($scope, $state) {
+
+        if (!$scope.round) {
+            $scope.round = {};
+        }
+        $scope.round.id = $state.params.id;
+
+        if (!$scope.hole) {
+            $scope.hole = {};
+        }
+        $scope.hole.number = $state.params.hole;
+
+        $scope.gotoSummary = function () {
+            var params = $state.params;
+            params.hole = undefined;
+            $state.go('^.round-summary', params);
+        };
+    }
+]);
+statracker.controller('ListRoundsController', [
+    '$state',
+    'roundService',
+    function ($state, roundService) {
+
+        var vm = this;
+
+        vm.rounds = [];
+
+        roundService.getAll().then(function (response) {
+            vm.rounds = response.data;
+        });
+    }
+]);
+
+statracker.directive('navNext', [
+    '$state',
+    '$ionicGesture',
+    '$ionicViewSwitcher',
+    function ($state, $ionicGesture, $ionicViewSwitcher) {
+        return {
+            restrict: 'A',
+            link: function(scope, elem, attrs) {
+                var destination = attrs.navNext;
+                $ionicGesture.on('swipe', function(event) {
+                    if (event.gesture.direction === 'left') {
+                        event.preventDefault();
+                        $ionicViewSwitcher.nextDirection('forward');
+                        //very specific to hole by hole navigation
+                        if ($state.is('tab.round-detail-shortgame'))
+                        {
+                            $ionicViewSwitcher.nextDirection('swap');
+                            if ($state.params.hole !== undefined && $state.params.hole == 3) { // jshint ignore:line
+                                $state.params.hole = 1;
+                            } else {
+                                $state.params.hole += 1;
+                            }
+                        }
+                        $state.go(destination, $state.params, {location: 'replace'});
+                    }
+                }, elem);
+            }
+        };
+    }
+]);
+
+statracker.directive('navPrev', [
+    '$state',
+    '$ionicGesture',
+    '$ionicViewSwitcher',
+    function ($state, $ionicGesture, $ionicViewSwitcher) {
+        return {
+            restrict: 'A',
+            link: function(scope, elem, attrs) {
+                var destination = attrs.navPrev;
+                $ionicGesture.on('swipe', function(event) {
+                    if (event.gesture.direction === 'right') {
+                        event.preventDefault();
+                        $ionicViewSwitcher.nextDirection('back');
+                        //very specific to hole by hole navigation
+                        if ($state.is('tab.round-detail-teeball'))
+                        {
+                            $ionicViewSwitcher.nextDirection('swap');
+                            if ($state.params.hole !== undefined && $state.params.hole == 1) { // jshint ignore:line
+                                $state.params.hole = 3;
+                            } else {
+                                $state.params.hole -= 1;
+                            }
+                        }
+                        $state.go(destination, $state.params, {location: 'replace'});
+                    }
+                }, elem);
+            }
+        };
+    }
+]);
+
+statracker.controller('RoundController', [
+    '$scope',
+    '$state',
+    function ($scope, $state) {
+
+        if (!$scope.round) {
+            $scope.round = {};
+        }
+        $scope.round.id = $state.params.id;
+
+        $scope.gotoDetails = function () {
+            var params = $state.params;
+            params.hole = 1;
+            $state.go('^.round-detail-teeball', params);
+        };
+    }
+]);
+
+statracker.factory('roundService', [
+    '$http',
+    '$q',
+    'localStore',
+    'apiUrl',
+    function ($http, $q, localStore, apiUrl) {
+
+        var currentRound;
+
+        var getCurrentRound = function () {
+            if (currentRound) {
+                return currentRound;
+            }
+            currentRound = localStore.get('round');
+            return currentRound;
+        };
+
+        var getRound = function (key) {
+            var deferred = $q.defer();
+            $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
+                currentRound = new statracker.Round(null, null, null, response.data);
+                localStore.set('round', currentRound);
+                deferred.resolve(currentRound);
+            });
+            return deferred.promise;
+        };
+
+        var getRounds = function () {
+            return $http.get(apiUrl + '/api/rounds');
+        };
+
+        var createRound = function (course, datePlayed, holes) {
+            currentRound = new statracker.Round(course, datePlayed, holes);
+            localStore.set('round', currentRound);
+            return currentRound;
+        };
+
+        var updateRound = function (round, doSynch) {
+            var deferred = $q.defer();
+            currentRound = round;
+            if (doSynch) {
+                var postRound = currentRound.toApi();
+                if (currentRound.key && currentRound.key > 0) {
+                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, postRound).then(function () {
+                        localStore.set('round', currentRound);
+                        deferred.resolve(currentRound);
+                    });
+                } else {
+                    $http.post(apiUrl + '/api/rounds', postRound).then(function (response) {
+                        currentRound.key = response.data.key; //TODO: import the response?
+                        localStore.set('round', currentRound);
+                        deferred.resolve(currentRound);
+                    });
+                }
+            } else {
+                localStore.set('round', currentRound);
+                deferred.resolve(currentRound);
+            }
+            return deferred.promise;
+        };
+
+        var completeRound = function (round) {
+            updateRound(round);
+            localStore.remove('round');
+        };
+
+        var deleteRound = function (key) {
+            $http.delete(apiUrl + '/api/rounds/' + key).then(function () {
+                if (currentRound && currentRound.key === key) {
+                    currentRound = undefined;
+                    localStore.remove('round');
+                }
+            });
+        };
+
+        return {
+            getCurrent: getCurrentRound,
+            getOne: getRound,
+            getAll: getRounds,
+            create: createRound,
+            update: updateRound,
+            complete: completeRound,
+            delete: deleteRound
+        };
+    }
+]);
+
+(function (st) {
+
+    var importRound, exportRound, round;
+
+    importRound = function (r) {
+        var hole;
+
+        this.key = r.key;
+        this.datePlayed = r.roundDate;
+        this.courseKey = r.courseKey;
+        this.holes = r.holesCount;
+        this.score = r.scoreNumber;
+        this.greens = r.greensNumber;
+        this.fairways = r.fairwaysNumber;
+        this.penalties = r.penaltiesNumber;
+        this.sandSaveAttempts = r.sandSaveAttemptsNumber;
+        this.sandSaveConversions = r.sandSaveConvertedNumber;
+        this.upAndDownAttempts = r.upAndDownAttemptsNumber;
+        this.upAndDownConversions = r.upAndDownConvertedNumber;
+
+        this.teeShots = [];
+        this.approachShots = [];
+        this.shortGameShots = [];
+
+        for (hole = 0; hole < r.holesCount; hole++) {
+            this.teeShots.push(new st.TeeShot(hole+1, r.teeShots[hole]));
+            this.approachShots.push(new st.ApproachShot(hole+1, r.approachShots[hole]));
+            this.shortGameShots.push(new st.ShortGame(hole+1, r.shortGameShots[hole]));
+        }
+    };
+
+    round = function (course, datePlayed, holes, api) {
+        var hole;
+
+        if (api) {
+            importRound(api);
+        } else {
+            this.key = undefined;
+            this.courseKey = course.key;
+            this.courseName = course.description;
+            this.datePlayed = datePlayed;
+            this.holes = holes;
+            this.score = undefined;
+            this.greens = undefined;
+            this.fairways = undefined;
+            this.penalties = undefined;
+            this.sandSaveAttempts = undefined;
+            this.sandSaveConversions = undefined;
+            this.upAndDownAttempts = undefined;
+            this.upAndDownConversions = undefined;
+
+            this.teeShots = [];
+            this.approachShots = [];
+            this.shortGameShots = [];
+
+            for (hole = 1; hole <= holes; hole++) {
+                this.teeShots.push(new st.TeeShot(hole));
+                this.approachShots.push(new st.ApproachShot(hole));
+                this.shortGameShots.push(new st.ShortGame(hole));
+            }
+        }
+    };
+
+    exportRound = function () {
+        var outbound = {
+            key: this.key,
+            roundDate: this.datePlayed,
+            courseKey: this.courseKey,
+            holesCount: this.holes,
+            scoreNumber: this.score,
+            greensNumber: this.greens,
+            fairwaysNumber: this.fairways,
+            penaltiesNumber: this.penalties,
+            sandSaveAttemptsNumber: this.sandSaveAttempts,
+            sandSaveConvertedNumber: this.sandSaveConversions,
+            upAndDownAttemptsNumber: this.upAndDownAttempts,
+            upAndDownConvertedNumber: this.upAndDownConversions,
+            teeShots: [],
+            approachShots: [],
+            shortGameShots: []
+        };
+        var i;
+        for (i = 0; i < this.holes; i++) {
+            outbound.teeShots.push(this.teeShots[i].toApi());
+            outbound.approachShots.push(this.approachShots[i].toApi());
+            outbound.shortGameShots.push(this.shortGameShots[i].toApi());
+        }
+        return outbound;
+    };
+
+    round.prototype = {
+        constructor: round,
+        toApi: exportRound
+    };
+
+    st.Round = round;
+
+}(statracker));
+statracker.controller('StatsController', [
+    '$scope',
+    '$state',
+    function ($state) {
+        if ($state.is('tab.stats')) {
+            $state.go('.overall');
+        }
+    }
+]);
+statracker.directive('approachResultInput', [
+    function () {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/approach/approach-result-input.html',
+            replace: true,
+            scope: {
+                shot: '='
+            },
+            link: function (scope, elem) {
+
+                var green = elem.find('path'),
+                    svg = document.querySelector('svg'),
+                    xmlns = 'http://www.w3.org/2000/svg',
+                    xlinkns = 'http://www.w3.org/1999/xlink',
+                    shots = document.getElementById('shots');
+
+                var point = svg.createSVGPoint();
+
+                var cursorPoint = function (evt) {
+                    point.x = evt.clientX;
+                    point.y = evt.clientY;
+                    return point.matrixTransform(svg.getScreenCTM().inverse());
+                };
+
+                var placeBall = function (x, y, clear) {
+                    var use = document.createElementNS(xmlns, 'use'),
+                        transform = 'translate(' + x + ',' + y + ') scale(1.0)';
+
+                    if (clear) {
+                        clearBalls();
+                    }
+
+                    use.setAttributeNS(xlinkns, 'xlink:href', '#ball');
+                    use.setAttributeNS(null, 'transform', transform);
+                    shots.appendChild(use);
+                };
+
+                var clearBalls = function () {
+                    if (shots.hasChildNodes()) {
+                        var i, balls = shots.children;
+                        for(i = 0; i < balls.length; i++) {
+                            shots.removeChild(balls[i]);
+                        }
+                    }
+                };
+
+                scope.$watch('shot', function () {
+                    if (scope.shot.result && scope.shot.result >= 0) {
+                        scope.resultText = scope.shot.getResultText();
+                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    }
+                });
+
+                green.bind('click', function (e) {
+                    var cp = cursorPoint(e);
+                    scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    scope.shot.coordinates.x = cp.x;
+                    scope.shot.coordinates.y = cp.y;
+                    scope.resultText = scope.shot.getResultText();
+                    placeBall(cp.x, cp.y, true);
+                    //scope.$apply();
+                });
+            }
+        };
+    }
+]);
+
+statracker.controller('ApproachShotController', [
+    '$state',
+    'roundService',
+    'userData',
+    function ($state, roundService, userData) {
+
+        var vm = this;
+
+        vm.clubs = userData.clubs;
+
+        if (!vm.round) {
+            vm.round = roundService.getCurrent($state.params.id);
+        }
+
+        if (!vm.shot) {
+            vm.shot = vm.round.approachShots[$state.params.hole - 1];
+        }
+
+        vm.gotoSummary = function () {
+            var params = $state.params;
+            params.hole = undefined;
+            $state.go('^.round-summary', params);
+        };
+    }
+]);
+(function (st) {
+
+    var results = [
+        'On the green, inside 6 feet',
+        'On the green, inside 12 feet, short',
+        'On the green, inside 12 feet, short right',
+        'On the green, inside 12 feet, right',
+        'On the green, inside 12 feet, long right',
+        'On the green, inside 12 feet, long',
+        'On the green, inside 12 feet, long left',
+        'On the green, inside 12 feet, left',
+        'On the green, inside 12 feet, short left',
+        'On the green, inside 30 feet, short',
+        'On the green, inside 30 feet, short right',
+        'On the green, inside 30 feet, right',
+        'On the green, inside 30 feet, long right',
+        'On the green, inside 30 feet, long',
+        'On the green, inside 30 feet, long left',
+        'On the green, inside 30 feet, left',
+        'On the green, inside 30 feet, short left',
+        'On the green, outside 30 feet, short',
+        'On the green, outside 30 feet, short right',
+        'On the green, outside 30 feet, right',
+        'On the green, outside 30 feet, long right',
+        'On the green, outside 30 feet, long',
+        'On the green, outside 30 feet, long left',
+        'On the green, outside 30 feet, left',
+        'On the green, outside 30 feet, short left',
+        'Missed green (less than 6 feet), short',
+        'Missed green (less than 6 feet), short right',
+        'Missed green (less than 6 feet), right',
+        'Missed green (less than 6 feet), long right',
+        'Missed green (less than 6 feet), long',
+        'Missed green (less than 6 feet), long left',
+        'Missed green (less than 6 feet), left',
+        'Missed green (less than 6 feet), short left',
+        'Missed green, short',
+        'Missed green, short right',
+        'Missed green, right',
+        'Missed green, long right',
+        'Missed green, long',
+        'Missed green, long left',
+        'Missed green, left',
+        'Missed green, short left'];
+
+    var shot = function (hole, apiShot) {
+        if (apiShot) {
+            this.key = apiShot.key;
+            this.hole = apiShot.holeNumber;
+            this.clubKey = apiShot.clubKey;
+            this.yardage = apiShot.yardageNumber;
+            this.result = apiShot.resultId;
+            this.coordinates = {
+                x: apiShot.resultXNumber,
+                y: apiShot.resultYNumber
+            };
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.clubKey = undefined;
+            this.yardage = undefined;
+            this.result = undefined;
+            this.coordinates = undefined;
+        }
+    },
+    toApi = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            clubKey: this.clubKey,
+            yardageNumber: this.yardage,
+            resultId: this.result,
+            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
+            resultYNumber: this.coordinates ? this.coordinates.y : undefined
+        };
+    },
+    resultText = function () {
+        return results[this.result];
+    };
+
+    shot.prototype = {
+        constructor: shot,
+        toApi: toApi,
+        getResultText: resultText
+    };
+
+    st.ApproachShot = shot;
+
+}(statracker));
+statracker.directive('attemptInput', [
+    '$parse',
+    function ($parse) {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/shortgame/attempt-input.html',
+            replace: true,
+            require: 'ngModel',
+            link: function (scope, element, attributes, controller) {
+
+                var make = angular.element(document.querySelector('#make')),
+                    miss = angular.element(document.querySelector('#miss')),
+                    initialValue = $parse(attributes.ngModel)(scope);
+
+                var showUndefined = function () {
+                    if (!make.hasClass('unselected')) make.addClass('unselected');
+                    if (!miss.hasClass('unselected')) miss.addClass('unselected');
+                };
+
+                var showTrue = function() {
+                    if (make.hasClass('unselected')) make.removeClass('unselected');
+                    if (!miss.hasClass('unselected')) miss.addClass('unselected');
+                };
+
+                var showFalse = function () {
+                    if (!make.hasClass('unselected')) make.addClass('unselected');
+                    if (miss.hasClass('unselected')) miss.removeClass('unselected');
+                };
+
+                if (initialValue === true) {
+                    showTrue();
+                } else if (initialValue === false) {
+                    showFalse();
+                } else {
+                    showUndefined();
+                }
+
+                make.bind('click', function () {
+                    if (!controller.$viewValue) {
+                        controller.$setViewValue(true);
+                        showTrue();
+                    } else {
+                        controller.$setViewValue(undefined);
+                        showUndefined();
+                    }
+                    scope.$apply();
+                });
+
+                miss.bind('click', function () {
+                    if (controller.$viewValue === undefined || controller.$viewValue === true) {
+                        controller.$setViewValue(false);
+                        showFalse();
+                    } else {
+                        controller.$setViewValue(undefined);
+                        showUndefined();
+                    }
+                    scope.$apply();
+                });
+            }
+        };
+    }
+]);
+statracker.directive('puttsInput', [
+    '$parse',
+    function ($parse) {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/shortgame/putts-input.html',
+            replace: true,
+            require: 'ngModel',
+            link: function (scope, element, attributes, controller) {
+
+                var putts = element.find('circle'),
+                    initialValue = $parse(attributes.ngModel)(scope);
+
+                var clearPutts = function () {
+                    putts.forEach(function (putt) {
+                        if (!putt.hasClass('unselected')) putt.addClass('unselected');
+                        if (putt.hasClass('selected')) putt.removeClass('selected');
+                    });
+                };
+
+                var showPutt = function(value) {
+                    putts.forEach(function (putt) {
+                        var puttValue = parseInt(putt.getAttribute(('data-value')));
+                        if (puttValue === value) {
+                            if (!putt.hasClass('selected')) putt.addClass('selected');
+                            if (putt.hasClass('unselected')) putt.removeClass('unselected');
+                        } else {
+                            if (!putt.hasClass('unselected')) putt.addClass('unselected');
+                            if (putt.hasClass('selected')) putt.removeClass('selected');
+                        }
+                    });
+                };
+
+                if (initialValue !== undefined) {
+                    showPutt(initialValue);
+                } else {
+                    clearPutts();
+                }
+
+                putts.bind('click', function () {
+                    var value = parseInt(this.getAttribute(('data-value')));
+                    controller.$setViewValue(value);
+                    showPutt(value);
+                    scope.$apply();
+                });
+            }
+        };
+    }
+]);
+statracker.controller('ShortGameController', [
+    '$state',
+    'roundService',
+    function ($state, roundService) {
+
+        var vm = this;
+
+        if (!vm.round) {
+            vm.round = roundService.getCurrent($state.params.id);
+        }
+
+        if (!vm.shot) {
+            vm.shot = vm.round.approachShots[$state.params.hole - 1];
+        }
+
+        vm.gotoSummary = function () {
+            var params = $state.params;
+            params.hole = undefined;
+            $state.go('^.round-summary', params);
+        };
+    }
+]);
+
+(function (st) {
+
+    var shortgame = function (hole, api) {
+        if (api) {
+            this.key = api.key;
+            this.hole = api.holeNumber;
+            this.initialPuttLength = api.initialLengthNumber;
+            this.puttMadeLength = api.finalLengthNumber;
+            this.putts = api.puttsCount;
+            this.upAndDown = api.upAndDownFlag;
+            this.sandSave = api.sandSaveFlag;
+            this.holeOut = api.holeOutFlag;
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.initialPuttLength = undefined;
+            this.puttMadeLength = undefined;
+            this.putts = undefined;
+            this.upAndDown = undefined;
+            this.sandSave = undefined;
+            this.holeOut = undefined;
+        }
+    },
+    toApi = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            initialLengthNumber: this.initialPuttLength,
+            finalLengthNumber: this.puttMadeLength,
+            puttsCount: this.putts,
+            upAndDownFlag: this.upAndDown,
+            sandSaveFlag: this.sandSave,
+            holeOutFlag: this.holeOut
+        };
+    };
+
+    shortgame.prototype = {
+        constructor: shortgame,
+        toApi: toApi
+    };
+
+    st.ShortGame = shortgame;
+
+}(statracker));
+statracker.directive('teeResultInput', [
+    function () {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/tee/tee-result-input.html',
+            replace: true,
+            scope: {
+                shot: '='
+            },
+            link: function (scope, elem) {
+
+                var fairway = elem.find('rect'),
+                    svg = document.querySelector('svg'),
+                    xmlns = 'http://www.w3.org/2000/svg',
+                    xlinkns = 'http://www.w3.org/1999/xlink',
+                    shots = document.getElementById('shots');
+
+                var point = svg.createSVGPoint();
+
+                var cursorPoint = function (evt) {
+                    point.x = evt.clientX;
+                    point.y = evt.clientY;
+                    return point.matrixTransform(svg.getScreenCTM().inverse());
+                };
+
+                var placeBall = function (x, y, clear) {
+                    var use = document.createElementNS(xmlns, 'use'),
+                        transform = 'translate(' + x + ',' + y + ') scale(1.0)';
+
+                    if (clear) {
+                        clearBalls();
+                    }
+
+                    use.setAttributeNS(xlinkns, 'xlink:href', '#ball');
+                    use.setAttributeNS(null, 'transform', transform);
+                    shots.appendChild(use);
+                };
+
+                var clearBalls = function () {
+                    if (shots.hasChildNodes()) {
+                        var i, balls = shots.children;
+                        for(i = 0; i < balls.length; i++) {
+                            shots.removeChild(balls[i]);
+                        }
+                    }
+                };
+
+                scope.$watch('shot', function () {
+                    if (scope.shot.result && scope.shot.result >= 0) {
+                        scope.resultText = scope.shot.getResultText();
+                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    }
+                });
+
+                fairway.bind('click', function (e) {
+                    var cp = cursorPoint(e);
+                    scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    scope.shot.coordinates.x = cp.x;
+                    scope.shot.coordinates.y = cp.y;
+                    scope.resultText = scope.shot.getResultText();
+                    placeBall(cp.x, cp.y, true);
+                    //scope.$apply();
+                });
+            }
+        };
+    }
+]);
+
+statracker.controller('TeeShotController', [
+    '$state',
+    'roundService',
+    'userData',
+    function ($state, roundService, userData) {
+
+        var vm = this;
+
+        vm.clubs = userData.clubs;
+
+        if (!vm.round) {
+            vm.round = roundService.getCurrent($state.params.id);
+        }
+
+        if (!vm.shot) {
+            vm.shot = vm.round.approachShots[$state.params.hole - 1];
+        }
+
+        vm.gotoSummary = function () {
+            var params = $state.params;
+            params.hole = undefined;
+            $state.go('^.round-summary', params);
+        };
+    }
+]);
+
+(function (st) {
+
+    var results = [
+        'Fairway, less than 200 yards',
+        'Miss left (first cut up to 2 paces), less than 200 yards',
+        'Miss right (first cut up to 2 paces), less than 200 yards',
+        'Big miss left, less than 200 yards',
+        'Big miss right, less than 200 yards',
+        'Out of play (hazard or OB) left, less than 200 yards',
+        'Out of play (hazard or OB) right, less than 200 yards',
+        'Fairway, 200 - 225 yards',
+        'Miss left (first cut up to 2 paces), 200 - 225 yards',
+        'Miss right (first cut up to 2 paces), 200 - 225 yards',
+        'Big miss left, 200 - 225 yards',
+        'Big miss right, 200 - 225 yards',
+        'Out of play (hazard or OB) left, 200 - 225 yards',
+        'Out of play (hazard or OB) right, 200 - 225 yards',
+        'Fairway, 225 - 250 yards',
+        'Miss left (first cut up to 2 paces), 225 - 250 yards',
+        'Miss right (first cut up to 2 paces), 225 - 250 yards',
+        'Big miss left, 225 - 250 yards',
+        'Big miss right, 225 - 250 yards',
+        'Out of play (hazard or OB) left, 225 - 250 yards',
+        'Out of play (hazard or OB) right, 225 - 250 yards',
+        'Fairway, 250 - 275 yards',
+        'Miss left (first cut up to 2 paces), 250 - 275 yards',
+        'Miss right (first cut up to 2 paces), 250 - 275 yards',
+        'Big miss left, 250 - 275 yards',
+        'Big miss right, 250 - 275 yards',
+        'Out of play (hazard or OB) left, 250 - 275 yards',
+        'Out of play (hazard or OB) right, 250 - 275 yards',
+        'Fairway, 275 - 300 yards',
+        'Miss left (first cut up to 2 paces), 275 - 300 yards',
+        'Miss right (first cut up to 2 paces), 275 - 300 yards',
+        'Big miss left, 275 - 300 yards',
+        'Big miss right, 275 - 300 yards',
+        'Out of play (hazard or OB) left, 275 - 300 yards',
+        'Out of play (hazard or OB) right, 275 - 300 yards',
+        'Fairway, over 300 yards',
+        'Miss left (first cut up to 2 paces), over 300 yards',
+        'Miss right (first cut up to 2 paces), over 300 yards',
+        'Big miss left, over 300 yards',
+        'Big miss left, over 300 yards',
+        'Out of play (hazard or OB) left, over 300 yards',
+        'Out of play (hazard or OB) right, over 300 yards'
+    ];
+
+    var shot = function (hole, apiShot) {
+        if (apiShot) {
+            this.key = apiShot.key;
+            this.hole = apiShot.holeNumber;
+            this.clubKey = apiShot.clubKey;
+            this.distance = apiShot.distanceNumber;
+            this.result = apiShot.resultId;
+            this.coordinates = {
+                x: apiShot.resultXNumber,
+                y: apiShot.resultYNumber
+            };
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.clubKey = undefined;
+            this.distance = undefined;
+            this.result = undefined;
+            this.coordinates = undefined;
+        }
+    },
+    toApi = function () {
+        return {
+            key: this.key,
+            holeNumber: this.hole,
+            clubKey: this.clubKey,
+            distanceNumber: this.distance,
+            resultId: this.result,
+            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
+            resultYNumber: this.coordinates ? this.coordinates.y : undefined
+        };
+    };
+
+    shot.prototype = {
+        constructor: shot,
+        toApi: toApi,
+        getResultText: function () {
+            return results[this.result];
+        }
+    };
+
+    st.TeeShot = shot;
+
+}(statracker));

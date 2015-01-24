@@ -29,6 +29,7 @@ module.exports = function(config) {
             'www/lib/angular-messages/angular-messages.js',
             'www/lib/angular-mocks/angular-mocks.js',
             'www/dist/app.js',
+            'www/dist/templates.js',
             'www/dist/statracker.js',
             //'test/*.js',
             'test/**/*.js'
@@ -70,7 +71,7 @@ module.exports = function(config) {
         // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
         // - PhantomJS
         // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-        browsers: ['PhantomJS'],//['PhantomJS'],
+        browsers: ['Chrome'],//['PhantomJS'],
 
         // If browser does not capture in given timeout [ms], kill it
         captureTimeout: 60000

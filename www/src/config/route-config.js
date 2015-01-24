@@ -52,7 +52,6 @@ statracker.config([
                     'settings': {
                         templateUrl: 'src/account/my-bag-page.html',
                         controller: 'MyBagController as vm',
-                        //controllerAs: 'vm',
                         resolve: {
                             userData: ['userDataService', function(userDataService) {
                                 return userDataService.loadUserData();
@@ -74,7 +73,13 @@ statracker.config([
                 url: '/new-round',
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/create-page.html'
+                        templateUrl: 'src/rounds/create-page.html',
+                        controller: 'CreateRoundController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -114,7 +119,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/teeball.html',
-                        controller: 'HoleController'
+                        controller: 'TeeShotController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })
@@ -124,7 +134,12 @@ statracker.config([
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/approach.html',
-                        controller: 'HoleController'
+                        controller: 'ApproachShotController as ctrl',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
                     }
                 }
             })

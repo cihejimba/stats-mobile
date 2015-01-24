@@ -4,17 +4,18 @@ statracker.directive('myCourses', [
     '$timeout',
     '$rootScope',
     '$document',
-    'userDataService',
-    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document, userDataService) {
+    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document) {
         return {
             require: '?ngModel',
             restrict: 'E',
             template: '<input type="text" class="my-courses-control" autocomplete="off">',
             replace: true,
+            scope: {
+                courses: '='
+            },
             link: function (scope, element, attrs, ngModel) {
 
-                var userData = userDataService.loadUserData(); //TODO: pass in via scope
-                scope.courses = userData.courses;
+                scope.filteredCourses = scope.courses; //TODO: copy
 
                 var searchEventTimeout,
                     POPUP_TPL = [
@@ -28,7 +29,7 @@ statracker.directive('myCourses', [
                         '</div>',
                         '<ion-content class="has-header">',
                             '<ion-list>',
-                                '<ion-item ng-repeat="course in courses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                                '<ion-item ng-repeat="course in filteredCourses" type="item-text-wrap" ng-click="selectCourse(course)">',
                                     '{{course.courseDescription}}',
                                 '</ion-item>',
                             '</ion-list>',
@@ -55,8 +56,8 @@ statracker.directive('myCourses', [
                         searchEventTimeout = $timeout(function () {
                             if (!query) return;
                             scope.$apply(function () {
-                                if (userData.courses && userData.courses.length > 0) {
-                                    scope.courses = userData.courses.filter(function (course) {
+                                if (scope.courses && scope.courses.length > 0) {
+                                    scope.filteredCourses = scope.courses.filter(function (course) {
                                         if (query === '' || course.courseDescription.startsWith(query)) {
                                             return course;
                                         }

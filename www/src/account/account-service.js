@@ -1,21 +1,21 @@
 statracker.factory('accountService', [
     '$http',
+    '$q',
     'localStore',
     'jwtHelper',
     'apiUrl',
     'clientId',
-    function ($http, localStore, jwtHelper, apiUrl, clientId) {
+    function ($http, $q, localStore, jwtHelper, apiUrl, clientId) {
 
         var user = {
-                authenticated: false,
-                id: '',
-                name: '',
-                email: ''
+                authenticated: false
             };
 
         var login = function (credentials) {
-            var data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
-            return $http({
+            var deferred = $q.defer(),
+                data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
+
+            $http({
                 url: apiUrl + 'token',
                 method: 'POST',
                 data: data,
@@ -34,10 +34,14 @@ statracker.factory('accountService', [
                 localStore.set('user', user);
                 localStore.set('access_token', response.access_token);
                 localStore.set('refresh_token', response.refresh_token);
+                deferred.resolve();
             })
-            .error(function () {
+            .error(function (error) {
                 logout();
+                deferred.reject(error);
             });
+
+            return deferred.promise;
         };
 
         var logout = function () {
@@ -48,7 +52,9 @@ statracker.factory('accountService', [
                     localStore.remove('user');
                 });
             }
-            user = {};
+            user = {
+                authenticated: false
+            };
             return user;
         };
 
@@ -63,8 +69,15 @@ statracker.factory('accountService', [
         };
 
         var getUser = function () {
-            var user = localStore.get('user');
-            return (user === undefined || user === null) ? undefined :user;
+            if (user.id !== undefined) {
+                return user;
+            } else {
+                var storedUser = localStore.get('user');
+                if (storedUser !== undefined && storedUser !== null){
+                    user = storedUser;
+                }
+            }
+            return user;
         };
 
         var refresh = function () {

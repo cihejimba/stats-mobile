@@ -1,13 +1,36 @@
 <?xml version="1.0"?>
 <testsuites>
-  <testsuite name="PhantomJS 1.9.8 (Windows 7)" package="" timestamp="2015-01-10T03:00:14" id="0" hostname="ISDEVL-G517329" tests="4" errors="0" failures="0" time="0.082">
+  <testsuite name="Chrome 39.0.2171 (Windows 7)" package="" timestamp="2015-01-21T02:18:08" id="0" hostname="ISDEVL-G517329" tests="27" errors="0" failures="0" time="0.399">
     <properties>
-      <property name="browser.fullName" value="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.34 (KHTML, like Gecko) PhantomJS/1.9.8 Safari/534.34"/>
+      <property name="browser.fullName" value="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36"/>
     </properties>
-    <testcase name="should pass the correct data to POST" time="0.047" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
-    <testcase name="should store the tokens and user object on success" time="0.017" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
-    <testcase name="should call logout on failure" time="0.011" classname="PhantomJS 1.9.8 (Windows 7).account-service login"/>
-    <testcase name="should have a credentials object" time="0.007" classname="PhantomJS 1.9.8 (Windows 7).login-controller setup"/>
+    <testcase name="should return a promise" time="0.084" classname="Chrome 39.0.2171 (Windows 7).account-service login"/>
+    <testcase name="should pass the correct data to POST" time="0.023" classname="Chrome 39.0.2171 (Windows 7).account-service login"/>
+    <testcase name="should store the tokens and user object on success" time="0.017" classname="Chrome 39.0.2171 (Windows 7).account-service login"/>
+    <testcase name="should call logout on failure" time="0.018" classname="Chrome 39.0.2171 (Windows 7).account-service login"/>
+    <testcase name="should return an unauthenticated user" time="0.012" classname="Chrome 39.0.2171 (Windows 7).account-service logout"/>
+    <testcase name="should not POST if the user is not authenticated" time="0.009" classname="Chrome 39.0.2171 (Windows 7).account-service logout"/>
+    <testcase name="should POST if the user is authenticated" time="0.017" classname="Chrome 39.0.2171 (Windows 7).account-service logout"/>
+    <testcase name="should clear the local store if the user is authenticated" time="0.012" classname="Chrome 39.0.2171 (Windows 7).account-service logout"/>
+    <testcase name="should pass the correct data to POST" time="0.014" classname="Chrome 39.0.2171 (Windows 7).account-service register"/>
+    <testcase name="should return an HTTP promise" time="0.01" classname="Chrome 39.0.2171 (Windows 7).account-service register"/>
+    <testcase name="should flag the interceptor to skip authorization" time="0.01" classname="Chrome 39.0.2171 (Windows 7).account-service register"/>
+    <testcase name="should return the user object in memory if it is available" time="0.01" classname="Chrome 39.0.2171 (Windows 7).account-service getUser"/>
+    <testcase name="should return the user object from the local store if it is not in memory" time="0.01" classname="Chrome 39.0.2171 (Windows 7).account-service getUser"/>
+    <testcase name="should fall back to the most basic user object" time="0.011" classname="Chrome 39.0.2171 (Windows 7).account-service getUser"/>
+    <testcase name="should not POST if there is no refresh token" time="0.012" classname="Chrome 39.0.2171 (Windows 7).account-service refresh"/>
+    <testcase name="should POST to the correct data if there is a refresh token" time="0.019" classname="Chrome 39.0.2171 (Windows 7).account-service refresh"/>
+    <testcase name="should store the response tokens on success" time="0.01" classname="Chrome 39.0.2171 (Windows 7).account-service refresh"/>
+    <testcase name="should log out on error" time="0.011" classname="Chrome 39.0.2171 (Windows 7).account-service refresh"/>
+    <testcase name="should have a credentials object" time="0.009" classname="Chrome 39.0.2171 (Windows 7).login-controller setup"/>
+    <testcase name="should return false if the email is missing" time="0.007" classname="Chrome 39.0.2171 (Windows 7).login-controller canLogin"/>
+    <testcase name="should return false if the email is empty" time="0.008" classname="Chrome 39.0.2171 (Windows 7).login-controller canLogin"/>
+    <testcase name="should return false if the password is missing" time="0.017" classname="Chrome 39.0.2171 (Windows 7).login-controller canLogin"/>
+    <testcase name="should return false if the password is empty" time="0.009" classname="Chrome 39.0.2171 (Windows 7).login-controller canLogin"/>
+    <testcase name="should return true if the email and password have been entered" time="0.008" classname="Chrome 39.0.2171 (Windows 7).login-controller canLogin"/>
+    <testcase name="should navigate to tab.rounds if the credentials are valid" time="0.011" classname="Chrome 39.0.2171 (Windows 7).login-controller doLogin"/>
+    <testcase name="should set the error flag and description if the credentials are invalid" time="0.009" classname="Chrome 39.0.2171 (Windows 7).login-controller doLogin"/>
+    <testcase name="should set the error flag and description if the authorization server is unreachable" time="0.012" classname="Chrome 39.0.2171 (Windows 7).login-controller doLogin"/>
     <system-out><![CDATA[
 ]]></system-out>
     <system-err/>

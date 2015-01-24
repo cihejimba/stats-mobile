@@ -3,9 +3,12 @@ statracker.controller('CreateRoundController', [
     '$state',
     'userDataService',
     'roundService',
-    function ($scope, $state, userDataService, roundService) {
+    'userData',
+    function ($scope, $state, userDataService, roundService, userData) {
 
         var vm = this;
+
+        vm.courses = userData.courses;
 
         vm.round = {
             date: new Date(),
