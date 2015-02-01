@@ -1,16 +1,16 @@
 statracker.directive('attemptInput', [
-    '$parse',
-    function ($parse) {
+    function () {
         return {
-            restrict: 'AE',
+            restrict: 'E',
             templateUrl: 'src/rounds/shortgame/attempt-input.html',
             replace: true,
-            require: 'ngModel',
-            link: function (scope, element, attributes, controller) {
+            scope: {
+                flag: '='
+            },
+            link: function (scope, elem, attrs) {
 
-                var make = angular.element(document.querySelector('#make')),
-                    miss = angular.element(document.querySelector('#miss')),
-                    initialValue = $parse(attributes.ngModel)(scope);
+                var make = angular.element(elem[0].querySelector('#make')),
+                    miss = angular.element(elem[0].querySelector('#miss'));
 
                 var showUndefined = function () {
                     if (!make.hasClass('unselected')) make.addClass('unselected');
@@ -27,34 +27,42 @@ statracker.directive('attemptInput', [
                     if (miss.hasClass('unselected')) miss.removeClass('unselected');
                 };
 
-                if (initialValue === true) {
-                    showTrue();
-                } else if (initialValue === false) {
-                    showFalse();
-                } else {
-                    showUndefined();
-                }
-
-                make.bind('click', function () {
-                    if (!controller.$viewValue) {
-                        controller.$setViewValue(true);
+                var bindValue = function () {
+                    if (scope.flag === true) {
                         showTrue();
+                    } else if (scope.flag === false) {
+                        showFalse();
                     } else {
-                        controller.$setViewValue(undefined);
                         showUndefined();
                     }
-                    scope.$apply();
+                };
+
+                bindValue();
+
+                scope.$watch('flag', function () {
+                    bindValue();
+                });
+
+                make.bind('click', function () {
+                    if (scope.flag === undefined) {
+                        scope.flag = true;
+                        showTrue();
+                    } else {
+                        scope.flag = undefined;
+                        showUndefined();
+                    }
+                    //scope.$apply();
                 });
 
                 miss.bind('click', function () {
-                    if (controller.$viewValue === undefined || controller.$viewValue === true) {
-                        controller.$setViewValue(false);
+                    if (scope.flag === undefined || scope.flag === true) {
+                        scope.flag = false;
                         showFalse();
                     } else {
-                        controller.$setViewValue(undefined);
+                        scope.flag = undefined;
                         showUndefined();
                     }
-                    scope.$apply();
+                    //scope.$apply();
                 });
             }
         };

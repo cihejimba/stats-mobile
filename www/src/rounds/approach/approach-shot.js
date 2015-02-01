@@ -1,7 +1,7 @@
 (function (st) {
 
     var results = [
-        'On the green, inside 6 feet',
+        'On the green, inside 3 feet',
         'On the green, inside 12 feet, short',
         'On the green, inside 12 feet, short right',
         'On the green, inside 12 feet, right',

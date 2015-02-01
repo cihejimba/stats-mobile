@@ -1,0 +1,32 @@
+<ion-view view-title="Short Game" ng-controller="ShortGameController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear" ng-click="ctrl.gotoSummary()">Back</button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="secondary">
+        <goto hole="ctrl.shot.hole" holes="ctrl.round.holes"></goto>
+    </ion-nav-buttons>
+    <ion-content scroll="false" has-bouncing="false" hole-next="^.round-detail-teeball" hole-prev="^.round-detail-approach">
+        <div class="list">
+            <label class="item item-input">
+                <span class="input-label">Starting distance</span>
+                <input type="tel" ng-model="ctrl.shot.initialPuttLength" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Final putt length</span>
+                <input type="tel" ng-model="ctrl.shot.puttMadeLength" />
+            </label>
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">Putts</span>
+            </label>
+            <putts-input shot="ctrl.shot"></putts-input>
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">Up and down</span>
+            </label>
+            <attempt-input flag="ctrl.shot.upAndDown"></attempt-input>
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">Sand save</span>
+            </label>
+            <attempt-input flag="ctrl.shot.sandSave"></attempt-input>
+        </div>
+    </ion-content>
+</ion-view>

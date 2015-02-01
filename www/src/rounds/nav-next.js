@@ -11,16 +11,6 @@ statracker.directive('navNext', [
                     if (event.gesture.direction === 'left') {
                         event.preventDefault();
                         $ionicViewSwitcher.nextDirection('forward');
-                        //very specific to hole by hole navigation
-                        if ($state.is('tab.round-detail-shortgame'))
-                        {
-                            $ionicViewSwitcher.nextDirection('swap');
-                            if ($state.params.hole !== undefined && $state.params.hole == 3) { // jshint ignore:line
-                                $state.params.hole = 1;
-                            } else {
-                                $state.params.hole += 1;
-                            }
-                        }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }
                 }, elem);

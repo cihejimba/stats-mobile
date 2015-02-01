@@ -1,21 +1,21 @@
-<ion-view view-title="Tee Shot">
+<ion-view view-title="Approach Shot">
     <ion-nav-buttons side="primary">
         <button class="button button-small button-clear" ng-click="ctrl.gotoSummary()">Back</button>
     </ion-nav-buttons>
     <ion-nav-buttons side="secondary">
-        <button class="button button-small" ng-click="ctrl.openHoleNav()">{{hole.number}}</button>
+        <goto hole="ctrl.shot.hole" holes="ctrl.round.holes"></goto>
     </ion-nav-buttons>
-    <ion-content scroll="false" has-bouncing="false" nav-next="^.round-detail-approach" nav-prev="^.round-detail-shortgame">
+    <ion-content scroll="false" has-bouncing="false" hole-next="^.round-detail-shortgame" hole-prev="^.round-detail-teeball">
         <div class="row">
             <div class="col">
-                <tee-result-input shot="ctrl.shot"></tee-result-input>
+                <approach-result-input shot="ctrl.shot"></approach-result-input>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <label class="item item-input">
-                    <span class="input-label">Distance</span>
-                    <input type="tel" ng-model="ctrl.shot.distance" />
+                    <span class="input-label">Yardage</span>
+                    <input type="tel" ng-model="ctrl.shot.yardage" />
                 </label>
             </div>
         </div>

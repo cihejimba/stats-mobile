@@ -1,0 +1,36 @@
+<ion-view view-title="Round Overview" ng-controller="RoundSummaryController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear" ui-sref="^.rounds">Back</button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear" ng-click="ctrl.gotoDetails()">Details</button>
+    </ion-nav-buttons>
+    <ion-content scroll="false" has-bouncing="false" nav-next="^.teeball-summary">
+        <div class="row">
+            <div class="col">
+                {{ctrl.round.datePlayed | date: 'yyyy-MM-dd'}}: {{ctrl.round.courseDescription}}
+            </div>
+        </div>
+        <div class="list">
+            <label class="item item-input">
+                <span class="input-label">Score ({{ctrl.round.holes}} holes)</span>
+                <input type="tel" ng-model="ctrl.round.score" readonly="ctrl.round.complete" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Fairways hit</span>
+                <input type="tel" ng-model="ctrl.round.fairways" readonly="ctrl.round.complete" /> of <input type="tel" ng-model="ctrl.round.penalties" readonly="ctrl.round.complete" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Greens in regulation</span>
+                <input type="tel" ng-model="ctrl.round.greens" readonly="ctrl.round.complete" />
+            </label>
+            <div class="item item-button-right">
+                Mark this round complete
+                <button class="button button-positive" ng-click="ctrl.completeRound()">
+                    <i class="icon ion-checkmark"></i>
+                </button>
+            </div>
+            <button class="button button-full button-positive" ng-click="ctrl.gotoDetails()">Enter Details</button>
+        </div>
+    </ion-content>
+</ion-view>

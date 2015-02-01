@@ -1,65 +1,242 @@
 <div class="tee-shot-container">
-    <svg id="teeshot" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 340 430" preserveAspectRatio="xMinYMin meet">
+    <svg id="teeshot" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 340 372" preserveAspectRatio="xMinYMin meet">
+        <style type="text/css">
+            <![CDATA[
+                .tee-out-of-play {fill: #610B0B; stroke: #610B0B; stroke-miterlimit: 10;}
+                .tee-big-miss {fill: #005C1F; stroke: #005C1F; stroke-miterlimit: 10;}
+                .tee-small-miss {fill: #4DB870; stroke: #4DB870; stroke-miterlimit: 10;}
+                .tee-fairway {fill: #99D6AD; stroke: #99D6AD; stroke-miterlimit: 10;}
+                .marker {font-family: Verdana; font-size: 11px; fill: #FFFFFF;}
+            ]]>
+        </style>
         <defs>
-            <circle id="ball" r="4" stroke="#000000" fill="#FFFFFF" stroke-width="0.5"></circle>
+            <circle id="ball" r="6" stroke="#000000" fill="#FFFFFF" stroke-width="0.5"></circle>
         </defs>
         <g id="fairway">
-            <rect data-location="40" x="6" y="5" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="33" x="6" y="75" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="26" x="6" y="145" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="19" x="6" y="215" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="12" x="6" y="285" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="5" x="6" y="355" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="38" x="36" y="5" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="31" x="36" y="75" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="24" x="36" y="145" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="17" x="36" y="215" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="10" x="36" y="285" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="3" x="36" y="355" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="36" x="86" y="5" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="29" x="86" y="75" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="22" x="86" y="145" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="15" x="86" y="215" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="8" x="86" y="285" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="1" x="86" y="355" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="35" x="116" y="5" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="28" x="116" y="75" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="21" x="116" y="145" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="14" x="116" y="215" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="7" x="116" y="285" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="0" x="116" y="355" fill="#99D6AD" stroke="#99D6AD" stroke-miterlimit="10" width="110" height="70"/>
-            <rect data-location="37" x="226" y="5" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="30" x="226" y="75" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="23" x="226" y="145" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="16" x="226" y="215" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="9" x="226" y="285" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="2" x="226" y="355" fill="#4DB870" stroke="#4DB870" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="39" x="256" y="5" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="32" x="256" y="75" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="25" x="256" y="145" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="18" x="256" y="215" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="11" x="256" y="285" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="4" x="256" y="355" fill="#005C1F" stroke="#005C1F" stroke-miterlimit="10" width="50" height="70"/>
-            <rect data-location="41" x="306" y="5" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="34" x="306" y="75" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="27" x="306" y="145" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="20" x="306" y="215" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="13" x="306" y="285" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <rect data-location="6" x="306" y="355" fill="#610B0B" stroke="#610B0B" stroke-miterlimit="10" width="30" height="70"/>
-            <line x1="6" y1="75" x2="336" y2="75" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
-            <line x1="6" y1="145" x2="336" y2="145" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
-            <line x1="6" y1="215" x2="336" y2="215" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
-            <line x1="6" y1="285" x2="336" y2="285" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
-            <line x1="6" y1="355" x2="336" y2="355" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
-            <text x="300" y="70" font-family="Verdana" font-size="11" style="fill: #FFFFFF">300</text>
-            <text x="300" y="140" font-family="Verdana" font-size="11" style="fill: #FFFFFF">275</text>
-            <text x="300" y="210" font-family="Verdana" font-size="11" style="fill: #FFFFFF">250</text>
-            <text x="300" y="280" font-family="Verdana" font-size="11" style="fill: #FFFFFF">225</text>
-            <text x="300" y="350" font-family="Verdana" font-size="11" style="fill: #FFFFFF">200</text>
+            <rect data-location="10" x="116" y="360" width="110" height="12" class="tee-fairway" />
+            <rect data-location="11" x="86" y="360" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="12" x="226" y="360" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="13" x="36" y="360" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="14" x="256" y="360" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="15" x="6" y="360" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="16" x="306" y="360" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="20" x="116" y="348" width="110" height="12" class="tee-fairway" />
+            <rect data-location="21" x="86" y="348" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="22" x="226" y="348" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="23" x="36" y="348" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="24" x="256" y="348" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="25" x="6" y="348" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="26" x="306" y="348" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="30" x="116" y="336" width="110" height="12" class="tee-fairway" />
+            <rect data-location="31" x="86" y="336" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="32" x="226" y="336" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="33" x="36" y="336" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="34" x="256" y="336" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="35" x="6" y="336" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="36" x="306" y="336" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="40" x="116" y="324" width="110" height="12" class="tee-fairway" />
+            <rect data-location="41" x="86" y="324" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="42" x="226" y="324" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="43" x="36" y="324" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="44" x="256" y="324" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="45" x="6" y="324" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="46" x="306" y="324" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="50" x="116" y="312" width="110" height="12" class="tee-fairway" />
+            <rect data-location="51" x="86" y="312" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="52" x="226" y="312" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="53" x="36" y="312" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="54" x="256" y="312" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="55" x="6" y="312" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="56" x="306" y="312" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="60" x="116" y="300" width="110" height="12" class="tee-fairway" />
+            <rect data-location="61" x="86" y="300" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="62" x="226" y="300" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="63" x="36" y="300" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="64" x="256" y="300" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="65" x="6" y="300" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="66" x="306" y="300" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="70" x="116" y="288" width="110" height="12" class="tee-fairway" />
+            <rect data-location="71" x="86" y="288" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="72" x="226" y="288" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="73" x="36" y="288" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="74" x="256" y="288" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="75" x="6" y="288" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="76" x="306" y="288" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="80" x="116" y="276" width="110" height="12" class="tee-fairway" />
+            <rect data-location="81" x="86" y="276" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="82" x="226" y="276" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="83" x="36" y="276" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="84" x="256" y="276" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="85" x="6" y="276" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="86" x="306" y="276" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="90" x="116" y="264" width="110" height="12" class="tee-fairway" />
+            <rect data-location="91" x="86" y="264" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="92" x="226" y="264" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="93" x="36" y="264" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="94" x="256" y="264" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="95" x="6" y="264" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="96" x="306" y="264" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="100" x="116" y="252" width="110" height="12" class="tee-fairway" />
+            <rect data-location="101" x="86" y="252" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="102" x="226" y="252" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="103" x="36" y="252" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="104" x="256" y="252" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="105" x="6" y="252" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="106" x="306" y="252" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="110" x="116" y="240" width="110" height="12" class="tee-fairway" />
+            <rect data-location="111" x="86" y="240" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="112" x="226" y="240" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="113" x="36" y="240" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="114" x="256" y="240" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="115" x="6" y="240" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="116" x="306" y="240" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="120" x="116" y="228" width="110" height="12" class="tee-fairway" />
+            <rect data-location="121" x="86" y="228" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="122" x="226" y="228" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="123" x="36" y="228" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="124" x="256" y="228" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="125" x="6" y="228" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="126" x="306" y="228" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="130" x="116" y="216" width="110" height="12" class="tee-fairway" />
+            <rect data-location="131" x="86" y="216" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="132" x="226" y="216" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="133" x="36" y="216" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="134" x="256" y="216" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="135" x="6" y="216" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="136" x="306" y="216" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="140" x="116" y="204" width="110" height="12" class="tee-fairway" />
+            <rect data-location="141" x="86" y="204" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="142" x="226" y="204" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="143" x="36" y="204" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="144" x="256" y="204" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="145" x="6" y="204" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="146" x="306" y="204" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="150" x="116" y="192" width="110" height="12" class="tee-fairway" />
+            <rect data-location="151" x="86" y="192" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="152" x="226" y="192" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="153" x="36" y="192" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="154" x="256" y="192" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="155" x="6" y="192" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="156" x="306" y="192" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="160" x="116" y="180" width="110" height="12" class="tee-fairway" />
+            <rect data-location="161" x="86" y="180" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="162" x="226" y="180" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="163" x="36" y="180" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="164" x="256" y="180" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="165" x="6" y="180" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="166" x="306" y="180" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="170" x="116" y="168" width="110" height="12" class="tee-fairway" />
+            <rect data-location="171" x="86" y="168" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="172" x="226" y="168" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="173" x="36" y="168" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="174" x="256" y="168" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="175" x="6" y="168" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="176" x="306" y="168" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="180" x="116" y="156" width="110" height="12" class="tee-fairway" />
+            <rect data-location="181" x="86" y="156" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="182" x="226" y="156" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="183" x="36" y="156" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="184" x="256" y="156" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="185" x="6" y="156" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="186" x="306" y="156" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="190" x="116" y="144" width="110" height="12" class="tee-fairway" />
+            <rect data-location="191" x="86" y="144" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="192" x="226" y="144" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="193" x="36" y="144" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="194" x="256" y="144" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="195" x="6" y="144" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="196" x="306" y="144" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="200" x="116" y="132" width="110" height="12" class="tee-fairway" />
+            <rect data-location="201" x="86" y="132" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="202" x="226" y="132" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="203" x="36" y="132" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="204" x="256" y="132" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="205" x="6" y="132" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="206" x="306" y="132" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="210" x="116" y="120" width="110" height="12" class="tee-fairway" />
+            <rect data-location="211" x="86" y="120" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="212" x="226" y="120" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="213" x="36" y="120" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="214" x="256" y="120" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="215" x="6" y="120" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="216" x="306" y="120" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="220" x="116" y="108" width="110" height="12" class="tee-fairway" />
+            <rect data-location="221" x="86" y="108" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="222" x="226" y="108" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="223" x="36" y="108" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="224" x="256" y="108" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="225" x="6" y="108" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="226" x="306" y="108" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="230" x="116" y="96" width="110" height="12" class="tee-fairway" />
+            <rect data-location="231" x="86" y="96" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="232" x="226" y="96" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="233" x="36" y="96" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="234" x="256" y="96" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="235" x="6" y="96" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="236" x="306" y="96" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="240" x="116" y="84" width="110" height="12" class="tee-fairway" />
+            <rect data-location="241" x="86" y="84" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="242" x="226" y="84" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="243" x="36" y="84" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="244" x="256" y="84" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="245" x="6" y="84" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="246" x="306" y="84" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="250" x="116" y="72" width="110" height="12" class="tee-fairway" />
+            <rect data-location="251" x="86" y="72" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="252" x="226" y="72" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="253" x="36" y="72" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="254" x="256" y="72" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="255" x="6" y="72" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="256" x="306" y="72" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="260" x="116" y="60" width="110" height="12" class="tee-fairway" />
+            <rect data-location="261" x="86" y="60" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="262" x="226" y="60" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="263" x="36" y="60" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="264" x="256" y="60" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="265" x="6" y="60" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="266" x="306" y="60" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="270" x="116" y="48" width="110" height="12" class="tee-fairway" />
+            <rect data-location="271" x="86" y="48" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="272" x="226" y="48" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="273" x="36" y="48" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="274" x="256" y="48" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="275" x="6" y="48" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="276" x="306" y="48" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="280" x="116" y="36" width="110" height="12" class="tee-fairway" />
+            <rect data-location="281" x="86" y="36" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="282" x="226" y="36" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="283" x="36" y="36" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="284" x="256" y="36" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="285" x="6" y="36" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="286" x="306" y="36" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="290" x="116" y="24" width="110" height="12" class="tee-fairway" />
+            <rect data-location="291" x="86" y="24" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="292" x="226" y="24" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="293" x="36" y="24" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="294" x="256" y="24" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="295" x="6" y="24" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="296" x="306" y="24" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="300" x="116" y="12" width="110" height="12" class="tee-fairway" />
+            <rect data-location="301" x="86" y="12" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="302" x="226" y="12" width="30" height="12" class="tee-small-miss" />
+            <rect data-location="303" x="36" y="12" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="304" x="256" y="12" width="50" height="12" class="tee-big-miss" />
+            <rect data-location="305" x="6" y="12" width="30" height="12" class="tee-out-of-play" />
+            <rect data-location="306" x="306" y="12" width="30" height="12" class="tee-out-of-play" />
+            <line x1="6" y1="72" x2="336" y2="72" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
+            <line x1="6" y1="132" x2="336" y2="132" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
+            <line x1="6" y1="192" x2="336" y2="192" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
+            <line x1="6" y1="252" x2="336" y2="252" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
+            <line x1="6" y1="312" x2="336" y2="312" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.5" />
+            <text x="310" y="67" class="marker">325</text>
+            <text x="310" y="127" class="marker">300</text>
+            <text x="310" y="187" class="marker">275</text>
+            <text x="310" y="247" class="marker">250</text>
+            <text x="310" y="307" class="marker">225</text>
+            <text x="310" y="367" class="marker">200</text>
         </g>
         <g id="shots">
-            <use xlink:href="#ball" transform="translate(68,170) scale(1.0)" />
+            <!--<use xlink:href="#ball" transform="translate(68,170) scale(1.0)" />-->
         </g>
     </svg>
-    <p class="text-center">{{ shot.resultText }}</p>
 </div>

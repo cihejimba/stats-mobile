@@ -1,25 +1,42 @@
 statracker.controller('ApproachShotController', [
     '$state',
+    '$scope',
     'roundService',
     'userData',
-    function ($state, roundService, userData) {
+    function ($state, $scope, roundService, userData) {
 
         var vm = this;
 
-        vm.clubs = userData.clubs;
-
-        if (!vm.round) {
-            vm.round = roundService.getCurrent($state.params.id);
-        }
-
-        if (!vm.shot) {
-            vm.shot = vm.round.approachShots[$state.params.hole - 1];
-        }
-
         vm.gotoSummary = function () {
-            var params = $state.params;
-            params.hole = undefined;
-            $state.go('^.round-summary', params);
+            $state.go('^.round-summary');
         };
+
+        $scope.$on('hole_change', function(e, hole) {
+            roundService.update(vm.round).then(function () {
+                roundService.setCurrentHole(hole);
+                vm.shot = vm.round.approachShots[hole - 1];
+            });
+        });
+
+        $scope.$on('$ionicView.loaded', function () {
+            vm.clubs = userData.clubs.reduce(function(memo, club) {
+                if (club.approachFlag) { // filter
+                    memo.push({ // map
+                        key: club.clubKey,
+                        name: club.club.clubName
+                    });
+                }
+                return memo;
+            }, []);
+        });
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.round = roundService.getCurrentRound();
+            vm.shot = vm.round.approachShots[roundService.getCurrentHole() - 1];
+        });
+
+        $scope.$on('$ionicView.beforeLeave', function () {
+            roundService.update(vm.round);
+        });
     }
 ]);

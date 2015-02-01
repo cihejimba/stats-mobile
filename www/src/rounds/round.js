@@ -2,30 +2,27 @@
 
     var importRound, exportRound, round;
 
-    importRound = function (r) {
+    importRound = function (self, r) {
         var hole;
 
-        this.key = r.key;
-        this.datePlayed = r.roundDate;
-        this.courseKey = r.courseKey;
-        this.holes = r.holesCount;
-        this.score = r.scoreNumber;
-        this.greens = r.greensNumber;
-        this.fairways = r.fairwaysNumber;
-        this.penalties = r.penaltiesNumber;
-        this.sandSaveAttempts = r.sandSaveAttemptsNumber;
-        this.sandSaveConversions = r.sandSaveConvertedNumber;
-        this.upAndDownAttempts = r.upAndDownAttemptsNumber;
-        this.upAndDownConversions = r.upAndDownConvertedNumber;
+        self.key = r.key;
+        self.datePlayed = r.roundDate;
+        self.courseKey = r.courseKey;
+        self.courseDescription = r.course.courseDescription;
+        self.holes = r.holesCount;
+        self.score = r.scoreNumber;
+        self.greens = r.greensNumber;
+        self.fairways = r.fairwaysNumber;
+        self.penalties = r.penaltiesNumber;
 
-        this.teeShots = [];
-        this.approachShots = [];
-        this.shortGameShots = [];
+        self.teeShots = [];
+        self.approachShots = [];
+        self.shortGameShots = [];
 
         for (hole = 0; hole < r.holesCount; hole++) {
-            this.teeShots.push(new st.TeeShot(hole+1, r.teeShots[hole]));
-            this.approachShots.push(new st.ApproachShot(hole+1, r.approachShots[hole]));
-            this.shortGameShots.push(new st.ShortGame(hole+1, r.shortGameShots[hole]));
+            self.teeShots.push(new st.TeeShot(hole+1, r.teeShots[hole]));
+            self.approachShots.push(new st.ApproachShot(hole+1, r.approachShots[hole]));
+            self.shortGameShots.push(new st.ShortGame(hole+1, r.shortGameShots[hole]));
         }
     };
 
@@ -33,21 +30,17 @@
         var hole;
 
         if (api) {
-            importRound(api);
+            importRound(this, api);
         } else {
             this.key = undefined;
             this.courseKey = course.key;
-            this.courseName = course.description;
+            this.courseDescription = course.courseDescription;
             this.datePlayed = datePlayed;
             this.holes = holes;
             this.score = undefined;
             this.greens = undefined;
             this.fairways = undefined;
-            this.penalties = undefined;
-            this.sandSaveAttempts = undefined;
-            this.sandSaveConversions = undefined;
-            this.upAndDownAttempts = undefined;
-            this.upAndDownConversions = undefined;
+            this.penalties = undefined; //TODO: change to total fairways
 
             this.teeShots = [];
             this.approachShots = [];
@@ -71,10 +64,6 @@
             greensNumber: this.greens,
             fairwaysNumber: this.fairways,
             penaltiesNumber: this.penalties,
-            sandSaveAttemptsNumber: this.sandSaveAttempts,
-            sandSaveConvertedNumber: this.sandSaveConversions,
-            upAndDownAttemptsNumber: this.upAndDownAttempts,
-            upAndDownConvertedNumber: this.upAndDownConversions,
             teeShots: [],
             approachShots: [],
             shortGameShots: []

@@ -13,7 +13,7 @@ statracker.factory('accountService', [
 
         var login = function (credentials) {
             var deferred = $q.defer(),
-                data = 'grant_type=password&username=' + credentials.email + '&password=' + credentials.password + '&client_id=' + clientId;
+                data = 'grant_type=password&username=' + encodeURIComponent(credentials.email) + '&password=' + encodeURIComponent(credentials.password) + '&client_id=' + encodeURIComponent(clientId);
 
             $http({
                 url: apiUrl + 'token',
@@ -46,12 +46,11 @@ statracker.factory('accountService', [
 
         var logout = function () {
             if (user.authenticated) {
-                $http.post(apiUrl + 'api/account/logout').then(function () {
-                    localStore.remove('access_token');
-                    localStore.remove('refresh_token');
-                    localStore.remove('user');
-                });
+                $http.post(apiUrl + 'api/account/logout');
             }
+            localStore.remove('access_token');
+            localStore.remove('refresh_token');
+            localStore.remove('user');
             user = {
                 authenticated: false
             };
@@ -82,7 +81,7 @@ statracker.factory('accountService', [
 
         var refresh = function () {
             var token = localStore.get('refresh_token'),
-                data = 'grant_type=refresh_token&refresh_token=' + token + '&client_id=' + clientId;
+                data = 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(token) + '&client_id=' + encodeURIComponent(clientId);
             if (token) {
                 return $http({
                     url: apiUrl + 'token',

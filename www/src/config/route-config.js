@@ -88,8 +88,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/round-summary.html',
-                        controller: 'RoundController'
+                        templateUrl: 'src/rounds/round-summary-page.html'
                     }
                 }
             })
@@ -98,8 +97,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/teeball-summary.html',
-                        controller: 'RoundController'
+                        templateUrl: 'src/rounds/tee/tee-summary-page.html'
                     }
                 }
             })
@@ -108,8 +106,7 @@ statracker.config([
                 params: {id: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/approach-summary.html',
-                        controller: 'RoundController'
+                        templateUrl: 'src/rounds/approach/approach-summary-page.html'
                     }
                 }
             })
@@ -118,7 +115,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/teeball.html',
+                        templateUrl: 'src/rounds/tee/tee-page.html',
                         controller: 'TeeShotController as ctrl',
                         resolve: {
                             userData: ['userDataService', function(userDataService) {
@@ -133,7 +130,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/approach.html',
+                        templateUrl: 'src/rounds/approach/approach-page.html',
                         controller: 'ApproachShotController as ctrl',
                         resolve: {
                             userData: ['userDataService', function(userDataService) {
@@ -148,8 +145,7 @@ statracker.config([
                 params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
-                        templateUrl: 'src/rounds/shortgame.html',
-                        controller: 'HoleController'
+                        templateUrl: 'src/rounds/shortgame/shortgame-page.html'
                     }
                 }
             })

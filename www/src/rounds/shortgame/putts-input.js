@@ -1,26 +1,28 @@
 statracker.directive('puttsInput', [
-    '$parse',
-    function ($parse) {
+    function () {
         return {
             restrict: 'AE',
             templateUrl: 'src/rounds/shortgame/putts-input.html',
             replace: true,
-            require: 'ngModel',
-            link: function (scope, element, attributes, controller) {
+            scope: {
+                shot: '='
+            },
+            link: function (scope, elem, attrs) {
 
-                var putts = element.find('circle'),
-                    initialValue = $parse(attributes.ngModel)(scope);
+                var putts = elem.find('circle');
 
                 var clearPutts = function () {
-                    putts.forEach(function (putt) {
+                    angular.forEach(putts, function (p) {
+                        var putt = angular.element(p);
                         if (!putt.hasClass('unselected')) putt.addClass('unselected');
                         if (putt.hasClass('selected')) putt.removeClass('selected');
                     });
                 };
 
                 var showPutt = function(value) {
-                    putts.forEach(function (putt) {
-                        var puttValue = parseInt(putt.getAttribute(('data-value')));
+                    angular.forEach(putts, function (p) {
+                        var puttValue = parseInt(p.getAttribute(('data-value'))),
+                            putt = angular.element(p);
                         if (puttValue === value) {
                             if (!putt.hasClass('selected')) putt.addClass('selected');
                             if (putt.hasClass('unselected')) putt.removeClass('unselected');
@@ -31,17 +33,24 @@ statracker.directive('puttsInput', [
                     });
                 };
 
-                if (initialValue !== undefined) {
-                    showPutt(initialValue);
-                } else {
-                    clearPutts();
-                }
+                var bindValue = function () {
+                    if (scope.shot && scope.shot.putts != null) {
+                        showPutt(scope.shot.putts);
+                    } else {
+                        clearPutts();
+                    }
+                };
+
+                bindValue();
+
+                scope.$watch('shot', function () {
+                    bindValue();
+                });
 
                 putts.bind('click', function () {
                     var value = parseInt(this.getAttribute(('data-value')));
-                    controller.$setViewValue(value);
-                    showPutt(value);
-                    scope.$apply();
+                    scope.shot.putts = value;
+                    bindValue();
                 });
             }
         };

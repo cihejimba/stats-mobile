@@ -24,8 +24,8 @@ statracker.controller('CreateRoundController', [
 
         vm.startRound = function () {
             var newRound = roundService.create(vm.round.course, vm.round.date, vm.round.holes);
-            roundService.update(newRound, true).then(function (r) {
-                $state.go('^.round-detail-teeball({id: ' + r.key + ', hole: 1})');
+            roundService.update(newRound, true).then(function () {
+                $state.go('^.round-detail-teeball');
             });
         };
 

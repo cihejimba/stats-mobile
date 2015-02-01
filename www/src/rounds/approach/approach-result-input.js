@@ -10,10 +10,10 @@ statracker.directive('approachResultInput', [
             link: function (scope, elem) {
 
                 var green = elem.find('path'),
-                    svg = document.querySelector('svg'),
+                    svg = elem[0].querySelector('svg'),
                     xmlns = 'http://www.w3.org/2000/svg',
                     xlinkns = 'http://www.w3.org/1999/xlink',
-                    shots = document.getElementById('shots');
+                    shots = elem[0].querySelector('#shots');
 
                 var point = svg.createSVGPoint();
 
@@ -24,6 +24,10 @@ statracker.directive('approachResultInput', [
                 };
 
                 var placeBall = function (x, y, clear) {
+                    if (x == null || y == null) {
+                        //log warning
+                        return
+                    }
                     var use = document.createElementNS(xmlns, 'use'),
                         transform = 'translate(' + x + ',' + y + ') scale(1.0)';
 
@@ -46,8 +50,9 @@ statracker.directive('approachResultInput', [
                 };
 
                 scope.$watch('shot', function () {
-                    if (scope.shot.result && scope.shot.result >= 0) {
-                        scope.resultText = scope.shot.getResultText();
+                    clearBalls();
+                    if (scope.shot.result != null && scope.shot.result >= 0) {
+                        //scope.resultText = scope.shot.getResultText();
                         placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
                     }
                 });
@@ -57,9 +62,7 @@ statracker.directive('approachResultInput', [
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
                     scope.shot.coordinates.x = cp.x;
                     scope.shot.coordinates.y = cp.y;
-                    scope.resultText = scope.shot.getResultText();
                     placeBall(cp.x, cp.y, true);
-                    //scope.$apply();
                 });
             }
         };

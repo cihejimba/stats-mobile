@@ -12,3 +12,7 @@ input.my-courses[readonly]{
     background-color: transparent;
     cursor: text;
 }
+
+.attempt-container {
+    width: 120px;
+}

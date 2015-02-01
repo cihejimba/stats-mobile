@@ -15,13 +15,19 @@ statracker.factory('roundService', [
             return currentRound;
         };
 
-        var getRound = function (key) {
-            var deferred = $q.defer();
-            $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
-                currentRound = new statracker.Round(null, null, null, response.data);
-                localStore.set('round', currentRound);
-                deferred.resolve(currentRound);
-            });
+        var loadRound = function (key) {
+            var deferred = $q.defer(),
+                round = getCurrentRound();
+
+            if (round && round.key === key) {
+                deferred.resolve(round);
+            } else {
+                $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
+                    currentRound = new statracker.Round(null, null, null, response.data);
+                    localStore.set('round', currentRound);
+                    deferred.resolve(currentRound);
+                });
+            }
             return deferred.promise;
         };
 
@@ -74,9 +80,16 @@ statracker.factory('roundService', [
         };
 
         return {
-            getCurrent: getCurrentRound,
-            getOne: getRound,
+            loadRound: loadRound,
             getAll: getRounds,
+            getCurrentRound: getCurrentRound,
+            setCurrentHole: function (hole) {
+                localStore.set('hole', hole);
+            },
+            getCurrentHole: function () {
+                var hole = localStore.get('hole');
+                return (!hole ? 1 : hole);
+            },
             create: createRound,
             update: updateRound,
             complete: completeRound,

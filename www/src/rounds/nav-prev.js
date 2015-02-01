@@ -11,16 +11,6 @@ statracker.directive('navPrev', [
                     if (event.gesture.direction === 'right') {
                         event.preventDefault();
                         $ionicViewSwitcher.nextDirection('back');
-                        //very specific to hole by hole navigation
-                        if ($state.is('tab.round-detail-teeball'))
-                        {
-                            $ionicViewSwitcher.nextDirection('swap');
-                            if ($state.params.hole !== undefined && $state.params.hole == 1) { // jshint ignore:line
-                                $state.params.hole = 3;
-                            } else {
-                                $state.params.hole -= 1;
-                            }
-                        }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }
                 }, elem);

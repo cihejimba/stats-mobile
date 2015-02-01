@@ -10,10 +10,10 @@ statracker.directive('teeResultInput', [
             link: function (scope, elem) {
 
                 var fairway = elem.find('rect'),
-                    svg = document.querySelector('svg'),
+                    svg = elem[0].querySelector('svg'),
                     xmlns = 'http://www.w3.org/2000/svg',
                     xlinkns = 'http://www.w3.org/1999/xlink',
-                    shots = document.getElementById('shots');
+                    shots = elem[0].querySelector('#shots');
 
                 var point = svg.createSVGPoint();
 
@@ -24,6 +24,10 @@ statracker.directive('teeResultInput', [
                 };
 
                 var placeBall = function (x, y, clear) {
+                    if (x == null || y == null) {
+                        //log warning
+                        return
+                    }
                     var use = document.createElementNS(xmlns, 'use'),
                         transform = 'translate(' + x + ',' + y + ') scale(1.0)';
 
@@ -45,9 +49,33 @@ statracker.directive('teeResultInput', [
                     }
                 };
 
+                var calculateDistance = function (resultId) {
+                    var distanceKey = Math.floor(resultId / 10) - 1,
+                        baseDistance = 200;
+                    return baseDistance + (5 * distanceKey);
+                };
+
+                var calculateCoordinates = function (distance) {
+                    var x = scope.shot.coordinates && scope.shot.coordinates.x ? scope.shot.coordinates.x : 170;
+                    var y = 372 - ((distance - 200) * 2.4);
+                    return {
+                        x: x,
+                        y: y
+                    };
+                };
+
+                //TODO: this should be a one-time thing - how to ensure that?
                 scope.$watch('shot', function () {
-                    if (scope.shot.result && scope.shot.result >= 0) {
-                        scope.resultText = scope.shot.getResultText();
+                    clearBalls();
+                    if (scope.shot.result != null && scope.shot.result >= 0) {
+                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    }
+                });
+
+                scope.$watch('shot.distance', function (newValue, oldValue) {
+                    if (newValue === undefined || newValue === oldValue) return;
+                    if (Number(newValue) > 200) {
+                        scope.shot.coordinates = calculateCoordinates(Number(newValue));
                         placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
                     }
                 });
@@ -57,9 +85,8 @@ statracker.directive('teeResultInput', [
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
                     scope.shot.coordinates.x = cp.x;
                     scope.shot.coordinates.y = cp.y;
-                    scope.resultText = scope.shot.getResultText();
+                    scope.$emit('tee_shot_distance', calculateDistance(scope.shot.result));
                     placeBall(cp.x, cp.y, true);
-                    //scope.$apply();
                 });
             }
         };

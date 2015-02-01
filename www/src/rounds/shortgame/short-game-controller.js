@@ -1,22 +1,32 @@
 statracker.controller('ShortGameController', [
     '$state',
+    '$scope',
     'roundService',
-    function ($state, roundService) {
+    function ($state, $scope, roundService) {
 
         var vm = this;
 
-        if (!vm.round) {
-            vm.round = roundService.getCurrent($state.params.id);
-        }
-
-        if (!vm.shot) {
-            vm.shot = vm.round.approachShots[$state.params.hole - 1];
-        }
+        //vm.round = roundService.getCurrentRound();
+        //vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
 
         vm.gotoSummary = function () {
-            var params = $state.params;
-            params.hole = undefined;
-            $state.go('^.round-summary', params);
+            $state.go('^.round-summary');
         };
+
+        $scope.$on('hole_change', function(e, hole) {
+            roundService.update(vm.round).then(function () {
+                roundService.setCurrentHole(hole);
+                vm.shot = vm.round.shortGameShots[hole - 1];
+            });
+        });
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.round = roundService.getCurrentRound();
+            vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+        });
+
+        $scope.$on('$ionicView.beforeLeave', function () {
+            roundService.update(vm.round);
+        });
     }
 ]);
