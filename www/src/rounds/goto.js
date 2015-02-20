@@ -3,12 +3,12 @@ statracker.directive('goto', [
     function ($ionicPopover) {
         return {
             restrict: 'AE',
-            template: '<button class="button button-small ion-ios7-flag" ng-click="open($event)"> {{hole}}</button>',
+            template: '<button class="button button-small button-clear" ng-click="open($event)">Hole {{hole}}</button>',
             scope: {
                 hole: '=',
                 holes: '='
             },
-            link: function(scope) {
+            link: function(scope, elem) {
 
                 $ionicPopover.fromTemplateUrl('src/rounds/goto-popover.html', {
                     scope: scope

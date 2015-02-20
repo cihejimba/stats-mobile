@@ -1,0 +1,30 @@
+<ion-modal-view>
+	<ion-header-bar class="bar-calm">
+        <button class="button button-small button-clear" ng-click="ctrl.hideModal()">Cancel</button>
+		<h1 class="title">Add Course</h1>
+	</ion-header-bar>
+	<ion-content>
+        <div class="row">
+            <div class="col">
+                <holes-select ng-model="course.holes"></holes-select>
+            </div>
+        </div>
+        <ion-list class="list list-inset">
+            <label class="item item-input">
+                <span class="input-label">Description</span>
+                <input type="text" ng-model="course.description" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Tees</span>
+                <input type="text" ng-model="course.tees" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Par</span>
+                <input type="tel" ng-model="course.par" />
+            </label>
+            <label class="item">
+                <button class="button button-block button-balanced" ng-click="ctrl.newCourse()">Add</button>
+            </label>
+        </ion-list>
+	</ion-content>
+</ion-modal-view>

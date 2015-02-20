@@ -51,8 +51,8 @@
             this.yardage = apiShot.yardageNumber;
             this.result = apiShot.resultId;
             this.coordinates = {
-                x: apiShot.resultXNumber,
-                y: apiShot.resultYNumber
+                x: apiShot.resultX,
+                y: apiShot.resultY
             };
         } else {
             this.key = undefined;
@@ -63,15 +63,16 @@
             this.coordinates = undefined;
         }
     },
-    toApi = function () {
+    toApi = function (parentKey) {
         return {
             key: this.key,
+            roundKey: parentKey,
             holeNumber: this.hole,
             clubKey: this.clubKey,
             yardageNumber: this.yardage,
             resultId: this.result,
-            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
-            resultYNumber: this.coordinates ? this.coordinates.y : undefined
+            resultX: this.coordinates ? this.coordinates.x : undefined,
+            resultY: this.coordinates ? this.coordinates.y : undefined
         };
     },
     resultText = function () {

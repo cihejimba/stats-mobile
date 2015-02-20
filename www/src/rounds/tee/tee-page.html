@@ -8,14 +8,14 @@
     <ion-content scroll="false" has-bouncing="false" hole-next="^.round-detail-approach" hole-prev="^.round-detail-shortgame">
         <div class="row">
             <div class="col">
-                <tee-result-input shot="ctrl.shot"></tee-result-input>
+                <tee-result-input shot="ctrl.shot" round="ctrl.round"></tee-result-input>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <label class="item item-input">
                     <span class="input-label">Distance</span>
-                    <input type="tel" ng-model="ctrl.shot.distance" />
+                    <input type="tel" ng-model="ctrl.shot.distance" ng-disabled="ctrl.round.isComplete" />
                 </label>
             </div>
         </div>
@@ -25,7 +25,7 @@
                     <div class="input-label">
                         Club
                     </div>
-                    <select ng-model="ctrl.shot.clubKey" ng-options="club.key as club.name for club in ctrl.clubs">
+                    <select ng-model="ctrl.shot.clubKey" ng-options="club.key as club.name for club in ctrl.clubs" ng-disabled="ctrl.round.isComplete">
                     </select>
                 </label>
             </div>

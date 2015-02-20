@@ -18,6 +18,8 @@ var jshint        = require('gulp-jshint');
 var replace       = require('gulp-replace');
 var args          = require('yargs').argv;
 var fs            = require('fs');
+var inject        = require('gulp-inject');
+var print         = require('gulp-print');
 
 var paths = {
   sass: ['./scss/**/*.scss'],
@@ -44,6 +46,7 @@ gulp.task('constants', function () {
     return gulp.src(paths.app)
         //.pipe(replace('/@@\w+/', function (match, p1) { return settings[p1]; })) TODO: make a regex work
         .pipe(replace('@@apiUrl', settings.apiUrl))
+        .pipe(replace('@@tokenUrl', settings.tokenUrl))
         .pipe(replace('@@clientId', settings.clientId))
         .pipe(gulp.dest('www/dist'));
 });
@@ -56,6 +59,13 @@ gulp.task('bundle', function() {
       .pipe(rename({ extname: '.min.js' }))
       .pipe(uglify())
       .pipe(gulp.dest('www/dist'));
+});
+
+gulp.task('inject-src', function () {
+    var target = gulp.src('./www/index.html');
+    var sources = gulp.src(['./www/src/account/**/*.js','./www/src/components/**/*.js','./www/src/config/**/*.js','./www/src/rounds/**/*.js','./www/src/stats/**/*.js'], {read: false, cwd: __dirname});
+    //sources.pipe(print());
+    return target.pipe(inject(sources, {relative: true, addRootSlash: false})).pipe(gulp.dest('./www'));
 });
 
 gulp.task('lint', function() {

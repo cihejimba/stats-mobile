@@ -28,21 +28,36 @@ statracker.config([
                 }
             })
 
-            .state('tab.settings', {
-                url: '/settings',
+            .state('tab.user', {
+                url: '/user',
                 views: {
                     'settings': {
-                        templateUrl: 'src/account/settings.html',
-                        controller: 'AccountController'
+                        templateUrl: 'src/account/user-page.html'
                     }
                 }
             })
-            .state('tab.preferences', {
-                url: '/preferences',
+            .state('tab.course-list', {
+                url: '/course-list',
                 views: {
                     'settings': {
-                        templateUrl: 'src/account/preferences.html',
-                        controller: 'PreferencesController'
+                        templateUrl: 'src/account/course-list-page.html',
+                        controller: 'CourseListController as vm',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
+                    }
+                }
+            })
+            .state('tab.course-detail', {
+                url: '/course-detail',
+                params: {
+                    key: 0
+                },
+                views: {
+                    'settings': {
+                        templateUrl: 'src/account/course-detail-page.html'
                     }
                 }
             })
@@ -57,6 +72,17 @@ statracker.config([
                                 return userDataService.loadUserData();
                             }]
                         }
+                    }
+                }
+            })
+            .state('tab.club-detail', {
+                url: '/club-detail',
+                params: {
+                    club: {}
+                },
+                views: {
+                    'settings': {
+                        templateUrl: 'src/account/club-detail-page.html'
                     }
                 }
             })
@@ -85,34 +111,14 @@ statracker.config([
             })
             .state('tab.round-summary', {
                 url: '/round-summary',
-                params: {id: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/round-summary-page.html'
                     }
                 }
             })
-            .state('tab.teeball-summary', {
-                url: '/teeball-summary',
-                params: {id: 0},
-                views: {
-                    'rounds': {
-                        templateUrl: 'src/rounds/tee/tee-summary-page.html'
-                    }
-                }
-            })
-            .state('tab.approach-summary', {
-                url: '/approach-summary',
-                params: {id: 0},
-                views: {
-                    'rounds': {
-                        templateUrl: 'src/rounds/approach/approach-summary-page.html'
-                    }
-                }
-            })
             .state('tab.round-detail-teeball', {
                 url: '/round-detail-teeball',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/tee/tee-page.html',
@@ -127,7 +133,6 @@ statracker.config([
             })
             .state('tab.round-detail-approach', {
                 url: '/round-detail-approach',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/approach/approach-page.html',
@@ -142,7 +147,6 @@ statracker.config([
             })
             .state('tab.round-detail-shortgame', {
                 url: '/round-detail-shortgame',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/shortgame/shortgame-page.html'
@@ -154,40 +158,7 @@ statracker.config([
                 url: '/stats',
                 views: {
                     'stats': {
-                        templateUrl: 'src/stats/stats.html',
-                        controller: 'StatsController'
-                    }
-                }
-            })
-            .state('tab.stats.overall', {
-                url: '/overall',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/overall.html'
-                    }
-                }
-            })
-            .state('tab.stats.teeball', {
-                url: '/teeball',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/teeball.html'
-                    }
-                }
-            })
-            .state('tab.stats.approach', {
-                url: '/approach',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/approach.html'
-                    }
-                }
-            })
-            .state('tab.stats.shortgame', {
-                url: '/shortgame',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/shortgame.html'
+                        templateUrl: 'src/stats/stats-page.html'
                     }
                 }
             });

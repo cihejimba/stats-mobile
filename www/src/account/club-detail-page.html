@@ -1,0 +1,42 @@
+<ion-view title="Club Details" ng-controller="ClubDetailController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear" ui-sref="^.my-bag">Back</button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear" ng-click="ctrl.saveClub()">Save</button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="list">
+            <div class="item item-divider item-balanced" ng-show="ctrl.userClub.key > 0">
+                {{ctrl.userClub.club.clubName}}
+            </div>
+            <div class="item" ng-show="!ctrl.userClub.key">
+                <label class="item-input item-select">
+                    <div class="input-label">
+                        Club
+                    </div>
+                    <select ng-model="ctrl.userClub.clubKey" ng-options="club.key as club.name for club in ctrl.clubs">
+                    </select>
+                </label>
+            </div>
+            <div class="item item-toggle">
+                Use for tee shots
+                <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="ctrl.userClub.teeballFlag">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="item item-toggle">
+                Use for approach shots
+                <label class="toggle toggle-balanced">
+                    <input type="checkbox" ng-model="ctrl.userClub.approachFlag">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

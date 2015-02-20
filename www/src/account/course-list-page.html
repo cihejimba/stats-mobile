@@ -1,0 +1,22 @@
+<ion-view view-title="My Courses">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear" ui-sref="^.user">Back</button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear" ui-sref="^.course-detail({ key: 0 })">New</button>
+    </ion-nav-buttons>
+    <ion-header-bar class="bar-energized bar-subheader">
+        <div class="buttons">
+            <button class="button button-clear" ng-click="vm.showDelete = !vm.showDelete">Delete</button>
+        </div>
+    </ion-header-bar>
+    <ion-content>
+        <ion-list show-delete="vm.showDelete" can-swipe="false">
+            <ion-item class="item-button-right item-icon-right" ng-repeat="course in vm.courses | orderBy : 'description'" ui-sref="^.course-detail({ key: course.key })">
+                {{ course.description }}
+                <i class="icon ion-ios7-arrow-forward"></i>
+                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteCourse(course)" ion-stop-event="click"></ion-delete-button>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>

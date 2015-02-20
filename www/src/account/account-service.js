@@ -4,8 +4,9 @@ statracker.factory('accountService', [
     'localStore',
     'jwtHelper',
     'apiUrl',
+    'tokenUrl',
     'clientId',
-    function ($http, $q, localStore, jwtHelper, apiUrl, clientId) {
+    function ($http, $q, localStore, jwtHelper, apiUrl, tokenUrl, clientId) {
 
         var user = {
                 authenticated: false
@@ -16,7 +17,7 @@ statracker.factory('accountService', [
                 data = 'grant_type=password&username=' + encodeURIComponent(credentials.email) + '&password=' + encodeURIComponent(credentials.password) + '&client_id=' + encodeURIComponent(clientId);
 
             $http({
-                url: apiUrl + 'token',
+                url: tokenUrl,
                 method: 'POST',
                 data: data,
                 skipAuthorization: true,
@@ -46,7 +47,7 @@ statracker.factory('accountService', [
 
         var logout = function () {
             if (user.authenticated) {
-                $http.post(apiUrl + 'api/account/logout');
+                $http.post(apiUrl + 'account/logout');
             }
             localStore.remove('access_token');
             localStore.remove('refresh_token');
@@ -60,7 +61,7 @@ statracker.factory('accountService', [
         var register = function (registration) {
             logout();
             return $http({
-                url: apiUrl + 'api/account/register',
+                url: apiUrl + 'account/register',
                 method: 'POST',
                 data: registration,
                 skipAuthorization: true
@@ -84,7 +85,7 @@ statracker.factory('accountService', [
                 data = 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(token) + '&client_id=' + encodeURIComponent(clientId);
             if (token) {
                 return $http({
-                    url: apiUrl + 'token',
+                    url: tokenUrl,
                     method: 'POST',
                     skipAuthorization: true,
                     data: data,

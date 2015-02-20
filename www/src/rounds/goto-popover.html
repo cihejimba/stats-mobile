@@ -1,49 +1,70 @@
-<ion-popover-view style="height: 320px">
+<ion-popover-view style="height: {{(holes === 9) ? 185 : 360}}px;">
     <ion-pane>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 320" preserveAspectRatio="xMinYMin meet">
-            <style type="text/css">
-                <![CDATA[
-                    .hole_nbr {fill: #000000; stroke: #000000; stroke-width: 0; font-size: 18px; font-family: Sans-serif; font-weight: bold; text-anchor: middle;}
-                ]]>
-            </style>
-            <g>
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="35" cy="34.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="90" cy="34.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="145" cy="34.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="35" cy="84.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="90" cy="84.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="145" cy="84.5" r="20" />
-                <circle r="20" cy="134.5" cx="35" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="134.5" cx="90" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="134.5" cx="145" stroke-width="1" stroke="#000000" fill="none" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="35" cy="184.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="90" cy="184.5" r="20" />
-                <circle fill="none" stroke="#000000" stroke-width="1" cx="145" cy="184.5" r="20" />
-                <circle r="20" cy="234.5" cx="35" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="234.5" cx="90" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="234.5" cx="145" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="284.5" cx="35" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="284.5" cx="90" stroke-width="1" stroke="#000000" fill="none" />
-                <circle r="20" cy="284.5" cx="145" stroke-width="1" stroke="#000000" fill="none" />
-                <text ng-click="goto(1)" x="35" y="41" class="hole_nbr">1</text>
-                <text ng-click="goto(2)" x="90" y="41" class="hole_nbr">2</text>
-                <text ng-click="goto(3)" x="145" y="41" class="hole_nbr">3</text>
-                <text ng-click="goto(4)" x="35" y="91" class="hole_nbr">4</text>
-                <text ng-click="goto(5)" x="90" y="91" class="hole_nbr">5</text>
-                <text ng-click="goto(6)" x="145" y="91" class="hole_nbr">6</text>
-                <text ng-click="goto(7)" x="35" y="141" class="hole_nbr">7</text>
-                <text ng-click="goto(8)" x="90" y="141" class="hole_nbr">8</text>
-                <text ng-click="goto(9)" x="145" y="141" class="hole_nbr">9</text>
-                <text ng-click="goto(10)" x="35" y="191" class="hole_nbr">10</text>
-                <text ng-click="goto(11)" x="90" y="191" class="hole_nbr">11</text>
-                <text ng-click="goto(12)" x="145" y="191" class="hole_nbr">12</text>
-                <text ng-click="goto(13)" x="35" y="241" class="hole_nbr">13</text>
-                <text ng-click="goto(14)" x="90" y="241" class="hole_nbr">14</text>
-                <text ng-click="goto(15)" x="145" y="241" class="hole_nbr">15</text>
-                <text ng-click="goto(16)" x="35" y="291" class="hole_nbr">16</text>
-                <text ng-click="goto(17)" x="90" y="291" class="hole_nbr">17</text>
-                <text ng-click="goto(18)" x="145" y="291" class="hole_nbr">18</text>
-            </g>
-        </svg>
+        <div class="row">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(1)">1</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(2)">2</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(3)">3</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(4)">4</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(5)">5</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(6)">6</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(7)">7</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(8)">8</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(9)">9</a>
+            </div>
+        </div>
+        <div class="row" ng-show="holes > 9">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(10)">10</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(11)">11</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(12)">12</a>
+            </div>
+        </div>
+        <div class="row" ng-show="holes > 9">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(13)">13</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(14)">14</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(15)">15</a>
+            </div>
+        </div>
+        <div class="row" ng-show="holes > 9">
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(16)">16</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(17)">17</a>
+            </div>
+            <div class="col">
+                <a class="button button-calm button-outline" ng-click="goto(18)">18</a>
+            </div>
+        </div>
     </ion-pane>
 </ion-popover-view>

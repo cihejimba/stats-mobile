@@ -5,7 +5,8 @@ statracker.directive('approachResultInput', [
             templateUrl: 'src/rounds/approach/approach-result-input.html',
             replace: true,
             scope: {
-                shot: '='
+                shot: '=',
+                round: '='
             },
             link: function (scope, elem) {
 
@@ -26,7 +27,7 @@ statracker.directive('approachResultInput', [
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
                         //log warning
-                        return
+                        return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
                         transform = 'translate(' + x + ',' + y + ') scale(1.0)';
@@ -50,16 +51,21 @@ statracker.directive('approachResultInput', [
                 };
 
                 scope.$watch('shot', function () {
-                    clearBalls();
-                    if (scope.shot.result != null && scope.shot.result >= 0) {
-                        //scope.resultText = scope.shot.getResultText();
-                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    if (scope.shot) {
+                        clearBalls();
+                        if (scope.shot.result != null && scope.shot.result >= 0) {
+                            placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                        }
                     }
                 });
 
                 green.bind('click', function (e) {
+                    if (scope.round && scope.round.isComplete) return;
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    if (!scope.shot.coordinates) {
+                        scope.shot.coordinates = {x:0,y:0};
+                    }
                     scope.shot.coordinates.x = cp.x;
                     scope.shot.coordinates.y = cp.y;
                     placeBall(cp.x, cp.y, true);

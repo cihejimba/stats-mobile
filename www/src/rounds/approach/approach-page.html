@@ -8,14 +8,14 @@
     <ion-content scroll="false" has-bouncing="false" hole-next="^.round-detail-shortgame" hole-prev="^.round-detail-teeball">
         <div class="row">
             <div class="col">
-                <approach-result-input shot="ctrl.shot"></approach-result-input>
+                <approach-result-input shot="ctrl.shot" round="ctrl.round"></approach-result-input>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <label class="item item-input">
                     <span class="input-label">Yardage</span>
-                    <input type="tel" ng-model="ctrl.shot.yardage" />
+                    <input type="tel" ng-model="ctrl.shot.yardage" ng-disabled="ctrl.round.isComplete" />
                 </label>
             </div>
         </div>
@@ -25,7 +25,7 @@
                     <div class="input-label">
                         Club
                     </div>
-                    <select ng-model="ctrl.shot.clubKey" ng-options="club.key as club.name for club in ctrl.clubs">
+                    <select ng-model="ctrl.shot.clubKey" ng-options="club.key as club.name for club in ctrl.clubs" ng-disabled="ctrl.round.isComplete">
                     </select>
                 </label>
             </div>

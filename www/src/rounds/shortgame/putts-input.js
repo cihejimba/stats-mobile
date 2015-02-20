@@ -5,17 +5,24 @@ statracker.directive('puttsInput', [
             templateUrl: 'src/rounds/shortgame/putts-input.html',
             replace: true,
             scope: {
-                shot: '='
+                shot: '=',
+                round: '='
             },
-            link: function (scope, elem, attrs) {
+            link: function (scope, elem) {
 
-                var putts = elem.find('circle');
+                var putts = elem.find('circle'),
+                    puttsText = elem.find('text');
 
                 var clearPutts = function () {
                     angular.forEach(putts, function (p) {
                         var putt = angular.element(p);
-                        if (!putt.hasClass('unselected')) putt.addClass('unselected');
-                        if (putt.hasClass('selected')) putt.removeClass('selected');
+                        if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                        if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttText = angular.element(txt);
+                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
+                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
                     });
                 };
 
@@ -24,11 +31,22 @@ statracker.directive('puttsInput', [
                         var puttValue = parseInt(p.getAttribute(('data-value'))),
                             putt = angular.element(p);
                         if (puttValue === value) {
-                            if (!putt.hasClass('selected')) putt.addClass('selected');
-                            if (putt.hasClass('unselected')) putt.removeClass('unselected');
+                            if (!putt.hasClass('putt-selected')) putt.addClass('putt-selected');
+                            if (putt.hasClass('putt-unselected')) putt.removeClass('putt-unselected');
                         } else {
-                            if (!putt.hasClass('unselected')) putt.addClass('unselected');
-                            if (putt.hasClass('selected')) putt.removeClass('selected');
+                            if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                            if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                        }
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttTextValue = parseInt(txt.textContent),
+                            puttText = angular.element(txt);
+                        if (puttTextValue === value) {
+                            if (!puttText.hasClass('putt-selected')) puttText.addClass('putt-selected');
+                            if (puttText.hasClass('putt-unselected')) puttText.removeClass('putt-unselected');
+                        } else {
+                            if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
+                            if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
                         }
                     });
                 };
@@ -48,7 +66,15 @@ statracker.directive('puttsInput', [
                 });
 
                 putts.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
                     var value = parseInt(this.getAttribute(('data-value')));
+                    scope.shot.putts = value;
+                    bindValue();
+                });
+
+                puttsText.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
+                    var value = parseInt(this.textContent);
                     scope.shot.putts = value;
                     bindValue();
                 });

@@ -1,0 +1,15 @@
+<ion-view view-title="{{user.name}}" ng-controller="UserController as ctrl">
+    <ion-content>
+        <ion-list class="list list-inset">
+            <label class="item">
+                <button class="button button-block button-balanced" ui-sref="^.my-bag">Clubs</button>
+            </label>
+            <label class="item">
+                <button class="button button-block button-balanced" ui-sref="^.course-list">Courses</button>
+            </label>
+            <label class="item">
+                <button class="button button-block button-stable" ng-click="ctrl.doLogout()">Log Out</button>
+            </label>
+        </ion-list>
+    </ion-content>
+</ion-view>

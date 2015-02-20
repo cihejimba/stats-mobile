@@ -5,32 +5,187 @@
     <ion-nav-buttons side="secondary">
         <button class="button button-small button-clear" ng-click="ctrl.gotoDetails()">Details</button>
     </ion-nav-buttons>
-    <ion-content scroll="false" has-bouncing="false" nav-next="^.teeball-summary">
-        <div class="row">
-            <div class="col">
-                {{ctrl.round.datePlayed | date: 'yyyy-MM-dd'}}: {{ctrl.round.courseDescription}}
+    <ion-content scroll="true" has-bouncing="false">
+        <ion-list>
+            <div class="card list" ng-hide="ctrl.isComplete()">
+                <div class="item item-divider text-center item-assertive">
+                    {{ctrl.round.courseDescription}}
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Date played:
+                    </div>
+                    <div class="col text-right">
+                        {{ctrl.round.datePlayed | date: 'yyyy-MM-dd'}}
+                    </div>
+                </div>
+                <label class="item item-input">
+                    <span class="input-label">Score ({{ctrl.round.holes}} holes)</span>
+                    <input type="tel" ng-model="ctrl.round.score" />
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Fairways hit</span>
+                    <input type="tel" ng-model="ctrl.round.fairways" />
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Greens in regulation</span>
+                    <input type="tel" ng-model="ctrl.round.greens" />
+                </label>
+                <label class="item item-input">
+                    <textarea placeholder="Notes" rows="4" ng-model="ctrl.round.notes" />
+                </label>
+                <div class="item item-button-right">
+                    Save and complete:
+                    <button class="button button-calm button-clear" ng-click="ctrl.saveRound(true)">
+                        <i class="icon ion-checkmark"></i>
+                    </button>
+                </div>
+                <div class="item item-button-right">
+                    Delete this round:
+                    <button class="button button-positive button-clear" ng-click="ctrl.deleteRound()">
+                        <i class="icon ion-ios7-trash"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="list">
-            <label class="item item-input">
-                <span class="input-label">Score ({{ctrl.round.holes}} holes)</span>
-                <input type="tel" ng-model="ctrl.round.score" readonly="ctrl.round.complete" />
-            </label>
-            <label class="item item-input">
-                <span class="input-label">Fairways hit</span>
-                <input type="tel" ng-model="ctrl.round.fairways" readonly="ctrl.round.complete" /> of <input type="tel" ng-model="ctrl.round.penalties" readonly="ctrl.round.complete" />
-            </label>
-            <label class="item item-input">
-                <span class="input-label">Greens in regulation</span>
-                <input type="tel" ng-model="ctrl.round.greens" readonly="ctrl.round.complete" />
-            </label>
-            <div class="item item-button-right">
-                Mark this round complete
-                <button class="button button-positive" ng-click="ctrl.completeRound()">
-                    <i class="icon ion-checkmark"></i>
-                </button>
+            <div class="card list" ng-show="ctrl.isComplete()">
+                <div class="item item-divider text-center item-assertive">
+                    {{ctrl.round.courseDescription}}
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Date played:
+                    </div>
+                    <div class="col text-right">
+                        {{ctrl.round.datePlayed | date: 'yyyy-MM-dd'}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        {{ctrl.round.holes}} hole score:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.round.score}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Fairways hit:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.round.fairways}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Greens in regulation:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.round.greens}}
+                    </div>
+                </div>
+                <div class="item item-text-wrap row">
+                    Notes: {{ctrl.round.notes}}
+                </div>
+                <div class="item item-button-right" ng-show="ctrl.round.isComplete">
+                    Re-edit this round:
+                    <button class="button button-calm button-clear" ng-click="ctrl.saveRound(false)">
+                        <i class="icon ion-ios7-undo"></i>
+                    </button>
+                </div>
             </div>
-            <button class="button button-full button-positive" ng-click="ctrl.gotoDetails()">Enter Details</button>
-        </div>
+            <div class="card" ng-show="ctrl.hasDrivingStats()">
+                <div class="item item-divider item-assertive">
+                    Tee Shot Results
+                </div>
+                <div class="item">
+                    <tee-result-summary round="ctrl.round"></tee-result-summary>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Average distance:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.driving | number:0}}
+                    </div>
+                </div>
+            </div>
+            <div class="card" ng-show="ctrl.hasApproachStats()">
+                <div class="item item-divider item-assertive">
+                    Approach Shot Results
+                </div>
+                <div class="item">
+                    <approach-result-summary round="ctrl.round"></approach-result-summary>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Average yardage:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.approachShots.averageYardage | number:0}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Average distance (ft):
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.approachShots.averageLeave | number:0}}
+                    </div>
+                </div>
+            </div>
+            <div class="card" ng-show="ctrl.hasShortgameStats()">
+                <div class="item item-divider item-assertive">
+                    Short Game Results
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Total putts:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.putting.putts}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Feet of putts made:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.putting.madePutts}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Up and downs:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.upAndDowns.conversions}}/{{ctrl.stats.upAndDowns.attempts}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Average leave (ft):
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.upAndDowns.averageLeave | number:1}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Sand saves:
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.sandSaves.conversions}}/{{ctrl.stats.sandSaves.attempts}}
+                    </div>
+                </div>
+                <div class="item row">
+                    <div class="col">
+                        Average leave (ft):
+                    </div>
+                    <div class="col text-right round-stat">
+                        {{ctrl.stats.sandSaves.averageLeave | number:1}}
+                    </div>
+                </div>
+            </div>
+        </ion-list>
     </ion-content>
 </ion-view>

@@ -1,0 +1,52 @@
+<ion-view title="Course Detail" ng-controller="CourseDetailController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear" ui-sref="^.course-list">Back</button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear" ng-click="ctrl.saveCourse()">Save</button>
+    </ion-nav-buttons>
+    <ion-content>
+        <ion-list class="list list-inset">
+            <label class="item item-input">
+                <span class="input-label">Description</span>
+                <input type="text" ng-model="ctrl.course.courseDescription" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Tees</span>
+                <input type="text" ng-model="ctrl.course.teesName" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Holes</span>
+                <input type="tel" ng-model="ctrl.course.holesNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Par</span>
+                <input type="tel" ng-model="ctrl.course.parNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Yardage</span>
+                <input type="tel" ng-model="ctrl.course.yardageNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Slope</span>
+                <input type="tel" ng-model="ctrl.course.slopeNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Rating</span>
+                <input type="tel" ng-model="ctrl.course.ratingNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Par 3s</span>
+                <input type="tel" ng-model="ctrl.course.parThreeNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Par 4s</span>
+                <input type="tel" ng-model="ctrl.course.parFourNumber" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Par 5s</span>
+                <input type="tel" ng-model="ctrl.course.parFiveNumber" />
+            </label>
+        </ion-list>
+    </ion-content>
+</ion-view>

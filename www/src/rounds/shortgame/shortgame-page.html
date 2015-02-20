@@ -6,27 +6,39 @@
         <goto hole="ctrl.shot.hole" holes="ctrl.round.holes"></goto>
     </ion-nav-buttons>
     <ion-content scroll="false" has-bouncing="false" hole-next="^.round-detail-teeball" hole-prev="^.round-detail-approach">
-        <div class="list">
+        <ion-list>
             <label class="item item-input">
-                <span class="input-label">Starting distance</span>
-                <input type="tel" ng-model="ctrl.shot.initialPuttLength" />
+                <span class="input-label">Starting distance:</span>
+                <input type="tel" ng-model="ctrl.shot.initialPuttLength" ng-disabled="ctrl.round.isComplete" />
             </label>
             <label class="item item-input">
-                <span class="input-label">Final putt length</span>
-                <input type="tel" ng-model="ctrl.shot.puttMadeLength" />
+                <span class="input-label">Final putt length:</span>
+                <input type="tel" ng-model="ctrl.shot.puttMadeLength" ng-disabled="ctrl.round.isComplete" />
             </label>
-            <label class="item item-input item-stacked-label">
-                <span class="input-label">Putts</span>
-            </label>
-            <putts-input shot="ctrl.shot"></putts-input>
-            <label class="item item-input item-stacked-label">
-                <span class="input-label">Up and down</span>
-            </label>
-            <attempt-input flag="ctrl.shot.upAndDown"></attempt-input>
-            <label class="item item-input item-stacked-label">
-                <span class="input-label">Sand save</span>
-            </label>
-            <attempt-input flag="ctrl.shot.sandSave"></attempt-input>
-        </div>
+            <div class="item row">
+                <div class="col col-25">
+                    <span class="input-label">Putts:</span>
+                </div>
+                <div class="col col-75">
+                    <putts-input shot="ctrl.shot" round="ctrl.round"></putts-input>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col">
+                    <span class="input-label">Up and down:</span>
+                </div>
+                <div class="col">
+                    <attempt-input flag="ctrl.shot.upAndDown" round="ctrl.round"></attempt-input>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col">
+                    <span class="input-label">Sand save:</span>
+                </div>
+                <div class="col">
+                    <attempt-input flag="ctrl.shot.sandSave" round="ctrl.round"></attempt-input>
+                </div>
+            </div>
+        </ion-list>
     </ion-content>
 </ion-view>

@@ -1,5 +1,0 @@
-statracker.controller('PreferencesController', [
-    function () {
-
-    }
-]);

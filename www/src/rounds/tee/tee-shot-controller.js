@@ -36,8 +36,14 @@ statracker.controller('TeeShotController', [
         });
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            vm.round = roundService.getCurrentRound();
-            vm.shot = vm.round.teeShots[roundService.getCurrentHole() - 1];
+            roundService.getCurrentRound().then(function (round) {
+                vm.round = round;
+                vm.shot = vm.round.teeShots[roundService.getCurrentHole() - 1];
+            },
+            function () {
+                console.log('failed to get the current round - redirecting to rounds list');
+                $state.go('^.rounds');
+            });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {

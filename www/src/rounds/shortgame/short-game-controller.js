@@ -6,9 +6,6 @@ statracker.controller('ShortGameController', [
 
         var vm = this;
 
-        //vm.round = roundService.getCurrentRound();
-        //vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
-
         vm.gotoSummary = function () {
             $state.go('^.round-summary');
         };
@@ -21,8 +18,14 @@ statracker.controller('ShortGameController', [
         });
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            vm.round = roundService.getCurrentRound();
-            vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+            roundService.getCurrentRound().then(function (round) {
+                    vm.round = round;
+                    vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+                },
+                function () {
+                    console.log('failed to get the current round - redirecting to rounds list');
+                    $state.go('^.rounds');
+                });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {

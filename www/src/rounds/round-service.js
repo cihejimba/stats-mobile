@@ -3,41 +3,50 @@ statracker.factory('roundService', [
     '$q',
     'localStore',
     'apiUrl',
-    function ($http, $q, localStore, apiUrl) {
+    'accountService',
+    function ($http, $q, localStore, apiUrl, accountService) {
 
         var currentRound;
 
         var getCurrentRound = function () {
+            var deferred = $q.defer();
             if (currentRound) {
-                return currentRound;
+                deferred.resolve(currentRound);
+            } else {
+                var id = localStore.get('roundId');
+                if (id) {
+                    return loadRound(id);
+                } else {
+                    deferred.reject();
+                }
             }
-            currentRound = localStore.get('round');
-            return currentRound;
+            return deferred.promise;
         };
 
         var loadRound = function (key) {
             var deferred = $q.defer(),
-                round = getCurrentRound();
+            round; // = currentRound;
 
             if (round && round.key === key) {
                 deferred.resolve(round);
             } else {
-                $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
+                $http.get(apiUrl + 'rounds/' + key).then(function (response) {
                     currentRound = new statracker.Round(null, null, null, response.data);
-                    localStore.set('round', currentRound);
+                    localStore.set('roundId', currentRound.key);
                     deferred.resolve(currentRound);
                 });
             }
             return deferred.promise;
         };
 
-        var getRounds = function () {
-            return $http.get(apiUrl + '/api/rounds');
+        var getRounds = function (limit) {
+            if (!limit) limit = 20;
+            return $http.get(apiUrl + 'rounds?limit=' + limit);
         };
 
         var createRound = function (course, datePlayed, holes) {
             currentRound = new statracker.Round(course, datePlayed, holes);
-            localStore.set('round', currentRound);
+            localStore.set('roundId', currentRound.key);
             return currentRound;
         };
 
@@ -46,35 +55,39 @@ statracker.factory('roundService', [
             currentRound = round;
             if (doSynch) {
                 var postRound = currentRound.toApi();
+                postRound.userId = accountService.user().id;
                 if (currentRound.key && currentRound.key > 0) {
-                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, postRound).then(function () {
-                        localStore.set('round', currentRound);
+                    $http.put(apiUrl + 'rounds/' + currentRound.key, postRound).then(function () {
+                        localStore.set('roundId', currentRound.key);
                         deferred.resolve(currentRound);
                     });
                 } else {
-                    $http.post(apiUrl + '/api/rounds', postRound).then(function (response) {
+                    $http.post(apiUrl + 'rounds', postRound).then(function (response) {
                         currentRound.key = response.data.key; //TODO: import the response?
-                        localStore.set('round', currentRound);
+                        localStore.set('roundId', currentRound.key);
                         deferred.resolve(currentRound);
                     });
                 }
             } else {
-                localStore.set('round', currentRound);
+                localStore.set('roundId', currentRound.key);
                 deferred.resolve(currentRound);
             }
             return deferred.promise;
         };
 
         var completeRound = function (round) {
-            updateRound(round);
-            localStore.remove('round');
+            return updateRound(round, true).then(function () {
+                if (round.isComplete) {
+                    localStore.remove('roundId');
+                }
+            });
         };
 
         var deleteRound = function (key) {
-            $http.delete(apiUrl + '/api/rounds/' + key).then(function () {
+            return $http.delete(apiUrl + 'rounds/' + key).then(function () {
                 if (currentRound && currentRound.key === key) {
                     currentRound = undefined;
-                    localStore.remove('round');
+                    localStore.remove('roundId');
                 }
             });
         };

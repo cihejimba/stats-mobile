@@ -1,32 +1,32 @@
 <ion-view view-title="My Clubs">
     <ion-nav-buttons side="primary">
-        <button class="button button-small button-clear icon icon-left ion-ios7-arrow-back" ui-sref="^.settings">Back</button>
+        <button class="button button-small button-clear" ui-sref="^.user">Back</button>
     </ion-nav-buttons>
-    <ion-header-bar class="bar-balanced bar-subheader">
+    <ion-nav-buttons side="secondary">
+        <button class="button button-small button-clear" ui-sref="^.club-detail({})">Add</button>
+    </ion-nav-buttons>
+    <ion-header-bar class="bar-energized bar-subheader">
         <div class="buttons">
             <button class="button button-clear" ng-click="vm.showDelete = !vm.showDelete">Delete</button>
-            <button class="button button-clear" ng-click="vm.editClub()">Add</button>
         </div>
     </ion-header-bar>
     <ion-content>
-        <ion-list show-delete="vm.showDelete" show-reorder="vm.showReorder" can-swipe="true">
-            <div class="item item-divider">
+        <ion-list show-delete="vm.showDelete" can-swipe="false">
+            <div class="item item-divider item-balanced">
                 Tee Shot Clubs
             </div>
-            <ion-item ng-repeat="club in vm.clubs | filter : { teeballFlag : true } | orderBy : 'clubKey'">
-                {{ club.club.clubName }}
-                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteClub(club)"></ion-delete-button>
-                <ion-option-button class="button-assertive" ng-click="vm.editClub(club)">Edit</ion-option-button>
-                <ion-reorder-button class="ion-navicon" on-reorder="vm.moveClub(club, $fromIndex, $toIndex)"></ion-reorder-button>
+            <ion-item class="item-button-right item-icon-right" ng-repeat="userClub in vm.userClubs | filter : { teeballFlag : true } | orderBy : 'clubKey'" ui-sref="^.club-detail({ club: userClub })">
+                {{ userClub.club.clubName }}
+                <i class="icon ion-ios7-arrow-forward"></i>
+                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteClub(userClub)" ion-stop-event="click"></ion-delete-button>
             </ion-item>
-            <div class="item item-divider">
+            <div class="item item-divider item-balanced">
                 Approach Shot Clubs
             </div>
-            <ion-item ng-repeat="club in vm.clubs | filter : { approachFlag : true } | orderBy : 'clubKey' : true">
-                {{ club.club.clubName }}
-                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteClub(club)"></ion-delete-button>
-                <ion-option-button class="button-assertive" ng-click="vm.editClub(club)">Edit</ion-option-button>
-                <ion-reorder-button class="ion-navicon" on-reorder="vm.moveClub(club, $fromIndex, $toIndex)"></ion-reorder-button>
+            <ion-item class="item-button-right item-icon-right" ng-repeat="userClub in vm.userClubs | filter : { approachFlag : true } | orderBy : 'clubKey' : true" ui-sref="^.club-detail({ club: userClub })">
+                {{ userClub.club.clubName }}
+                <i class="icon ion-ios7-arrow-forward"></i>
+                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteClub(userClub)" ion-stop-event="click"></ion-delete-button>
             </ion-item>
         </ion-list>
     </ion-content>

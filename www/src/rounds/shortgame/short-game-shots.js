@@ -21,9 +21,10 @@
             this.holeOut = undefined;
         }
     },
-    toApi = function () {
+    toApi = function (parentKey) {
         return {
             key: this.key,
+            roundKey: parentKey,
             holeNumber: this.hole,
             initialLengthNumber: this.initialPuttLength,
             finalLengthNumber: this.puttMadeLength,

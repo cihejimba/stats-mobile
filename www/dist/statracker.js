@@ -1,6 +1,806 @@
 'use strict';
-statracker.controller('HomeController', [
-    function () {
+statracker.factory('accountService', [
+    '$http',
+    '$q',
+    'localStore',
+    'jwtHelper',
+    'apiUrl',
+    'tokenUrl',
+    'clientId',
+    function ($http, $q, localStore, jwtHelper, apiUrl, tokenUrl, clientId) {
+
+        var user = {
+                authenticated: false
+            };
+
+        var login = function (credentials) {
+            var deferred = $q.defer(),
+                data = 'grant_type=password&username=' + encodeURIComponent(credentials.email) + '&password=' + encodeURIComponent(credentials.password) + '&client_id=' + encodeURIComponent(clientId);
+
+            $http({
+                url: tokenUrl,
+                method: 'POST',
+                data: data,
+                skipAuthorization: true,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .success(function (response) {
+                //decode the token
+                var claims = jwtHelper.decodeToken(response.access_token);
+                //populate our user object
+                user.authenticated = true;
+                user.id = claims.nameid;
+                user.name = claims.sub; //TODO: would like to separate these, maybe?
+                user.email = claims.sub;
+                //store the tokens
+                localStore.set('user', user);
+                localStore.set('access_token', response.access_token);
+                localStore.set('refresh_token', response.refresh_token);
+                deferred.resolve();
+            })
+            .error(function (error) {
+                logout();
+                deferred.reject(error);
+            });
+
+            return deferred.promise;
+        };
+
+        var logout = function () {
+            if (user.authenticated) {
+                $http.post(apiUrl + 'account/logout');
+            }
+            localStore.remove('access_token');
+            localStore.remove('refresh_token');
+            localStore.remove('user');
+            user = {
+                authenticated: false
+            };
+            return user;
+        };
+
+        var register = function (registration) {
+            logout();
+            return $http({
+                url: apiUrl + 'account/register',
+                method: 'POST',
+                data: registration,
+                skipAuthorization: true
+            });
+        };
+
+        var getUser = function () {
+            if (user.id !== undefined) {
+                return user;
+            } else {
+                var storedUser = localStore.get('user');
+                if (storedUser !== undefined && storedUser !== null){
+                    user = storedUser;
+                }
+            }
+            return user;
+        };
+
+        var refresh = function () {
+            var token = localStore.get('refresh_token'),
+                data = 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(token) + '&client_id=' + encodeURIComponent(clientId);
+            if (token) {
+                return $http({
+                    url: tokenUrl,
+                    method: 'POST',
+                    skipAuthorization: true,
+                    data: data,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                })
+                .success(function (response) {
+                    localStore.set('access_token', response.access_token);
+                    localStore.set('refresh_token', response.refresh_token);
+                })
+                .error(function () {
+                    logout();
+                });
+            }
+        };
+
+        return {
+            login: login,
+            logout: logout,
+            register: register,
+            user: getUser,
+            refresh: refresh
+        };
+    }
+]);
+
+statracker.controller('ClubDetailController', [
+    '$state',
+    '$scope',
+    'userDataService',
+    function ($state, $scope, userDataService) {
+
+        var vm = this;
+
+        userDataService.getDefaultClubs().then(function (clubs) {
+            vm.clubs = clubs;
+        });
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.userClub = $state.params.club;
+        });
+
+        vm.saveClub = function () {
+            if (!vm.userClub.key) {
+                //the club child object is not populated by our api call
+                var club = vm.clubs.find(function (c) {
+                    return c.key === vm.userClub.clubKey;
+                });
+                vm.userClub.key = 0;
+                vm.userClub.club = {
+                    key: club.key,
+                    clubName: club.name
+                };
+                userDataService.addClub(vm.userClub).then(function () {
+                    $state.go('^.my-bag');
+                });
+            } else {
+                userDataService.updateClub(vm.userClub).then(function () {
+                    $state.go('^.my-bag');
+                });
+            }
+        };
+    }
+]);
+statracker.controller('CourseDetailController', [
+    '$state',
+    '$scope',
+    'userDataService',
+    function ($state, $scope, userDataService) {
+
+        var vm = this;
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            userDataService.getCourse( $state.params.key).then(function (response) {
+                vm.course = response.data;
+            });
+        });
+
+        vm.saveCourse = function () {
+            if (!vm.course.key) {
+                vm.course.key = 0;
+                userDataService.createCourse(vm.course).then(function () {
+                    $state.go('^.course-list');
+                });
+            } else {
+                userDataService.updateCourse(vm.course).then(function () {
+                    $state.go('^.course-list');
+                });
+            }
+        };
+    }
+]);
+
+statracker.controller('CourseListController', [
+    'userDataService',
+    'userData',
+    function (userDataService, userData) {
+
+        var vm = this;
+
+        vm.courses = userData.courses;
+        vm.showDelete = false;
+
+        vm.deleteCourse = function (course) {
+            //TODO: get confirmation
+            //TODO: detect and handle case where course is tied to a round
+            userDataService.deleteCourse(course).then(function (newCourseList) {
+                vm.courses = newCourseList;
+                vm.showDelete = false;
+            });
+        };
+    }
+]);
+statracker.controller('LoginController', [
+    '$state',
+    'accountService',
+    function ($state, accountService) {
+
+        var vm = this;
+
+        vm.credentials = {
+            email: '',
+            password: '',
+            hasError: false,
+            error: ''
+        };
+
+        vm.canLogin = function () {
+            if (vm.credentials.email && //email will be undefined until is looks valid
+                vm.credentials.email.length > 0 &&
+                vm.credentials.password &&
+                vm.credentials.password.length > 0) {
+                return true;
+            }
+            return false;
+        };
+
+        this.doLogin = function () {
+            vm.credentials.hasError = false;
+            vm.credentials.error = '';
+            accountService.login(this.credentials)
+                .then(function () {
+                    $state.go('tab.rounds');
+                }, function (error) {
+                    vm.credentials.hasError = true;
+                    if (error === null) {
+                        vm.credentials.error = 'Cannot reach the StaTracker authorization server';
+                    } else {
+                        vm.credentials.error = error.error_description;
+                    }
+                });
+        };
+    }
+]);
+
+statracker.directive('login', [function () {
+    return {
+        scope: {},
+        templateUrl: 'js/account/login.html',
+        replace: true,
+        bindToController: true,
+        controller: 'loginController',
+        controllerAs: 'ctrl'
+    };
+}]).controller('loginController', ['$state', 'accountService', function ($state, accountService) {
+
+    this.credentials = {
+        email: '',
+        password: '',
+        hasError: false,
+        error: ''
+    };
+
+    this.doLogin = function () {
+        this.credentials.hasError = false;
+        this.credentials.error = '';
+        accountService.login(this.credentials)
+            .success(function () {
+                $state.go('tab.rounds');
+            })
+            .error(function (error) {
+                this.credentials.hasError = true;
+                this.credentials.error = error.error_description;
+            });
+    };
+}]);
+
+statracker.controller('MyBagController', [
+    '$scope',
+    'userDataService',
+    'userData',
+    function ($scope, userDataService, userData) {
+
+        var vm = this;
+
+        vm.showDelete = false;
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.userClubs = userData.clubs;
+        });
+
+        vm.deleteClub = function (club) {
+            userDataService.removeClub(club).then(function (clubs) {
+                vm.userClubs = clubs;
+                vm.showDelete = false;
+            });
+        };
+    }
+]);
+statracker.directive('myCourses', [
+    '$ionicTemplateLoader',
+    '$ionicBackdrop',
+    '$timeout',
+    '$rootScope',
+    '$document',
+    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document) {
+        return {
+            require: '?ngModel',
+            restrict: 'E',
+            template: '<input type="text" class="my-courses-control" autocomplete="off">',
+            replace: true,
+            scope: {
+                courses: '='
+            },
+            link: function (scope, element, attrs, ngModel) {
+
+                scope.filteredCourses = scope.courses; //TODO: copy
+
+                var searchEventTimeout,
+                    POPUP_TPL = [
+                    '<div class="my-courses-container">',
+                        '<div class="bar bar-header item-input-inset">',
+                            '<label class="item-input-wrapper">',
+                                '<i class="icon ion-ios7-search placeholder-icon"></i>',
+                                '<input type="search" ng-model="searchQuery" placeholder="Enter a course description">',
+                            '</label>',
+                            '<button class="button button-clear">Save</button>',
+                        '</div>',
+                        '<ion-content class="has-header">',
+                            '<ion-list>',
+                                '<ion-item ng-repeat="course in filteredCourses" type="item-text-wrap" ng-click="selectCourse(course)">',
+                                    '{{course.courseDescription}}',
+                                '</ion-item>',
+                            '</ion-list>',
+                        '</ion-content>',
+                    '</div>'
+                ].join('');
+
+                $ionicTemplateLoader.compile({
+                    template: POPUP_TPL,
+                    scope: scope,
+                    appendTo: $document[0].body
+                }).then(function (el) {
+                    var searchInputElement = angular.element(el.element.find('input'));
+
+                    scope.selectCourse = function (course) {
+                        ngModel.$setViewValue(course);
+                        ngModel.$render();
+                        el.element.css('display', 'none');
+                        $ionicBackdrop.release();
+                    };
+
+                    scope.$watch('searchQuery', function (query) {
+                        if (searchEventTimeout) $timeout.cancel(searchEventTimeout);
+                        searchEventTimeout = $timeout(function () {
+                            if (!query) return;
+                            scope.$apply(function () {
+                                if (scope.courses && scope.courses.length > 0) {
+                                    scope.filteredCourses = scope.courses.filter(function (course) {
+                                        if (query === '' || course.courseDescription.startsWith(query)) {
+                                            return course;
+                                        }
+                                    });
+                                }
+                            });
+                        }, 100);
+                    });
+
+                    var onClick = function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        $ionicBackdrop.retain();
+                        el.element.css('display', 'block');
+                        searchInputElement[0].focus();
+                        setTimeout(function () {
+                            searchInputElement[0].focus();
+                        }, 0);
+                    };
+
+                    var onSave = function () {
+                        var newCourse = {
+                            key: 0,
+                            courseDescription: searchInputElement[0].value
+                        };
+                        ngModel.$setViewValue(newCourse);
+                        ngModel.$render();
+                        scope.searchQuery = '';
+                        $ionicBackdrop.release();
+                        el.element.css('display', 'none');
+                        scope.$emit('new-course', searchInputElement[0].value);
+                    };
+
+                    element.bind('click', onClick);
+                    element.bind('touchend', onClick);
+
+                    el.element.find('button').bind('click', onSave);
+                });
+
+                if (attrs.placeholder) {
+                    element.attr('placeholder', attrs.placeholder);
+                }
+
+                ngModel.$formatters.unshift(function (modelValue) {
+                    if (!modelValue) return '';
+                    return modelValue;
+                });
+
+                ngModel.$parsers.unshift(function (viewValue) {
+                    return viewValue;
+                });
+
+                ngModel.$render = function () {
+                    if (!ngModel.$viewValue) {
+                        element.val('');
+                    } else {
+                        element.val(ngModel.$viewValue.courseDescription || '');
+                    }
+                };
+            }
+        };
+    }
+]);
+statracker.controller('RegisterController', [
+    '$state',
+    'accountService',
+    'userDataService',
+    function ($state, accountService, userDataService) {
+
+        var vm = this,
+            defaultBag = [
+                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Driver' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 1 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '3 Wood' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 2 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '5 Wood' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 3 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '4 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 4 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '5 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 5 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '6 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 6 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '7 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 7 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '8 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 8 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: '9 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 9 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Pitching Wedge' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 10 },
+                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Sand Wedge' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 11 }
+            ];
+
+        userDataService.getDefaultClubs().then(function (clubs) {
+            defaultBag.forEach(function (c, i) {
+                var defaultClub = clubs.find(function (d) {
+                    return c.club.clubName === d.name;
+                });
+                if (defaultClub) {
+                    defaultBag[i].clubKey = defaultClub.key;
+                    defaultBag[i].club.key = defaultClub.key;
+                } else {
+                    //TODO: this is a problem
+                    console.log('what gives?');
+                }
+            });
+            userDataService.addClubs(defaultBag).then(function (clubs) {
+                this.clubs = clubs;
+            });
+        });
+
+        vm.registration = {
+            email: '',
+            password: '',
+            confirmPassword: '',
+            hasError: false,
+            error: ''
+        };
+
+        vm.doRegister = function () {
+            vm.registration.hasError = false;
+            vm.registration.error = '';
+            if (vm.validate()) {
+                accountService.register(vm.registration)
+                    .success(function () {
+                        accountService.login(vm.registration).then(function () {
+                            userDataService.getDefaultClubs().then(function (clubs) {
+                                defaultBag.forEach(function (c, i) {
+                                    var defaultClub = clubs.find(function (d) {
+                                        return c.club.clubName === d.name;
+                                    });
+                                    if (defaultClub) {
+                                        defaultBag[i].clubKey = defaultClub.key;
+                                        defaultBag[i].club.key = defaultClub.key;
+                                    } else {
+                                        //TODO: this is a problem
+                                        console.log('what gives?');
+                                    }
+                                });
+                                userDataService.addClubs(defaultBag).then(function () {
+                                    //TODO: how to handle an error here?
+                                    //at this point, our new user should have a default set of clubs to use
+                                    $state.go('tab.rounds');
+                                });
+                            });
+                        });
+                    })
+                    .error(function (error) {
+                        vm.registration.hasError = true;
+                        if (error.error_description) {
+                            vm.registration.error = error.error_description;
+                        } else if (error.modelState) {
+                            vm.registration.error = error.modelState;
+                        } else {
+                            vm.registration.error = error;
+                        }
+                    });
+            }
+        };
+
+        vm.validate = function () {
+            if (vm.registration.email === '') {
+                vm.registration.hasError = true;
+                vm.registration.error = 'An email address is required';
+                return false;
+            }
+            if (vm.registration.password === '') {
+                vm.registration.hasError = true;
+                vm.registration.error = 'A password is required';
+                return false;
+            }
+            if (vm.registration.password !== vm.registration.confirmPassword) {
+                vm.registration.hasError = true;
+                vm.registration.error = 'The passwords do not match';
+                return false;
+            }
+            return true;
+        };
+    }
+]);
+
+statracker.controller('UserController', [
+    '$scope',
+    '$state',
+    'accountService',
+    function ($scope, $state, accountService) {
+
+        $scope.user = accountService.user();
+
+        $scope.doLogout = function () {
+            accountService.logout();
+            $state.go('login');
+        };
+    }
+]);
+statracker.factory('userDataService', [
+    '$http',
+    '$q',
+    'apiUrl',
+    function ($http, $q, apiUrl) {
+
+        var clubs = [], courses = [], availableClubs = [];
+
+        var loadUserData = function () {
+            var p1 = $q.defer(),
+                p2 = $q.defer();
+
+            if (clubs && clubs.length > 0) {
+                p1.resolve(clubs);
+            } else {
+                $http.get(apiUrl + 'users/clubs').then(function (response) {
+                    if (response.data) {
+                        clubs = response.data;
+                    }
+                    p1.resolve(clubs);
+                });
+            }
+
+            if (courses && courses.length > 0) {
+                p2.resolve(courses);
+            } else {
+                $http.get(apiUrl + 'users/courses').then(function (response) {
+                    if (response.data) {
+                        courses = response.data;
+                    }
+                    p2.resolve(courses);
+                });
+            }
+
+            return $q.all([p1.promise,p2.promise]).then(function (results) {
+                return {
+                    clubs: results[0],
+                    courses: results[1]
+                };
+            });
+        };
+
+        var addCourse = function (course) {
+            var deferred = $q.defer(),
+                description = course.description + '(' + course.tees + ')',
+                existing = courses && courses.find(function (c) {
+                        return c.description.toLowerCase() === description.toLowerCase();
+                });
+            if (existing) {
+                deferred.resolve(existing);
+            } else {
+                var postCourse = {
+                    key: 0,
+                    courseDescription: course.description,
+                    teesName: course.tees,
+                    holesNumber: course.holes,
+                    parNumber: course.par
+                };
+                $http.post(apiUrl + 'users/courses', postCourse).then(function (response) {
+                    courses.push({
+                        key: response.data.key,
+                        description: response.data.courseDescription + ' (' + response.data.teesName + ')',
+                        holes: response.data.holesNumber
+                    });
+                    deferred.resolve(response.data);
+                });
+            }
+            return deferred.promise;
+        };
+
+        var createCourse = function (course) {
+            var deferred = $q.defer(),
+                description = course.courseDescription + '(' + course.teesName + ')',
+                existing = courses && courses.find(function (c) {
+                        return c.description.toLowerCase() === description.toLowerCase();
+                    });
+            if (existing) {
+                deferred.reject('A course named ' + description + ' already exists');
+            } else {
+                $http.post(apiUrl + 'users/courses', course).then(function (response) {
+                    courses.push({
+                        key: response.data.key,
+                        description: response.data.courseDescription + ' (' + response.data.teesName + ')',
+                        holes: response.data.holesNumber
+                    });
+                    deferred.resolve(response.data);
+                });
+            }
+            return deferred.promise;
+        };
+
+        var updateCourse = function (course) {
+            return $http.put(apiUrl + 'users/courses/' + course.key, course);
+        };
+
+        var deleteCourse = function (course) {
+            var deferred = $q.defer(),
+                idx = courses.findIndex(function (c) {
+                    return c.key === course.key;
+                });
+            $http.delete(apiUrl + 'users/courses/' + course.key).then(function () {
+                courses.splice(idx, 1);
+                deferred.resolve(courses);
+            });
+            return deferred.promise;
+        };
+
+        var getCourse = function (key) {
+            return $http.get(apiUrl + 'users/courses/' + key);
+        };
+
+        var getClub = function (key) {
+            return $http.get(apiUrl + 'users/clubs/' + key);
+        };
+
+        var addClub = function (club) {
+            var deferred = $q.defer();
+            $http.post(apiUrl + 'users/clubs', club).then(function (response) {
+                clubs.push(response.data);
+                deferred.resolve(clubs);
+            });
+            return deferred.promise;
+        };
+
+        var addClubs = function (newClubs) {
+            var deferred = $q.defer();
+            $http.put(apiUrl + 'users/clubs', newClubs).then(function () {
+                $http.get(apiUrl + 'users/clubs').then(function (response) {
+                    if (response.data) {
+                        clubs = response.data;
+                        deferred.resolve(clubs);
+                    }
+                });
+            });
+            return deferred.promise;
+        };
+
+        var updateClub = function (club) {
+            var deferred = $q.defer();
+            var index = clubs.findIndex(function (c) { return c.key === club.key; });
+            clubs[index] = club;
+            $http.put(apiUrl + 'users/clubs/' + club.key, club).then(function (response) {
+                deferred.resolve(clubs);
+            });
+            return deferred.promise;
+        };
+
+        var removeClub = function (club) {
+            var deferred = $q.defer();
+            var index = clubs.findIndex(function (c) { return c.key === club.key; });
+            $http.delete(apiUrl + 'users/clubs/' + club.key).then(function () {
+                clubs.splice(index, 1);
+                deferred.resolve(clubs);
+            });
+            return deferred.promise;
+        };
+
+        var getDefaultClubs = function () {
+            var deferred = $q.defer();
+
+            if (availableClubs && availableClubs.length > 0) {
+                deferred.resolve(availableClubs);
+            } else {
+                $http.get(apiUrl + 'clubs').then(function (response) {
+                    if (response.data) {
+                        availableClubs = response.data.map(function (club) {
+                            var approachFlag = true,
+                                teeballFlag = false;
+                            if (club.clubName === 'Driver' || club.clubName.endsWith('Wood')) {
+                                approachFlag = false;
+                                teeballFlag = true;
+                            } else if (club.clubName === 'Putter') {
+                                approachFlag = false;
+                            }
+                            return {
+                                key: club.key,
+                                name: club.clubName,
+                                sortOrder: club.key,
+                                approachFlag: approachFlag,
+                                teeballFlag: teeballFlag
+                            };
+                        });
+                    }
+                    deferred.resolve(availableClubs);
+                });
+            }
+            return deferred.promise;
+        };
+
+        return {
+            get clubs() { return clubs; },
+            get courses() { return courses; },
+            getDefaultClubs: getDefaultClubs,
+            loadUserData: loadUserData,
+            addCourse: addCourse,
+            getCourse: getCourse,
+            createCourse: createCourse,
+            updateCourse: updateCourse,
+            deleteCourse: deleteCourse,
+            getClub: getClub,
+            addClub: addClub,
+            addClubs: addClubs,
+            updateClub: updateClub,
+            removeClub: removeClub
+        };
+    }
+]);
+statracker.directive('holesSelect', [
+    '$parse',
+    function($parse){
+        return {
+            restrict: 'EA',
+            replace: true,
+            require: 'ngModel',
+            template: '<div class="holes-container button-bar"><a class="button button-small">9</a><a class="button button-small">18</a></div>',
+            link: function(scope, elem, attrs, ngModelCtrl){
+                var buttons = elem.find('a'),
+                    value = $parse(attrs.ngModel),
+                    updateButtons;
+
+                updateButtons = function (value) {
+                    angular.forEach(buttons, function (btn) {
+                        var b = angular.element(btn);
+                        if (btn.innerText == value) { // jshint ignore: line
+                            if (!b.hasClass('button-assertive')) {
+                                b.addClass('button-assertive');
+                                b.removeClass('button-outline');
+                            }
+                            if (b.hasClass('button-stable')) {
+                                b.removeClass('button-stable');
+                                b.addClass('button-outline');
+                            }
+                        } else {
+                            if (b.hasClass('button-assertive')) {
+                                b.removeClass('button-assertive');
+                                b.addClass('button-outline');
+                            }
+                            if (!b.hasClass('button-stable')) {
+                                b.addClass('button-stable');
+                                b.removeClass('button-outline');
+                            }
+                        }
+                    });
+                };
+
+                elem.bind('click', function () {
+                    if (value === undefined) {
+                        value = 18;
+                    } else if (value === 9) {
+                        value = 18;
+                    } else {
+                        value = 9;
+                    }
+                    ngModelCtrl.$setViewValue(value);
+                    updateButtons(value);
+                });
+
+                updateButtons(value);
+            }
+        };
     }
 ]);
 statracker.config([
@@ -206,21 +1006,36 @@ statracker.config([
                 }
             })
 
-            .state('tab.settings', {
-                url: '/settings',
+            .state('tab.user', {
+                url: '/user',
                 views: {
                     'settings': {
-                        templateUrl: 'src/account/settings.html',
-                        controller: 'AccountController'
+                        templateUrl: 'src/account/user-page.html'
                     }
                 }
             })
-            .state('tab.preferences', {
-                url: '/preferences',
+            .state('tab.course-list', {
+                url: '/course-list',
                 views: {
                     'settings': {
-                        templateUrl: 'src/account/preferences.html',
-                        controller: 'PreferencesController'
+                        templateUrl: 'src/account/course-list-page.html',
+                        controller: 'CourseListController as vm',
+                        resolve: {
+                            userData: ['userDataService', function(userDataService) {
+                                return userDataService.loadUserData();
+                            }]
+                        }
+                    }
+                }
+            })
+            .state('tab.course-detail', {
+                url: '/course-detail',
+                params: {
+                    key: 0
+                },
+                views: {
+                    'settings': {
+                        templateUrl: 'src/account/course-detail-page.html'
                     }
                 }
             })
@@ -235,6 +1050,17 @@ statracker.config([
                                 return userDataService.loadUserData();
                             }]
                         }
+                    }
+                }
+            })
+            .state('tab.club-detail', {
+                url: '/club-detail',
+                params: {
+                    club: {}
+                },
+                views: {
+                    'settings': {
+                        templateUrl: 'src/account/club-detail-page.html'
                     }
                 }
             })
@@ -263,34 +1089,14 @@ statracker.config([
             })
             .state('tab.round-summary', {
                 url: '/round-summary',
-                params: {id: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/round-summary-page.html'
                     }
                 }
             })
-            .state('tab.teeball-summary', {
-                url: '/teeball-summary',
-                params: {id: 0},
-                views: {
-                    'rounds': {
-                        templateUrl: 'src/rounds/tee/tee-summary-page.html'
-                    }
-                }
-            })
-            .state('tab.approach-summary', {
-                url: '/approach-summary',
-                params: {id: 0},
-                views: {
-                    'rounds': {
-                        templateUrl: 'src/rounds/approach/approach-summary-page.html'
-                    }
-                }
-            })
             .state('tab.round-detail-teeball', {
                 url: '/round-detail-teeball',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/tee/tee-page.html',
@@ -305,7 +1111,6 @@ statracker.config([
             })
             .state('tab.round-detail-approach', {
                 url: '/round-detail-approach',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/approach/approach-page.html',
@@ -320,7 +1125,6 @@ statracker.config([
             })
             .state('tab.round-detail-shortgame', {
                 url: '/round-detail-shortgame',
-                params: {id: 0, hole: 0},
                 views: {
                     'rounds': {
                         templateUrl: 'src/rounds/shortgame/shortgame-page.html'
@@ -336,8 +1140,8 @@ statracker.config([
                         controller: 'StatsController'
                     }
                 }
-            })
-            .state('tab.stats.overall', {
+            });
+/*            .state('tab.stats.overall', {
                 url: '/overall',
                 views: {
                     'stats-detail': {
@@ -368,7 +1172,7 @@ statracker.config([
                         templateUrl: 'src/stats/shortgame.html'
                     }
                 }
-            });
+            });*/
 
         // if none of the above states are matched, use this as the fallback
         $urlRouterProvider.otherwise('/login');
@@ -379,43 +1183,124 @@ statracker.factory('localStore', ['store', function(store) {
     return store.getNamespacedStore('stk');
 }]);
 
+statracker.factory('toaster', [
+    '$window',
+    '$cordovaToast',
+    '$q',
+    function ($window, $cordovaToast, $q) {
+        var isLive = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test($window.navigator.userAgent);
+        return {
+            toastSuccess: function (message) {
+                var defer = $q.defer();
+                if (isLive) {
+                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
+                } else {
+                    defer.resolve();
+                }
+                return defer.promise;
+            },
+            toastError: function (message) {
+                var defer = $q.defer();
+                console.error(message);
+                if (isLive) {
+                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
+                } else {
+                    defer.resolve();
+                }
+                return defer.promise;
+            }
+        };
+    }
+]);
+statracker.controller('StatsController', [
+    '$scope',
+    '$state',
+    function ($state) {
+        if ($state.is('tab.stats')) {
+            $state.go('.overall');
+        }
+    }
+]);
 statracker.controller('CreateRoundController', [
     '$scope',
     '$state',
     'userDataService',
     'roundService',
     'userData',
-    function ($scope, $state, userDataService, roundService, userData) {
+    '$ionicModal',
+    function ($scope, $state, userDataService, roundService, userData, $ionicModal) {
 
         var vm = this;
 
         vm.courses = userData.courses;
-
-        vm.round = {
-            date: new Date(),
-            holes: 18,
-            course: { key: 0, courseDescription: '' },
-            hasError: false,
-            error: ''
-        };
 
         vm.canStart = function () {
             return true;
         };
 
         vm.startRound = function () {
-            var newRound = roundService.create(vm.round.course, vm.round.date, vm.round.holes);
+            var selectedCourse = vm.courses.find(function (c) {
+                return c.key === vm.round.courseKey;
+            });
+            var newRound = roundService.create(selectedCourse, vm.round.date, vm.round.holes);
             roundService.update(newRound, true).then(function () {
                 $state.go('^.round-detail-teeball');
             });
         };
 
-        $scope.$on('new-course', function (e, courseName) {
-            userDataService.addCourse(courseName).then(function (data) {
+        vm.courseSelected = function () {
+            var selected = vm.courses.find(function (c) {
+                return c.key === vm.round.courseKey;
+            });
+            if (selected) {
+                vm.round.holes = selected.holes;
+            }
+        };
+
+        vm.getNewCourse = function() {
+            vm.modal.show();
+        };
+
+        vm.newCourse = function () {
+            userDataService.addCourse($scope.course).then(function (data) {
                 if (data) {
-                    vm.round.course.key = data.key;
+                    vm.round.courseKey = data.key;
+                    vm.round.holes = data.holesNumber;
                 }
             });
+            vm.modal.hide();
+        };
+
+        vm.hideModal = function () {
+            vm.modal.hide();
+        };
+
+        $ionicModal.fromTemplateUrl('src/rounds/new-course-modal.html', {
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function(modal) {
+            vm.modal = modal;
+        });
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.round = {
+                date: new Date(),
+                holes: 18,
+                courseKey: 0,
+                isTournament: false,
+                hasError: false,
+                error: ''
+            };
+            $scope.course = {
+                holes: 18,
+                course: '',
+                tees: '',
+                par: 72
+            };
+        });
+
+        $scope.$on('$destroy', function() {
+            vm.modal.remove();
         });
     }
 ]);
@@ -425,7 +1310,7 @@ statracker.directive('goto', [
     function ($ionicPopover) {
         return {
             restrict: 'AE',
-            template: '<button class="button button-small ion-ios7-flag" ng-click="open($event)"> {{hole}}</button>',
+            template: '<button class="button button-small button-clear icon-right ion-ios7-flag-outline" ng-click="open($event)"> {{hole}}</button>',
             scope: {
                 hole: '=',
                 holes: '='
@@ -457,28 +1342,6 @@ statracker.directive('goto', [
     }
 ]);
 
-statracker.controller('HoleController', [
-    '$scope',
-    '$state',
-    function ($scope, $state) {
-
-        if (!$scope.round) {
-            $scope.round = {};
-        }
-        $scope.round.id = $state.params.id;
-
-        if (!$scope.hole) {
-            $scope.hole = {};
-        }
-        $scope.hole.number = $state.params.hole;
-
-        $scope.gotoSummary = function () {
-            var params = $state.params;
-            params.hole = undefined;
-            $state.go('^.round-summary', params);
-        };
-    }
-]);
 statracker.directive('holeNext', [
     '$state',
     '$ionicGesture',
@@ -559,10 +1422,66 @@ statracker.controller('ListRoundsController', [
 
         var vm = this;
 
+        vm.filter = {
+            holes: 18,
+            roundsToChart: 10,
+            monthsToList: 3
+        };
         vm.rounds = [];
 
         roundService.getAll().then(function (response) {
             vm.rounds = response.data;
+
+            var recent18 = {
+                key: 'Recent 18 hole rounds',
+                values: vm.getRecentScores(vm.rounds, 18, 10)
+            },  recent9 = {
+                key: 'Recent 9 hole rounds',
+                values: vm.getRecentScores(vm.rounds, 9, 10)
+            },  total18 = recent18.values.reduce(function (prev, curr) {
+                return {value: prev.value + curr.value};
+            }, {value: 0}),
+                total9 = recent9.values.reduce(function (prev, curr) {
+                return {value: prev.value + curr.value};
+            }, {value: 0});
+
+            vm.scores = {};
+            vm.scores.average9 = total9.value / recent9.values.length;
+            vm.scores.average18 = total18.value / recent18.values.length;
+            vm.scores.options = {
+                chart: {
+                    type: 'discreteBarChart',
+                    height: 160,
+                    title: {
+                        enable: true,
+                        text: 'Recent Scores'
+                    },
+                    margin : {
+                        top: 20,
+                        right: 10,
+                        bottom: 10,
+                        left: 10
+                    },
+                    x: function(d){ return d.label; },
+                    y: function(d){ return d.value; },
+                    showValues: true,
+                    showYAxis: false,
+                    showXAxis: false,
+                    valueFormat: function(d){
+                        return d3.format('d')(d);
+                    },
+                    transitionDuration: 500,
+                    discretebar: {
+                        dispatch: {
+                            elementClick: function (e) {
+                                vm.gotoSummary(e.point.label);
+                            }
+                        }
+                    }
+                }
+            };
+
+            vm.scores.data = [recent9];
         });
 
         vm.gotoSummary = function (roundId) {
@@ -570,47 +1489,21 @@ statracker.controller('ListRoundsController', [
                 $state.go('tab.round-summary');
             });
         };
-    }
-]);
 
-statracker.directive('navNext', [
-    '$state',
-    '$ionicGesture',
-    '$ionicViewSwitcher',
-    function ($state, $ionicGesture, $ionicViewSwitcher) {
-        return {
-            restrict: 'A',
-            link: function(scope, elem, attrs) {
-                var destination = attrs.navNext;
-                $ionicGesture.on('swipe', function(event) {
-                    if (event.gesture.direction === 'left') {
-                        event.preventDefault();
-                        $ionicViewSwitcher.nextDirection('forward');
-                        $state.go(destination, $state.params, {location: 'replace'});
-                    }
-                }, elem);
-            }
-        };
-    }
-]);
+        vm.getRecentScores = function (rounds, holes, num) {
+            var i, latest, recent = [];
 
-statracker.directive('navPrev', [
-    '$state',
-    '$ionicGesture',
-    '$ionicViewSwitcher',
-    function ($state, $ionicGesture, $ionicViewSwitcher) {
-        return {
-            restrict: 'A',
-            link: function(scope, elem, attrs) {
-                var destination = attrs.navPrev;
-                $ionicGesture.on('swipe', function(event) {
-                    if (event.gesture.direction === 'right') {
-                        event.preventDefault();
-                        $ionicViewSwitcher.nextDirection('back');
-                        $state.go(destination, $state.params, {location: 'replace'});
-                    }
-                }, elem);
+            latest = rounds.filter(function (round) {
+                return round.holes === holes && round.score > 0;
+            });
+
+            for (i = 0; i < num && i < latest.length; i++) {
+                recent.push({
+                    label: latest[i].key,
+                    value: latest[i].score
+                });
             }
+            return recent;
         };
     }
 ]);
@@ -638,41 +1531,50 @@ statracker.factory('roundService', [
     '$q',
     'localStore',
     'apiUrl',
-    function ($http, $q, localStore, apiUrl) {
+    'accountService',
+    function ($http, $q, localStore, apiUrl, accountService) {
 
         var currentRound;
 
         var getCurrentRound = function () {
+            var deferred = $q.defer();
             if (currentRound) {
-                return currentRound;
+                deferred.resolve(currentRound);
+            } else {
+                var id = localStore.get('roundId');
+                if (id) {
+                    return loadRound(id);
+                } else {
+                    deferred.reject();
+                }
             }
-            currentRound = localStore.get('round');
-            return currentRound;
+            return deferred.promise;
         };
 
         var loadRound = function (key) {
             var deferred = $q.defer(),
-                round = getCurrentRound();
+            round; // = currentRound;
 
             if (round && round.key === key) {
                 deferred.resolve(round);
             } else {
-                $http.get(apiUrl + '/api/rounds/' + key).then(function (response) {
+                $http.get(apiUrl + 'rounds/' + key).then(function (response) {
                     currentRound = new statracker.Round(null, null, null, response.data);
-                    localStore.set('round', currentRound);
+                    localStore.set('roundId', currentRound.key);
                     deferred.resolve(currentRound);
                 });
             }
             return deferred.promise;
         };
 
-        var getRounds = function () {
-            return $http.get(apiUrl + '/api/rounds');
+        var getRounds = function (limit) {
+            if (!limit) limit = 20;
+            return $http.get(apiUrl + 'rounds?limit=' + limit);
         };
 
         var createRound = function (course, datePlayed, holes) {
             currentRound = new statracker.Round(course, datePlayed, holes);
-            localStore.set('round', currentRound);
+            localStore.set('roundId', currentRound.key);
             return currentRound;
         };
 
@@ -681,35 +1583,39 @@ statracker.factory('roundService', [
             currentRound = round;
             if (doSynch) {
                 var postRound = currentRound.toApi();
+                postRound.userId = accountService.user().id;
                 if (currentRound.key && currentRound.key > 0) {
-                    $http.put(apiUrl + '/api/rounds/' + currentRound.key, postRound).then(function () {
-                        localStore.set('round', currentRound);
+                    $http.put(apiUrl + 'rounds/' + currentRound.key, postRound).then(function () {
+                        localStore.set('roundId', currentRound.key);
                         deferred.resolve(currentRound);
                     });
                 } else {
-                    $http.post(apiUrl + '/api/rounds', postRound).then(function (response) {
+                    $http.post(apiUrl + 'rounds', postRound).then(function (response) {
                         currentRound.key = response.data.key; //TODO: import the response?
-                        localStore.set('round', currentRound);
+                        localStore.set('roundId', currentRound.key);
                         deferred.resolve(currentRound);
                     });
                 }
             } else {
-                localStore.set('round', currentRound);
+                localStore.set('roundId', currentRound.key);
                 deferred.resolve(currentRound);
             }
             return deferred.promise;
         };
 
         var completeRound = function (round) {
-            updateRound(round);
-            localStore.remove('round');
+            return updateRound(round, true).then(function () {
+                if (round.isComplete) {
+                    localStore.remove('roundId');
+                }
+            });
         };
 
         var deleteRound = function (key) {
-            $http.delete(apiUrl + '/api/rounds/' + key).then(function () {
+            return $http.delete(apiUrl + 'rounds/' + key).then(function () {
                 if (currentRound && currentRound.key === key) {
                     currentRound = undefined;
-                    localStore.remove('round');
+                    localStore.remove('roundId');
                 }
             });
         };
@@ -736,23 +1642,84 @@ statracker.factory('roundService', [
 statracker.controller('RoundSummaryController', [
     'roundService',
     '$state',
-    function (roundService, $state) {
+    '$scope',
+    'toaster',
+    function (roundService, $state, $scope, toaster) {
 
         var vm = this;
 
-        vm.round = roundService.getCurrentRound();
+        $scope.$on('$ionicView.beforeEnter', function () {
+            roundService.getCurrentRound().then(function (round) {
+                vm.round = round;
+                vm.stats = vm.round.calculateStats();
+            },
+            function () {
+                console.log('failed to get the current round - redirecting to rounds list');
+                $state.go('^.rounds');
+            });
+        });
+
+        vm.saveRound = function (completed) {
+            var isComplete = vm.round.isComplete;
+            vm.round.isComplete = completed;
+            roundService.complete(vm.round).then(function () {
+                toaster.toastSuccess('the round has been saved');
+            },
+            function (error) {
+                toaster.toastError('failure: ' + error);
+                vm.round.isComplete = isComplete;
+            });
+        };
+
+        vm.deleteRound = function () {
+            roundService.delete(vm.round.key).then(function () {
+                    toaster.toastSuccess('the round has been deleted').then(function () {
+                    $state.go('^.rounds');
+                });
+            },
+            function (error) {
+                toaster.toastError('failure: ' + error);
+            });
+        };
 
         vm.gotoDetails = function () {
-            var params = $state.params;
-            params.hole = 1;
-            $state.go('^.round-detail-teeball', params);
+            roundService.setCurrentHole(1);
+            $state.go('^.round-detail-teeball');
+        };
+
+        vm.isComplete = function () {
+            return vm.round && vm.round.isComplete;
+        };
+
+        vm.hasDrivingStats = function () {
+            if (vm.round && !vm.round.isComplete) return false;
+            var hasStats = vm.round &&
+                vm.round.teeShots.some(function (shot) {
+                    return shot.coordinates && shot.coordinates.x !== null;
+                });
+            return hasStats;
+        };
+
+        vm.hasApproachStats = function () {
+            if (vm.round && !vm.round.isComplete) return false;
+            var hasStats = vm.round &&
+                vm.round.approachShots.some(function (shot) {
+                    return shot.coordinates && shot.coordinates.x !== null;
+                });
+            return hasStats;
+        };
+
+        vm.hasShortgameStats = function () {
+            if (vm.round && !vm.round.isComplete) return false;
+            return vm.stats && vm.stats.putting && vm.stats.putting.putts > 0;
         };
     }
 ]);
 
 (function (st) {
 
-    var importRound, exportRound, round;
+    var importRound, exportRound, round, averageDrivingDistance, calculateStats,
+        puttingStats, approachStats, upAndDownStats, sandSaveStats;
 
     importRound = function (self, r) {
         var hole;
@@ -765,7 +1732,10 @@ statracker.controller('RoundSummaryController', [
         self.score = r.scoreNumber;
         self.greens = r.greensNumber;
         self.fairways = r.fairwaysNumber;
-        self.penalties = r.penaltiesNumber;
+        self.totalFairways = r.totalFairwaysNumber;
+        self.isTournament = r.tournamentFlag;
+        self.isComplete = r.completedFlag;
+        self.notes = r.notesText;
 
         self.teeShots = [];
         self.approachShots = [];
@@ -792,7 +1762,10 @@ statracker.controller('RoundSummaryController', [
             this.score = undefined;
             this.greens = undefined;
             this.fairways = undefined;
-            this.penalties = undefined; //TODO: change to total fairways
+            this.totalFairways = (holes === 18) ? 14 : 7;
+            this.notes = undefined;
+            this.isTournament = false;
+            this.isComplete = false;
 
             this.teeShots = [];
             this.approachShots = [];
@@ -815,691 +1788,139 @@ statracker.controller('RoundSummaryController', [
             scoreNumber: this.score,
             greensNumber: this.greens,
             fairwaysNumber: this.fairways,
-            penaltiesNumber: this.penalties,
+            totalFairwaysNumber: this.totalFairways,
+            notesText: this.notes,
+            tournamentFlag: this.isTournament,
+            completedFlag: this.isComplete,
             teeShots: [],
             approachShots: [],
             shortGameShots: []
         };
         var i;
         for (i = 0; i < this.holes; i++) {
-            outbound.teeShots.push(this.teeShots[i].toApi());
-            outbound.approachShots.push(this.approachShots[i].toApi());
-            outbound.shortGameShots.push(this.shortGameShots[i].toApi());
+            outbound.teeShots.push(this.teeShots[i].toApi(this.key));
+            outbound.approachShots.push(this.approachShots[i].toApi(this.key));
+            outbound.shortGameShots.push(this.shortGameShots[i].toApi(this.key));
         }
         return outbound;
     };
 
+    averageDrivingDistance = function (self) {
+        var shots = 0, distance = 0;
+        self.teeShots.forEach(function (shot) {
+            if (shot.distance) {
+                distance += shot.distance;
+                shots += 1;
+            }
+        });
+        if (shots === 0) return 0;
+        return distance / shots;
+    };
+
+    approachStats = function (self) {
+        var shots = 0,
+            yardage = 0,
+            distance = 0,
+            greens = 0;
+        self.approachShots.forEach(function (shot) {
+            if (shot.yardage) {
+                yardage += shot.yardage;
+                shots += 1;
+                if (shot.result <= 24) {
+                    greens += 1;
+                }
+            }
+        });
+        self.shortGameShots.forEach(function (hole) {
+            if (hole.initialPuttLength && !hole.sandSave && !hole.upAndDown) {
+                distance += hole.initialPuttLength;
+            }
+        });
+        return {
+            averageYardage: (shots === 0) ? 0 : yardage / shots,
+            averageLeave: (shots === 0) ? 0 : distance / greens
+        };
+    };
+
+    puttingStats = function (self) {
+        var putts = 0,
+            distance = 0;
+        self.shortGameShots.forEach(function (hole) {
+            if (hole.putts) {
+                putts += hole.putts;
+            }
+            if (hole.puttMadeLength) {
+                distance += hole.puttMadeLength;
+            }
+        });
+        return {
+            putts: putts,
+            madePutts: distance
+        };
+    };
+
+    upAndDownStats = function (self) {
+        var conversions = 0,
+            attempts = 0,
+            distance = 0;
+        self.shortGameShots.forEach(function (hole) {
+            if (hole.upAndDown !== null) {
+                attempts += 1;
+                conversions += (hole.upAndDown) ? 1 : 0;
+                if (hole.initialPuttLength) distance += hole.initialPuttLength;
+            }
+        });
+        return {
+            attempts: attempts,
+            conversions: conversions,
+            percentage: (attempts === 0) ? 0 : 100 * conversions / attempts,
+            averageLeave: (attempts === 0) ? 0 : distance / attempts
+        };
+    };
+
+    sandSaveStats = function (self) {
+        var conversions = 0,
+            attempts = 0,
+            distance = 0;
+        self.shortGameShots.forEach(function (hole) {
+            if (hole.sandSave !== null) {
+                attempts += 1;
+                conversions += (hole.sandSave) ? 1 : 0;
+                if (hole.initialPuttLength) distance += hole.initialPuttLength;
+            }
+        });
+        return {
+            attempts: attempts,
+            conversions: conversions,
+            percentage: (attempts === 0) ? 0 : 100 * conversions / attempts,
+            averageLeave: (attempts === 0) ? 0 : distance / attempts
+        };
+    };
+
+    calculateStats = function () {
+        var dd = averageDrivingDistance(this),
+            app = approachStats(this),
+            p = puttingStats(this),
+            uad = upAndDownStats(this),
+            ss = sandSaveStats(this);
+        return {
+            driving: dd,
+            approachShots: app,
+            putting: p,
+            upAndDowns: uad,
+            sandSaves: ss
+        };
+    };
+
     round.prototype = {
         constructor: round,
-        toApi: exportRound
+        toApi: exportRound,
+        calculateStats: calculateStats
     };
 
     st.Round = round;
 
 }(statracker));
-statracker.controller('StatsController', [
-    '$scope',
-    '$state',
-    function ($state) {
-        if ($state.is('tab.stats')) {
-            $state.go('.overall');
-        }
-    }
-]);
-statracker.controller('AccountController', [
-    '$scope',
-    '$state',
-    'accountService',
-    function ($scope, $state, accountService) {
-        
-        $scope.user = accountService.user();
-
-        $scope.doLogout = function () {
-            accountService.logout();
-            $state.go('login');
-        };
-    }
-]);
-
-statracker.factory('accountService', [
-    '$http',
-    '$q',
-    'localStore',
-    'jwtHelper',
-    'apiUrl',
-    'clientId',
-    function ($http, $q, localStore, jwtHelper, apiUrl, clientId) {
-
-        var user = {
-                authenticated: false
-            };
-
-        var login = function (credentials) {
-            var deferred = $q.defer(),
-                data = 'grant_type=password&username=' + encodeURIComponent(credentials.email) + '&password=' + encodeURIComponent(credentials.password) + '&client_id=' + encodeURIComponent(clientId);
-
-            $http({
-                url: apiUrl + 'token',
-                method: 'POST',
-                data: data,
-                skipAuthorization: true,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            })
-            .success(function (response) {
-                //decode the token
-                var claims = jwtHelper.decodeToken(response.access_token);
-                //populate our user object
-                user.authenticated = true;
-                user.id = claims.nameid;
-                user.name = claims.sub; //TODO: would like to separate these, maybe?
-                user.email = claims.sub;
-                //store the tokens
-                localStore.set('user', user);
-                localStore.set('access_token', response.access_token);
-                localStore.set('refresh_token', response.refresh_token);
-                deferred.resolve();
-            })
-            .error(function (error) {
-                logout();
-                deferred.reject(error);
-            });
-
-            return deferred.promise;
-        };
-
-        var logout = function () {
-            if (user.authenticated) {
-                $http.post(apiUrl + 'api/account/logout');
-            }
-            localStore.remove('access_token');
-            localStore.remove('refresh_token');
-            localStore.remove('user');
-            user = {
-                authenticated: false
-            };
-            return user;
-        };
-
-        var register = function (registration) {
-            logout();
-            return $http({
-                url: apiUrl + 'api/account/register',
-                method: 'POST',
-                data: registration,
-                skipAuthorization: true
-            });
-        };
-
-        var getUser = function () {
-            if (user.id !== undefined) {
-                return user;
-            } else {
-                var storedUser = localStore.get('user');
-                if (storedUser !== undefined && storedUser !== null){
-                    user = storedUser;
-                }
-            }
-            return user;
-        };
-
-        var refresh = function () {
-            var token = localStore.get('refresh_token'),
-                data = 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(token) + '&client_id=' + encodeURIComponent(clientId);
-            if (token) {
-                return $http({
-                    url: apiUrl + 'token',
-                    method: 'POST',
-                    skipAuthorization: true,
-                    data: data,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                })
-                .success(function (response) {
-                    localStore.set('access_token', response.access_token);
-                    localStore.set('refresh_token', response.refresh_token);
-                })
-                .error(function () {
-                    logout();
-                });
-            }
-        };
-
-        return {
-            login: login,
-            logout: logout,
-            register: register,
-            user: getUser,
-            refresh: refresh
-        };
-    }
-]);
-
-statracker.controller('LoginController', [
-    '$state',
-    'accountService',
-    function ($state, accountService) {
-
-        var vm = this;
-
-        vm.credentials = {
-            email: '',
-            password: '',
-            hasError: false,
-            error: ''
-        };
-
-        vm.canLogin = function () {
-            if (vm.credentials.email && //email will be undefined until is looks valid
-                vm.credentials.email.length > 0 &&
-                vm.credentials.password &&
-                vm.credentials.password.length > 0) {
-                return true;
-            }
-            return false;
-        };
-
-        this.doLogin = function () {
-            vm.credentials.hasError = false;
-            vm.credentials.error = '';
-            accountService.login(this.credentials)
-                .then(function () {
-                    $state.go('tab.rounds');
-                }, function (error) {
-                    vm.credentials.hasError = true;
-                    if (error === null) {
-                        vm.credentials.error = 'Cannot reach the StaTracker authorization server';
-                    } else {
-                        vm.credentials.error = error.error_description;
-                    }
-                });
-        };
-    }
-]);
-
-statracker.directive('login', [function () {
-    return {
-        scope: {},
-        templateUrl: 'js/account/login.html',
-        replace: true,
-        bindToController: true,
-        controller: 'loginController',
-        controllerAs: 'ctrl'
-    };
-}]).controller('loginController', ['$state', 'accountService', function ($state, accountService) {
-
-    this.credentials = {
-        email: '',
-        password: '',
-        hasError: false,
-        error: ''
-    };
-
-    this.doLogin = function () {
-        this.credentials.hasError = false;
-        this.credentials.error = '';
-        accountService.login(this.credentials)
-            .success(function () {
-                $state.go('tab.rounds');
-            })
-            .error(function (error) {
-                this.credentials.hasError = true;
-                this.credentials.error = error.error_description;
-            });
-    };
-}]);
-
-statracker.controller('MyBagController', [
-    '$scope',
-    '$ionicModal',
-    'userDataService',
-    'userData',
-    function ($scope, $ionicModal, userDataService, userData) {
-
-        var vm = this;
-
-        vm.clubs = userData.clubs;
-        vm.showDelete = false;
-
-        userDataService.getDefaultClubs().then(function (clubs) {
-            $scope.clubs = clubs;
-            $ionicModal.fromTemplateUrl('src/account/edit-club-modal.html', {
-                scope: $scope
-            }).then(function (modal) {
-                vm.modal = modal;
-            });
-        });
-
-        $scope.cancel = function () {
-            vm.modal.hide();
-        };
-
-        $scope.save = function () {
-            vm.modal.hide();
-            var club = $scope.currentClub;
-            if ($scope.inEditMode) {
-                userDataService.updateClub(club);
-            } else {
-                var selectedClub = $scope.clubs.find(function (c) {
-                    return c.key === club.clubKey;
-                });
-                club.club.key = selectedClub.key;
-                club.club.clubName = selectedClub.name;
-                userDataService.addClub(club).then(function (clubs) {
-                    vm.clubs = clubs;
-                });
-            }
-        };
-
-        $scope.$on('$destroy', function () {
-            vm.modal.remove();
-        });
-
-        vm.editClub = function (club) {
-            $scope.inEditMode = true;
-            if (!club) {
-                club = {
-                    key: 0,
-                    club: {
-                        key: -1,
-                        clubName: ''
-                    },
-                    teeballFlag: false,
-                    approachFlag: false,
-                    sortOrderNumber: 99
-                };
-                $scope.inEditMode = false;
-            }
-            $scope.currentClub = club;
-            vm.modal.show();
-        };
-
-        vm.deleteClub = function (club) {
-            userDataService.removeClub(club).then(function (clubs) {
-                vm.clubs = clubs;
-            });
-        };
-    }
-]);
-statracker.directive('myCourses', [
-    '$ionicTemplateLoader',
-    '$ionicBackdrop',
-    '$timeout',
-    '$rootScope',
-    '$document',
-    function ($ionicTemplateLoader, $ionicBackdrop, $timeout, $rootScope, $document) {
-        return {
-            require: '?ngModel',
-            restrict: 'E',
-            template: '<input type="text" class="my-courses-control" autocomplete="off">',
-            replace: true,
-            scope: {
-                courses: '='
-            },
-            link: function (scope, element, attrs, ngModel) {
-
-                scope.filteredCourses = scope.courses; //TODO: copy
-
-                var searchEventTimeout,
-                    POPUP_TPL = [
-                    '<div class="my-courses-container">',
-                        '<div class="bar bar-header item-input-inset">',
-                            '<label class="item-input-wrapper">',
-                                '<i class="icon ion-ios7-search placeholder-icon"></i>',
-                                '<input type="search" ng-model="searchQuery" placeholder="Enter a course description">',
-                            '</label>',
-                            '<button class="button button-clear">Save</button>',
-                        '</div>',
-                        '<ion-content class="has-header">',
-                            '<ion-list>',
-                                '<ion-item ng-repeat="course in filteredCourses" type="item-text-wrap" ng-click="selectCourse(course)">',
-                                    '{{course.courseDescription}}',
-                                '</ion-item>',
-                            '</ion-list>',
-                        '</ion-content>',
-                    '</div>'
-                ].join('');
-
-                $ionicTemplateLoader.compile({
-                    template: POPUP_TPL,
-                    scope: scope,
-                    appendTo: $document[0].body
-                }).then(function (el) {
-                    var searchInputElement = angular.element(el.element.find('input'));
-
-                    scope.selectCourse = function (course) {
-                        ngModel.$setViewValue(course);
-                        ngModel.$render();
-                        el.element.css('display', 'none');
-                        $ionicBackdrop.release();
-                    };
-
-                    scope.$watch('searchQuery', function (query) {
-                        if (searchEventTimeout) $timeout.cancel(searchEventTimeout);
-                        searchEventTimeout = $timeout(function () {
-                            if (!query) return;
-                            scope.$apply(function () {
-                                if (scope.courses && scope.courses.length > 0) {
-                                    scope.filteredCourses = scope.courses.filter(function (course) {
-                                        if (query === '' || course.courseDescription.startsWith(query)) {
-                                            return course;
-                                        }
-                                    });
-                                }
-                            });
-                        }, 100);
-                    });
-
-                    var onClick = function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $ionicBackdrop.retain();
-                        el.element.css('display', 'block');
-                        searchInputElement[0].focus();
-                        setTimeout(function () {
-                            searchInputElement[0].focus();
-                        }, 0);
-                    };
-
-                    var onSave = function () {
-                        var newCourse = {
-                            key: 0,
-                            courseDescription: searchInputElement[0].value
-                        };
-                        ngModel.$setViewValue(newCourse);
-                        ngModel.$render();
-                        scope.searchQuery = '';
-                        $ionicBackdrop.release();
-                        el.element.css('display', 'none');
-                        scope.$emit('new-course', searchInputElement[0].value);
-                    };
-
-                    element.bind('click', onClick);
-                    element.bind('touchend', onClick);
-
-                    el.element.find('button').bind('click', onSave);
-                });
-
-                if (attrs.placeholder) {
-                    element.attr('placeholder', attrs.placeholder);
-                }
-
-                ngModel.$formatters.unshift(function (modelValue) {
-                    if (!modelValue) return '';
-                    return modelValue;
-                });
-
-                ngModel.$parsers.unshift(function (viewValue) {
-                    return viewValue;
-                });
-
-                ngModel.$render = function () {
-                    if (!ngModel.$viewValue) {
-                        element.val('');
-                    } else {
-                        element.val(ngModel.$viewValue.courseDescription || '');
-                    }
-                };
-            }
-        };
-    }
-]);
-statracker.controller('PreferencesController', [
-    function () {
-
-    }
-]);
-statracker.controller('RegisterController', [
-    '$state',
-    'accountService',
-    'userDataService',
-    function ($state, accountService, userDataService) {
-
-        var vm = this,
-            defaultBag = [
-                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Driver' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 1 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '3 Wood' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 2 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '5 Wood' }, teeballFlag: true, approachFlag: false, sortOrderNumber: 3 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '4 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 4 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '5 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 5 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '6 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 6 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '7 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 7 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '8 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 8 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: '9 Iron' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 9 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Pitching Wedge' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 10 },
-                { key: 0, clubKey: 0, club: { key: 0, clubName: 'Sand Wedge' }, teeballFlag: false, approachFlag: true, sortOrderNumber: 11 }
-            ];
-
-        userDataService.getDefaultClubs().then(function (clubs) {
-            defaultBag.forEach(function (c, i) {
-                var defaultClub = clubs.find(function (d) {
-                    return c.club.clubName === d.name;
-                });
-                if (defaultClub) {
-                    defaultBag[i].clubKey = defaultClub.key;
-                    defaultBag[i].club.key = defaultClub.key;
-                } else {
-                    //TODO: this is a problem
-                    console.log('what gives?');
-                }
-            });
-            userDataService.addClubs(defaultBag).then(function (clubs) {
-                this.clubs = clubs;
-            });
-        });
-
-        vm.registration = {
-            email: '',
-            password: '',
-            confirmPassword: '',
-            hasError: false,
-            error: ''
-        };
-
-        vm.doRegister = function () {
-            vm.registration.hasError = false;
-            vm.registration.error = '';
-            if (vm.validate()) {
-                accountService.register(vm.registration)
-                    .success(function () {
-                        accountService.login(vm.registration).then(function () {
-                            userDataService.getDefaultClubs().then(function (clubs) {
-                                defaultBag.forEach(function (c, i) {
-                                    var defaultClub = clubs.find(function (d) {
-                                        return c.club.clubName === d.name;
-                                    });
-                                    if (defaultClub) {
-                                        defaultBag[i].clubKey = defaultClub.key;
-                                        defaultBag[i].club.key = defaultClub.key;
-                                    } else {
-                                        //TODO: this is a problem
-                                        console.log('what gives?');
-                                    }
-                                });
-                                userDataService.addClubs(defaultBag).then(function () {
-                                    //TODO: how to handle an error here?
-                                    //at this point, our new user should have a default set of clubs to use
-                                    $state.go('tab.rounds');
-                                });
-                            });
-                        });
-                    })
-                    .error(function (error) {
-                        vm.registration.hasError = true;
-                        if (error.error_description) {
-                            vm.registration.error = error.error_description;
-                        } else if (error.modelState) {
-                            vm.registration.error = error.modelState;
-                        } else {
-                            vm.registration.error = error;
-                        }
-                    });
-            }
-        };
-
-        vm.validate = function () {
-            if (vm.registration.email === '') {
-                vm.registration.hasError = true;
-                vm.registration.error = 'An email address is required';
-                return false;
-            }
-            if (vm.registration.password === '') {
-                vm.registration.hasError = true;
-                vm.registration.error = 'A password is required';
-                return false;
-            }
-            if (vm.registration.password !== vm.registration.confirmPassword) {
-                vm.registration.hasError = true;
-                vm.registration.error = 'The passwords do not match';
-                return false;
-            }
-            return true;
-        };
-    }
-]);
-
-statracker.factory('userDataService', [
-    '$http',
-    '$q',
-    'apiUrl',
-    function ($http, $q, apiUrl) {
-
-        var clubs = [], courses = [], availableClubs = [];
-
-        var loadUserData = function () {
-            var p1 = $q.defer(),
-                p2 = $q.defer();
-
-            if (clubs && clubs.length > 0) {
-                p1.resolve(clubs);
-            } else {
-                $http.get(apiUrl + '/api/users/clubs').then(function (response) {
-                    if (response.data) {
-                        clubs = response.data;
-                    }
-                    p1.resolve(clubs);
-                });
-            }
-
-            if (courses && courses.length > 0) {
-                p2.resolve(courses);
-            } else {
-                $http.get(apiUrl + '/api/users/courses').then(function (response) {
-                    if (response.data) {
-                        courses = response.data;
-                    }
-                    p2.resolve(courses);
-                });
-            }
-
-            return $q.all([p1.promise,p2.promise]).then(function (results) {
-                return {
-                    clubs: results[0],
-                    courses: results[1]
-                };
-            });
-        };
-
-        var addCourse = function (description) {
-            var deferred = $q.defer(),
-                existing = courses && courses.find(function (c) {
-                    return c.courseDescription.toLowerCase() === description.toLowerCase();
-                });
-            if (existing) {
-                deferred.resolve(undefined);
-            } else {
-                $http.post(apiUrl + '/api/users/courses', { courseDescription: description }).then(function (response) {
-                    courses.push(response.data);
-                    deferred.resolve(response.data);
-                });
-            }
-            return deferred.promise;
-        };
-
-        var addClub = function (club) {
-            var deferred = $q.defer();
-            $http.post(apiUrl + '/api/users/clubs', club).then(function (response) {
-                club.key = response.data.key;
-                clubs.push(club);
-                deferred.resolve(clubs);
-            });
-            return deferred.promise;
-        };
-
-        var addClubs = function (newClubs) {
-            var deferred = $q.defer();
-            $http.put(apiUrl + '/api/users/clubs', newClubs).then(function () {
-                $http.get(apiUrl + '/api/users/clubs').then(function (response) {
-                    if (response.data) {
-                        clubs = response.data;
-                        deferred.resolve(clubs);
-                    }
-                });
-            });
-            return deferred.promise;
-        };
-
-        var updateClub = function (club) {
-            var index = clubs.findIndex(function (c) { return c.key === club.key; });
-            $http.put(apiUrl + '/api/users/clubs/' + club.key, club).then(function (response) {
-                club.key = response.data.key;
-                clubs[index] = club;
-            });
-        };
-
-        var removeClub = function (club) {
-            var deferred = $q.defer();
-            var index = clubs.findIndex(function (c) { return c.key === club.key; });
-            $http.delete(apiUrl + '/api/users/clubs/' + club.key).then(function () {
-                clubs.splice(index, 1);
-                deferred.resolve(clubs);
-            });
-            return deferred.promise;
-        };
-
-        var getDefaultClubs = function () {
-            var deferred = $q.defer();
-
-            if (availableClubs && availableClubs.length > 0) {
-                deferred.resolve(availableClubs);
-            } else {
-                $http.get(apiUrl + '/api/clubs').then(function (response) {
-                    if (response.data) {
-                        availableClubs = response.data.map(function (club) {
-                            var approachFlag = true,
-                                teeballFlag = false;
-                            if (club.clubName === 'Driver' || club.clubName.endsWith('Wood')) {
-                                approachFlag = false;
-                                teeballFlag = true;
-                            } else if (club.clubName === 'Putter') {
-                                approachFlag = false;
-                            }
-                            return {
-                                key: club.key,
-                                name: club.clubName,
-                                sortOrder: club.key,
-                                approachFlag: approachFlag,
-                                teeballFlag: teeballFlag
-                            };
-                        });
-                    }
-                    deferred.resolve(availableClubs);
-                });
-            }
-            return deferred.promise;
-        };
-
-        return {
-            get clubs() { return clubs; },
-            get courses() { return courses; },
-            getDefaultClubs: getDefaultClubs,
-            loadUserData: loadUserData,
-            addCourse: addCourse,
-            addClub: addClub,
-            addClubs: addClubs,
-            updateClub: updateClub,
-            removeClub: removeClub
-        };
-    }
-]);
 statracker.directive('approachResultInput', [
     function () {
         return {
@@ -1528,7 +1949,7 @@ statracker.directive('approachResultInput', [
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
                         //log warning
-                        return
+                        return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
                         transform = 'translate(' + x + ',' + y + ') scale(1.0)';
@@ -1554,7 +1975,6 @@ statracker.directive('approachResultInput', [
                 scope.$watch('shot', function () {
                     clearBalls();
                     if (scope.shot.result != null && scope.shot.result >= 0) {
-                        //scope.resultText = scope.shot.getResultText();
                         placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
                     }
                 });
@@ -1562,9 +1982,68 @@ statracker.directive('approachResultInput', [
                 green.bind('click', function (e) {
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    if (!scope.shot.coordinates) {
+                        scope.shot.coordinates = {x:0,y:0};
+                    }
                     scope.shot.coordinates.x = cp.x;
                     scope.shot.coordinates.y = cp.y;
                     placeBall(cp.x, cp.y, true);
+                });
+            }
+        };
+    }
+]);
+
+statracker.directive('approachResultSummary', [
+    function () {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/approach/approach-result-input.html',
+            replace: true,
+            scope: {
+                round: '='
+            },
+            link: function (scope, elem) {
+
+                var xmlns = 'http://www.w3.org/2000/svg',
+                    xlinkns = 'http://www.w3.org/1999/xlink',
+                    shots = elem[0].querySelector('#shots');
+
+                var placeBall = function (x, y, clear) {
+                    if (x == null || y == null) {
+                        //log warning
+                        return;
+                    }
+                    var use = document.createElementNS(xmlns, 'use'),
+                        transform = 'translate(' + x + ',' + y + ') scale(1.0)';
+
+                    if (clear) {
+                        clearBalls();
+                    }
+
+                    use.setAttributeNS(xlinkns, 'xlink:href', '#ball');
+                    use.setAttributeNS(null, 'transform', transform);
+                    shots.appendChild(use);
+                };
+
+                var clearBalls = function () {
+                    if (shots.hasChildNodes()) {
+                        var i, balls = shots.children;
+                        for(i = 0; i < balls.length; i++) {
+                            shots.removeChild(balls[i]);
+                        }
+                    }
+                };
+
+                scope.$watch('round', function () {
+                    if (scope.round && scope.round.approachShots) {
+                        clearBalls();
+                        scope.round.approachShots.forEach(function (shot) {
+                            if (shot.coordinates != null) {
+                                placeBall(shot.coordinates.x, shot.coordinates.y, false);
+                            }
+                        });
+                    }
                 });
             }
         };
@@ -1604,8 +2083,14 @@ statracker.controller('ApproachShotController', [
         });
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            vm.round = roundService.getCurrentRound();
-            vm.shot = vm.round.approachShots[roundService.getCurrentHole() - 1];
+            roundService.getCurrentRound().then(function (round) {
+                vm.round = round;
+                vm.shot = vm.round.approachShots[roundService.getCurrentHole() - 1];
+            },
+            function () {
+                console.log('failed to get the current round - redirecting to rounds list');
+                $state.go('^.rounds');
+            });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
@@ -1666,8 +2151,8 @@ statracker.controller('ApproachShotController', [
             this.yardage = apiShot.yardageNumber;
             this.result = apiShot.resultId;
             this.coordinates = {
-                x: apiShot.resultXNumber,
-                y: apiShot.resultYNumber
+                x: apiShot.resultX,
+                y: apiShot.resultY
             };
         } else {
             this.key = undefined;
@@ -1678,15 +2163,16 @@ statracker.controller('ApproachShotController', [
             this.coordinates = undefined;
         }
     },
-    toApi = function () {
+    toApi = function (parentKey) {
         return {
             key: this.key,
+            roundKey: parentKey,
             holeNumber: this.hole,
             clubKey: this.clubKey,
             yardageNumber: this.yardage,
             resultId: this.result,
-            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
-            resultYNumber: this.coordinates ? this.coordinates.y : undefined
+            resultX: this.coordinates ? this.coordinates.x : undefined,
+            resultY: this.coordinates ? this.coordinates.y : undefined
         };
     },
     resultText = function () {
@@ -1730,7 +2216,7 @@ statracker.directive('teeResultInput', [
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
                         //log warning
-                        return
+                        return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
                         transform = 'translate(' + x + ',' + y + ') scale(1.0)';
@@ -1787,10 +2273,69 @@ statracker.directive('teeResultInput', [
                 fairway.bind('click', function (e) {
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    if (!scope.shot.coordinates) {
+                        scope.shot.coordinates = {x:0,y:0};
+                    }
                     scope.shot.coordinates.x = cp.x;
                     scope.shot.coordinates.y = cp.y;
                     scope.$emit('tee_shot_distance', calculateDistance(scope.shot.result));
                     placeBall(cp.x, cp.y, true);
+                });
+            }
+        };
+    }
+]);
+
+statracker.directive('teeResultSummary', [
+    function () {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/tee/tee-result-input.html',
+            replace: true,
+            scope: {
+                round: '='
+            },
+            link: function (scope, elem) {
+
+                var xmlns = 'http://www.w3.org/2000/svg',
+                    xlinkns = 'http://www.w3.org/1999/xlink',
+                    shots = elem[0].querySelector('#shots');
+
+                var placeBall = function (x, y, clear) {
+                    if (x == null || y == null) {
+                        //log warning
+                        return;
+                    }
+                    var use = document.createElementNS(xmlns, 'use'),
+                        transform = 'translate(' + x + ',' + y + ') scale(1.0)';
+
+                    if (clear) {
+                        clearBalls();
+                    }
+
+                    use.setAttributeNS(xlinkns, 'xlink:href', '#ball');
+                    use.setAttributeNS(null, 'transform', transform);
+                    shots.appendChild(use);
+                };
+
+                var clearBalls = function () {
+                    if (shots.hasChildNodes()) {
+                        var i, balls = shots.children;
+                        for(i = 0; i < balls.length; i++) {
+                            shots.removeChild(balls[i]);
+                        }
+                    }
+                };
+
+                scope.$watch('round', function () {
+                    if (scope.round && scope.round.teeShots) {
+                        clearBalls();
+                        scope.round.teeShots.forEach(function (shot) {
+                            if (shot.coordinates != null) {
+                                placeBall(shot.coordinates.x, shot.coordinates.y, false);
+                            }
+                        });
+                    }
                 });
             }
         };
@@ -1835,8 +2380,14 @@ statracker.controller('TeeShotController', [
         });
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            vm.round = roundService.getCurrentRound();
-            vm.shot = vm.round.teeShots[roundService.getCurrentHole() - 1];
+            roundService.getCurrentRound().then(function (round) {
+                vm.round = round;
+                vm.shot = vm.round.teeShots[roundService.getCurrentHole() - 1];
+            },
+            function () {
+                console.log('failed to get the current round - redirecting to rounds list');
+                $state.go('^.rounds');
+            });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
@@ -1847,51 +2398,6 @@ statracker.controller('TeeShotController', [
 
 (function (st) {
 
-    var results = [
-        'Fairway, less than 200 yards',
-        'Miss left (first cut up to 2 paces), less than 200 yards',
-        'Miss right (first cut up to 2 paces), less than 200 yards',
-        'Big miss left, less than 200 yards',
-        'Big miss right, less than 200 yards',
-        'Out of play (hazard or OB) left, less than 200 yards',
-        'Out of play (hazard or OB) right, less than 200 yards',
-        'Fairway, 200 - 225 yards',
-        'Miss left (first cut up to 2 paces), 200 - 225 yards',
-        'Miss right (first cut up to 2 paces), 200 - 225 yards',
-        'Big miss left, 200 - 225 yards',
-        'Big miss right, 200 - 225 yards',
-        'Out of play (hazard or OB) left, 200 - 225 yards',
-        'Out of play (hazard or OB) right, 200 - 225 yards',
-        'Fairway, 225 - 250 yards',
-        'Miss left (first cut up to 2 paces), 225 - 250 yards',
-        'Miss right (first cut up to 2 paces), 225 - 250 yards',
-        'Big miss left, 225 - 250 yards',
-        'Big miss right, 225 - 250 yards',
-        'Out of play (hazard or OB) left, 225 - 250 yards',
-        'Out of play (hazard or OB) right, 225 - 250 yards',
-        'Fairway, 250 - 275 yards',
-        'Miss left (first cut up to 2 paces), 250 - 275 yards',
-        'Miss right (first cut up to 2 paces), 250 - 275 yards',
-        'Big miss left, 250 - 275 yards',
-        'Big miss right, 250 - 275 yards',
-        'Out of play (hazard or OB) left, 250 - 275 yards',
-        'Out of play (hazard or OB) right, 250 - 275 yards',
-        'Fairway, 275 - 300 yards',
-        'Miss left (first cut up to 2 paces), 275 - 300 yards',
-        'Miss right (first cut up to 2 paces), 275 - 300 yards',
-        'Big miss left, 275 - 300 yards',
-        'Big miss right, 275 - 300 yards',
-        'Out of play (hazard or OB) left, 275 - 300 yards',
-        'Out of play (hazard or OB) right, 275 - 300 yards',
-        'Fairway, over 300 yards',
-        'Miss left (first cut up to 2 paces), over 300 yards',
-        'Miss right (first cut up to 2 paces), over 300 yards',
-        'Big miss left, over 300 yards',
-        'Big miss left, over 300 yards',
-        'Out of play (hazard or OB) left, over 300 yards',
-        'Out of play (hazard or OB) right, over 300 yards'
-    ];
-
     var shot = function (hole, apiShot) {
         if (apiShot) {
             this.key = apiShot.key;
@@ -1900,8 +2406,8 @@ statracker.controller('TeeShotController', [
             this.distance = apiShot.distanceNumber;
             this.result = apiShot.resultId;
             this.coordinates = {
-                x: apiShot.resultXNumber,
-                y: apiShot.resultYNumber
+                x: apiShot.resultX,
+                y: apiShot.resultY
             };
         } else {
             this.key = undefined;
@@ -1912,24 +2418,22 @@ statracker.controller('TeeShotController', [
             this.coordinates = undefined;
         }
     },
-    toApi = function () {
+    toApi = function (parentKey) {
         return {
             key: this.key,
+            roundKey: parentKey,
             holeNumber: this.hole,
             clubKey: this.clubKey,
             distanceNumber: this.distance,
             resultId: this.result,
-            resultXNumber: this.coordinates ? this.coordinates.x : undefined,
-            resultYNumber: this.coordinates ? this.coordinates.y : undefined
+            resultX: this.coordinates ? this.coordinates.x : undefined,
+            resultY: this.coordinates ? this.coordinates.y : undefined
         };
     };
 
     shot.prototype = {
         constructor: shot,
-        toApi: toApi,
-        getResultText: function () {
-            return results[this.result];
-        }
+        toApi: toApi
     };
 
     st.TeeShot = shot;
@@ -1944,24 +2448,30 @@ statracker.directive('attemptInput', [
             scope: {
                 flag: '='
             },
-            link: function (scope, elem, attrs) {
+            link: function (scope, elem) {
 
                 var make = angular.element(elem[0].querySelector('#make')),
                     miss = angular.element(elem[0].querySelector('#miss'));
 
                 var showUndefined = function () {
-                    if (!make.hasClass('unselected')) make.addClass('unselected');
-                    if (!miss.hasClass('unselected')) miss.addClass('unselected');
+                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
+                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
+                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
+                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
                 };
 
                 var showTrue = function() {
-                    if (make.hasClass('unselected')) make.removeClass('unselected');
-                    if (!miss.hasClass('unselected')) miss.addClass('unselected');
+                    if (make.hasClass('attempt-unselected')) make.removeClass('attempt-unselected');
+                    if (!make.hasClass('attempt-selected-make')) make.addClass('attempt-selected-make');
+                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
+                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
                 };
 
                 var showFalse = function () {
-                    if (!make.hasClass('unselected')) make.addClass('unselected');
-                    if (miss.hasClass('unselected')) miss.removeClass('unselected');
+                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
+                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
+                    if (miss.hasClass('attempt-unselected')) miss.removeClass('attempt-unselected');
+                    if (!miss.hasClass('attempt-selected-miss')) miss.addClass('attempt-selected-miss');
                 };
 
                 var bindValue = function () {
@@ -1981,14 +2491,13 @@ statracker.directive('attemptInput', [
                 });
 
                 make.bind('click', function () {
-                    if (scope.flag === undefined) {
+                    if (!scope.flag) {
                         scope.flag = true;
                         showTrue();
                     } else {
                         scope.flag = undefined;
                         showUndefined();
                     }
-                    //scope.$apply();
                 });
 
                 miss.bind('click', function () {
@@ -1999,7 +2508,6 @@ statracker.directive('attemptInput', [
                         scope.flag = undefined;
                         showUndefined();
                     }
-                    //scope.$apply();
                 });
             }
         };
@@ -2014,15 +2522,21 @@ statracker.directive('puttsInput', [
             scope: {
                 shot: '='
             },
-            link: function (scope, elem, attrs) {
+            link: function (scope, elem) {
 
-                var putts = elem.find('circle');
+                var putts = elem.find('circle'),
+                    puttsText = elem.find('text');
 
                 var clearPutts = function () {
                     angular.forEach(putts, function (p) {
                         var putt = angular.element(p);
-                        if (!putt.hasClass('unselected')) putt.addClass('unselected');
-                        if (putt.hasClass('selected')) putt.removeClass('selected');
+                        if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                        if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttText = angular.element(txt);
+                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
+                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
                     });
                 };
 
@@ -2031,11 +2545,22 @@ statracker.directive('puttsInput', [
                         var puttValue = parseInt(p.getAttribute(('data-value'))),
                             putt = angular.element(p);
                         if (puttValue === value) {
-                            if (!putt.hasClass('selected')) putt.addClass('selected');
-                            if (putt.hasClass('unselected')) putt.removeClass('unselected');
+                            if (!putt.hasClass('putt-selected')) putt.addClass('putt-selected');
+                            if (putt.hasClass('putt-unselected')) putt.removeClass('putt-unselected');
                         } else {
-                            if (!putt.hasClass('unselected')) putt.addClass('unselected');
-                            if (putt.hasClass('selected')) putt.removeClass('selected');
+                            if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                            if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                        }
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttTextValue = parseInt(txt.textContent),
+                            puttText = angular.element(txt);
+                        if (puttTextValue === value) {
+                            if (!puttText.hasClass('putt-selected')) puttText.addClass('putt-selected');
+                            if (puttText.hasClass('putt-unselected')) puttText.removeClass('putt-unselected');
+                        } else {
+                            if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
+                            if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
                         }
                     });
                 };
@@ -2059,6 +2584,12 @@ statracker.directive('puttsInput', [
                     scope.shot.putts = value;
                     bindValue();
                 });
+
+                puttsText.bind('click', function () {
+                    var value = parseInt(this.textContent);
+                    scope.shot.putts = value;
+                    bindValue();
+                });
             }
         };
     }
@@ -2070,9 +2601,6 @@ statracker.controller('ShortGameController', [
     function ($state, $scope, roundService) {
 
         var vm = this;
-
-        //vm.round = roundService.getCurrentRound();
-        //vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
 
         vm.gotoSummary = function () {
             $state.go('^.round-summary');
@@ -2086,8 +2614,14 @@ statracker.controller('ShortGameController', [
         });
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            vm.round = roundService.getCurrentRound();
-            vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+            roundService.getCurrentRound().then(function (round) {
+                    vm.round = round;
+                    vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+                },
+                function () {
+                    console.log('failed to get the current round - redirecting to rounds list');
+                    $state.go('^.rounds');
+                });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
@@ -2119,9 +2653,10 @@ statracker.controller('ShortGameController', [
             this.holeOut = undefined;
         }
     },
-    toApi = function () {
+    toApi = function (parentKey) {
         return {
             key: this.key,
+            roundKey: parentKey,
             holeNumber: this.hole,
             initialLengthNumber: this.initialPuttLength,
             finalLengthNumber: this.puttMadeLength,

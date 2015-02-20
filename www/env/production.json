@@ -1,4 +1,5 @@
 {
-  "apiUrl": "https://statsapi.azurewebsites.net/",
+  "apiUrl": "https://statsapi.azurewebsites.net/api/v1/",
+  "tokenUrl": "https://statsapi.azurewebsites.net/token",
   "clientId": "73788e966f4c4c289a3a8f12f9aae744"
 }

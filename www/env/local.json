@@ -1,4 +1,5 @@
 {
-  "apiUrl": "https://localhost:44300/",
+  "apiUrl": "https://localhost:44300/api/v1/",
+  "tokenUrl": "https://localhost:44300/token",
   "clientId": "73788e966f4c4c289a3a8f12f9aae744"
 }

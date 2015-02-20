@@ -1,17 +1,33 @@
 <ion-view view-title="My Rounds" ng-controller="ListRoundsController as ctrl">
+    <ion-nav-buttons side="primary">
+        <button class="button button-small button-clear">Search</button>
+    </ion-nav-buttons>
     <ion-nav-buttons side="secondary">
-        <button class="button button-small button-clear icon ion-plus" ui-sref="^.new-round"></button>
+        <button class="button button-small button-clear" ui-sref="^.new-round">New</button>
     </ion-nav-buttons>
     <ion-content>
-        <div>
-            <p>graph of the last N rounds</p>
+        <div class="row">
+            <div class="col">
+                <nvd3 options="ctrl.scores.options" data="ctrl.scores.data"></nvd3>
+            </div>
         </div>
-        <div>
-            <p>average score for those last N rounds</p>
+        <div class="row">
+            <div class="col col-25">
+                <holes-select ng-model="ctrl.filter.holes"></holes-select>
+            </div>
+            <div class="col col-50">
+                <h3 class="text-center">{{ctrl.scores.average | number:1}}</h3>
+            </div>
+            <div class="col col-25">
+                <a class="button button-outline button-small button-calm">&nbsp;Filter&nbsp;</a>
+            </div>
         </div>
         <ion-list>
-            <ion-item ng-repeat="round in ctrl.rounds" ng-click="ctrl.gotoSummary(round.key)">
-                {{round.date | date: 'yyyy-MM-dd'}} - ({{round.score}}): {{round.course.courseDescription}}
+            <div class="item item-divider item-assertive">
+                Last {{ctrl.filter.monthsToList}} Months
+            </div>
+            <ion-item ng-repeat="round in ctrl.rounds | orderBy : 'date' : true" ng-click="ctrl.gotoSummary(round.key)">
+                {{round.date | date: 'yyyy-MM-dd'}}: {{round.courseDescription}}
             </ion-item>
         </ion-list>
     </ion-content>

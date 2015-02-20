@@ -133,7 +133,7 @@
 			<line number="1"  hits="1"  branch="false" />
 		</lines>
 		</class>
-		<class name="preferences-controller.js"  filename="www\js\account\preferences-controller.js"  line-rate="1"  branch-rate="1" >
+		<class name="user-controller.js"  filename="www\js\account\user-controller.js"  line-rate="1"  branch-rate="1" >
 		<methods>
 			<method name="(anonymous_1)"  hits="0"  signature="()V" >
 				<lines><line number="3"  hits="0" /></lines>

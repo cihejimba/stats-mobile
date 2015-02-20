@@ -1,30 +1,44 @@
 <ion-view view-title="New Round">
     <ion-nav-buttons side="primary">
-        <button class="button button-small button-clear icon icon-left ion-ios7-arrow-back" ui-sref="^.rounds">Back</button>
+        <button class="button button-small button-clear" ui-sref="^.rounds">Cancel</button>
     </ion-nav-buttons>
     <ion-content>
         <div class="row">
             <div class="col">
-                <form ng-submit="ctrl.startRound()">
-                    <div class="list">
-                        <label class="item item-input">
-                            <span class="input-label">Date</span>
-                            <input type="date" ng-model="ctrl.round.date" />
+                <ion-list class="list list-inset">
+                    <label class="item item-input">
+                        <span class="input-label">Date</span>
+                        <input type="date" ng-model="ctrl.round.date" />
+                    </label>
+                    <label class="item-input item-select">
+                        <div class="input-label">
+                            Course
+                        </div>
+                        <select ng-model="ctrl.round.courseKey"
+                                ng-options="course.key as course.description for course in ctrl.courses"
+                                ng-change="ctrl.courseSelected()">
+                        </select>
+                    </label>
+                    <label class="item item-input">
+                        <span class="input-label">Holes</span>
+                        <input type="tel" ng-model="ctrl.round.holes" />
+                    </label>
+                    <li class="item item-toggle">
+                        Tournament
+                        <label class="toggle toggle-assertive">
+                            <input type="checkbox" ng-model="ctrl.round.isTournament">
+                            <div class="track">
+                                <div class="handle"></div>
+                            </div>
                         </label>
-                        <label class="item item-input">
-                            <span class="input-label">Course</span>
-                            <my-courses ng-model="ctrl.round.course" />
-                        </label>
-                        <label class="item item-input">
-                            <span class="input-label">Holes</span>
-                            <input type="tel" ng-model="ctrl.round.holes" />
-                        </label>
-                        <label class="item">
-                            <button class="button button-block button-positive" type="submit"
-                                    ng-disabled="!ctrl.canStart()">Start</button>
-                        </label>
-                    </div>
-                </form>
+                    </li>
+                    <label class="item">
+                        <button class="button button-block button-balanced" ng-click="ctrl.startRound()" ng-disabled="!ctrl.canStart()">Start</button>
+                    </label>
+                    <label class="item" ng-show="ctrl.round.courseKey <= 0">
+                        <button class="button button-block button-energized" ng-click="ctrl.getNewCourse()">Add a New Course</button>
+                    </label>
+                </ion-list>
             </div>
         </div>
         <div class="row" ng-show="ctrl.round.hasError">

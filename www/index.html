@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title></title>
 
-    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/ionic.app.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 
     <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
@@ -14,20 +14,66 @@
 
     <!-- ionic/angularjs js -->
     <script src="lib/ionic/js/ionic.bundle.js"></script>
-    <script src="lib/a0-angular-storage/dist/angular-storage.js"></script>
-    <script src="lib/angular-jwt/dist/angular-jwt.js"></script>
-    <script src="lib/angular-messages/angular-messages.js"></script>
+    <script src="lib/a0-angular-storage/dist/angular-storage.min.js"></script>
+    <script src="lib/angular-jwt/dist/angular-jwt.min.js"></script>
+    <script src="lib/angular-messages/angular-messages.min.js"></script>
+    <script src="lib/d3/d3.min.js"></script>
+    <script src="lib/nvd3/nv.d3.min.js"></script>
+    <script src="lib/angular-nvd3/dist/angular-nvd3.min.js"></script>
 
     <!-- cordova script (this will be a 404 during development) -->
+    <script src="lib/ngCordova/dist/ng-cordova.min.js"></script>
     <script src="cordova.js"></script>
 
     <!-- your app's js -->
     <script src="dist/app.js"></script>
     <script src="dist/templates.js"></script>
-    <script src="dist/statracker.js"></script>
+    <!-- inject:js -->
+    <script src="src/account/account-service.js"></script>
+    <script src="src/account/club-detail-controller.js"></script>
+    <script src="src/account/course-detail-controller.js"></script>
+    <script src="src/account/course-list-controller.js"></script>
+    <script src="src/account/login-controller.js"></script>
+    <script src="src/account/login.js"></script>
+    <script src="src/account/my-bag-controller.js"></script>
+    <script src="src/account/my-courses.js"></script>
+    <script src="src/account/register-controller.js"></script>
+    <script src="src/account/user-controller.js"></script>
+    <script src="src/account/user-data-service.js"></script>
+    <script src="src/components/holes-select.js"></script>
+    <script src="src/config/access-control-config.js"></script>
+    <script src="src/config/http-feedback-config.js"></script>
+    <script src="src/config/ionic-config.js"></script>
+    <script src="src/config/polyfills.js"></script>
+    <script src="src/config/route-config.js"></script>
+    <script src="src/config/storage-factory.js"></script>
+    <script src="src/config/toaster.js"></script>
+    <script src="src/rounds/create-round-controller.js"></script>
+    <script src="src/rounds/goto.js"></script>
+    <script src="src/rounds/hole-next.js"></script>
+    <script src="src/rounds/hole-prev.js"></script>
+    <script src="src/rounds/list-rounds-controller.js"></script>
+    <script src="src/rounds/round-controller.js"></script>
+    <script src="src/rounds/round-service.js"></script>
+    <script src="src/rounds/round-summary-controller.js"></script>
+    <script src="src/rounds/round.js"></script>
+    <script src="src/rounds/approach/approach-result-input.js"></script>
+    <script src="src/rounds/approach/approach-result-summary.js"></script>
+    <script src="src/rounds/approach/approach-shot-controller.js"></script>
+    <script src="src/rounds/approach/approach-shot.js"></script>
+    <script src="src/rounds/shortgame/attempt-input.js"></script>
+    <script src="src/rounds/shortgame/putts-input.js"></script>
+    <script src="src/rounds/shortgame/short-game-controller.js"></script>
+    <script src="src/rounds/shortgame/short-game-shots.js"></script>
+    <script src="src/rounds/tee/tee-result-input.js"></script>
+    <script src="src/rounds/tee/tee-result-summary.js"></script>
+    <script src="src/rounds/tee/tee-shot-controller.js"></script>
+    <script src="src/rounds/tee/tee-shot.js"></script>
+    <script src="src/stats/stats-controller.js"></script>
+    <!-- endinject -->
   </head>
   <body ng-app="statracker">
-    <ion-nav-bar class="bar-stable">
+    <ion-nav-bar class="bar-calm">
     </ion-nav-bar>
     <ion-nav-view></ion-nav-view>
   </body>

@@ -13,6 +13,89 @@ input.my-courses[readonly]{
     cursor: text;
 }
 
+.putts-container {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+circle.putt-selected  {
+    stroke: #5E8C6A;
+    fill: none;
+    stroke-width: 2;
+}
+text.putt-selected  {
+    font-family: "Helvetica Neue", "Roboto", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    stroke: #5E8C6A;
+    fill: #5E8C6A;
+}
+circle.putt-unselected  {
+    stroke: #b8b8b8;
+    fill: none;
+    stroke-width: .5;
+}
+text.putt-unselected  {
+    font-family: "Helvetica Neue", "Roboto", sans-serif;
+    font-size: 24px;
+    font-weight: 200;
+    stroke: #b8b8b8;
+    fill: #b8b8b8;
+}
 .attempt-container {
-    width: 120px;
+     width: 100px;
+ }
+.attempt-unselected circle {
+    stroke: #b8b8b8;
+    fill: none;
+    stroke-width: .5;
+}
+.attempt-unselected line {
+    stroke: #b8b8b8;
+    stroke-width: 5;
+}
+.attempt-selected-make circle {
+    stroke: #5E8C6A;
+    fill: none;
+    stroke-width: 2;
+}
+.attempt-selected-make line {
+    stroke: #5E8C6A;
+    stroke-width: 5;
+}
+.attempt-selected-miss circle {
+    stroke: #8C2318;
+    fill: none;
+    stroke-width: 2;
+}
+.attempt-selected-miss line {
+    stroke: #8C2318;
+    stroke-width: 5;
+}
+
+.button-holes {
+    padding: 0 8px !important;
+}
+
+.popover9 {
+    height: 185px !important;
+}
+.popover18 {
+    height: 370px !important;
+}
+
+.missed_green {fill: #BFB35A; stroke: #BFB35A; stroke-miterlimit: 10;}
+.close_to_green {fill: #88A65E; stroke: #88A65E; stroke-miterlimit: 10;}
+.on_green {fill: #ADC78B; stroke: #ADC78B; stroke-miterlimit: 10;}
+.inside_thirty {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
+.inside_twelve {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
+.inside_three {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
+
+.tee-out-of-play {fill: #BFB35A; stroke: #BFB35A; stroke-miterlimit: 10;}
+.tee-big-miss {fill: #88A65E; stroke: #88A65E; stroke-miterlimit: 10;}
+.tee-small-miss {fill: #ADC78B; stroke: #ADC78B; stroke-miterlimit: 10;}
+.tee-fairway {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
+.marker {font-family: Verdana; font-size: 11px; fill: #FFFFFF;}
+
+.round-stat {
+    font-weight: 400;
 }
