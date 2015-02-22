@@ -15,6 +15,7 @@ statracker.controller('ApproachShotController', [
             roundService.update(vm.round).then(function () {
                 roundService.setCurrentHole(hole);
                 vm.shot = vm.round.approachShots[hole - 1];
+                vm.shotDescription = vm.shot.getResultText();
             });
         });
 
@@ -34,15 +35,17 @@ statracker.controller('ApproachShotController', [
             roundService.getCurrentRound().then(function (round) {
                 vm.round = round;
                 vm.shot = vm.round.approachShots[roundService.getCurrentHole() - 1];
-            },
-            function () {
-                console.log('failed to get the current round - redirecting to rounds list');
-                $state.go('^.rounds');
+                vm.shotDescription = vm.shot.getResultText();
             });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
             roundService.update(vm.round);
+        });
+
+        $scope.$on('stk.approach', function (e, result) {
+            vm.shotDescription = result;
+            $scope.$apply();
         });
     }
 ]);

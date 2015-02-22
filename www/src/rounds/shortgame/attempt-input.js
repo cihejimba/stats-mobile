@@ -52,6 +52,7 @@ statracker.directive('attemptInput', [
 
                 make.bind('click', function () {
                     if (scope.round && scope.round.isComplete) return;
+                    console.debug('make click');
                     if (!scope.flag) {
                         scope.flag = true;
                         showTrue();
@@ -63,6 +64,7 @@ statracker.directive('attemptInput', [
 
                 miss.bind('click', function () {
                     if (scope.round && scope.round.isComplete) return;
+                    console.debug('miss click');
                     if (scope.flag === undefined || scope.flag === true) {
                         scope.flag = false;
                         showFalse();

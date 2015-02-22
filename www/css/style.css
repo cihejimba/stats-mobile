@@ -87,8 +87,8 @@ text.putt-unselected  {
 .close_to_green {fill: #88A65E; stroke: #88A65E; stroke-miterlimit: 10;}
 .on_green {fill: #ADC78B; stroke: #ADC78B; stroke-miterlimit: 10;}
 .inside_thirty {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
-.inside_twelve {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
-.inside_three {fill: #D9EBC2; stroke: #D9EBC2; stroke-miterlimit: 10;}
+.inside_twelve {fill: #EBF4E0; stroke: #EBF4E0; stroke-miterlimit: 10;}
+.inside_three {fill: #F9FBF7; stroke: #F9FBF7; stroke-miterlimit: 10;}
 
 .tee-out-of-play {fill: #BFB35A; stroke: #BFB35A; stroke-miterlimit: 10;}
 .tee-big-miss {fill: #88A65E; stroke: #88A65E; stroke-miterlimit: 10;}

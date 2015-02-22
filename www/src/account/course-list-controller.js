@@ -1,7 +1,8 @@
 statracker.controller('CourseListController', [
+    '$ionicPopup',
     'userDataService',
     'userData',
-    function (userDataService, userData) {
+    function ($ionicPopup, userDataService, userData) {
 
         var vm = this;
 
@@ -9,11 +10,17 @@ statracker.controller('CourseListController', [
         vm.showDelete = false;
 
         vm.deleteCourse = function (course) {
-            //TODO: get confirmation
-            //TODO: detect and handle case where course is tied to a round
-            userDataService.deleteCourse(course).then(function (newCourseList) {
-                vm.courses = newCourseList;
-                vm.showDelete = false;
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Delete Course',
+                template: 'Are you sure you want to permanently delete this course?'
+            });
+            confirmPopup.then(function(res) {
+                if(res) {
+                    userDataService.deleteCourse(course).then(function (newCourseList) {
+                        vm.courses = newCourseList;
+                        vm.showDelete = false;
+                    });
+                }
             });
         };
     }

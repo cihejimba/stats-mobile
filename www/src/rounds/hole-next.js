@@ -19,13 +19,14 @@ statracker.directive('holeNext', [
                         if ($state.is('tab.round-detail-shortgame'))
                         {
                             $ionicViewSwitcher.nextDirection('swap');
-                            var round = roundService.getCurrentRound(),
-                                hole = roundService.getCurrentHole();
-                            if (hole == round.holes) { // jshint ignore:line
-                                roundService.setCurrentHole(1);
-                            } else {
-                                roundService.setCurrentHole(hole + 1);
-                            }
+                            roundService.getCurrentRound().then(function (round) {
+                                var hole = roundService.getCurrentHole();
+                                if (hole == round.holes) { // jshint ignore:line
+                                    roundService.setCurrentHole(1);
+                                } else {
+                                    roundService.setCurrentHole(hole + 1);
+                                }
+                            });
                         }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }

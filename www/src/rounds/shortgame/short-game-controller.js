@@ -29,7 +29,7 @@ statracker.controller('ShortGameController', [
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
-            roundService.update(vm.round);
+            roundService.update(vm.round, true); //true: doSynch with server
         });
     }
 ]);

@@ -3,7 +3,8 @@ statracker.controller('RoundSummaryController', [
     '$state',
     '$scope',
     'toaster',
-    function (roundService, $state, $scope, toaster) {
+    '$ionicPopup',
+    function (roundService, $state, $scope, toaster, $ionicPopup) {
 
         var vm = this;
 
@@ -13,31 +14,31 @@ statracker.controller('RoundSummaryController', [
                 vm.stats = vm.round.calculateStats();
             },
             function () {
-                console.log('failed to get the current round - redirecting to rounds list');
+                toaster.toastError('Failed to get the current round');
                 $state.go('^.rounds');
             });
         });
 
-        vm.saveRound = function (completed) {
-            var isComplete = vm.round.isComplete;
-            vm.round.isComplete = completed;
-            roundService.complete(vm.round).then(function () {
-                toaster.toastSuccess('the round has been saved');
-            },
-            function (error) {
-                toaster.toastError('failure: ' + error);
-                vm.round.isComplete = isComplete;
+        vm.deleteRound = function() {
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Delete Round',
+                template: 'Are you sure you want to permanently delete this round?'
+            });
+            confirmPopup.then(function(res) {
+                if(res) {
+                    roundService.delete(vm.round.key).then(function () {
+                        toaster.toastSuccess('Your round has been deleted').then(function () {
+                            $state.go('^.rounds');
+                        });
+                    });
+                }
             });
         };
 
-        vm.deleteRound = function () {
-            roundService.delete(vm.round.key).then(function () {
-                    toaster.toastSuccess('the round has been deleted').then(function () {
-                    $state.go('^.rounds');
-                });
-            },
-            function (error) {
-                toaster.toastError('failure: ' + error);
+        vm.saveRound = function (completed) {
+            vm.round.isComplete = completed;
+            roundService.complete(vm.round).then(function () {
+                toaster.toastSuccess('Your round has been saved');
             });
         };
 

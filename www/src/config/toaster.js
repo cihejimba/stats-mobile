@@ -1,27 +1,36 @@
 statracker.factory('toaster', [
     '$window',
-    '$cordovaToast',
+    '$ionicPopup',
+    '$timeout',
     '$q',
-    function ($window, $cordovaToast, $q) {
-        var isLive = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test($window.navigator.userAgent);
+    function ($window, $ionicPopup, $timeout, $q) {
         return {
             toastSuccess: function (message) {
                 var defer = $q.defer();
-                if (isLive) {
-                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
-                } else {
-                    defer.resolve();
-                }
+                var popup = $ionicPopup.alert({
+                    title: 'Success!',
+                    template: message
+                });
+                popup.then(function(res) {
+                    defer.resolve(message);
+                });
+                $timeout(function() {
+                    popup.close();
+                }, 1500);
                 return defer.promise;
             },
             toastError: function (message) {
                 var defer = $q.defer();
-                console.error(message);
-                if (isLive) {
-                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
-                } else {
-                    defer.resolve();
-                }
+                var popup = $ionicPopup.alert({
+                    title: 'Fail!',
+                    template: message
+                });
+                popup.then(function(res) {
+                    defer.resolve(message);
+                });
+                $timeout(function() {
+                    popup.close();
+                }, 3000);
                 return defer.promise;
             }
         };

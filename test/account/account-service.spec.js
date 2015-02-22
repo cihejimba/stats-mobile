@@ -72,8 +72,9 @@
                 service.login(credentials);
 
                 http.expectPOST(url, function (data) {
-                   return data === 'grant_type=password&username=user@test.com&password=foo&client_id=73788e966f4c4c289a3a8f12f9aae744';
+                   return data === 'grant_type=password&username=user%40test.com&password=foo&client_id=73788e966f4c4c289a3a8f12f9aae744';
                 });
+
                 http.flush();
             });
 
@@ -113,7 +114,7 @@
 
         describe('logout', function () {
 
-            var url = 'https://localhost:44300/api/account/logout';
+            var url = 'https://localhost:44300/api/v1/account/logout';
 
             beforeEach(function () {
                 spyOn(my_store, 'remove');
@@ -158,7 +159,7 @@
 
         describe('register', function () {
 
-            var url = 'https://localhost:44300/api/account/register',
+            var url = 'https://localhost:44300/api/v1/account/register',
                 reg = {
                     email: 'user@test.com',
                     password: 'foo',

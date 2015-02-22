@@ -30,6 +30,9 @@ var paths = {
 gulp.task('default', function() {
     seq('lint', 'html', 'bundle', 'constants');
 });
+gulp.task('run-tests', function() {
+    seq('lint', 'html', 'bundle', 'test');
+});
 
 gulp.task('html', function () {
   gulp.src(paths.html)

@@ -8,7 +8,7 @@ statracker.directive('goto', [
                 hole: '=',
                 holes: '='
             },
-            link: function(scope, elem) {
+            link: function(scope) {
 
                 $ionicPopover.fromTemplateUrl('src/rounds/goto-popover.html', {
                     scope: scope

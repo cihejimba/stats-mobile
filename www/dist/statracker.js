@@ -159,7 +159,7 @@ statracker.controller('CourseDetailController', [
         var vm = this;
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            userDataService.getCourse( $state.params.key).then(function (response) {
+            userDataService.getCourse($state.params.key).then(function (response) {
                 vm.course = response.data;
             });
         });
@@ -180,9 +180,10 @@ statracker.controller('CourseDetailController', [
 ]);
 
 statracker.controller('CourseListController', [
+    '$ionicPopup',
     'userDataService',
     'userData',
-    function (userDataService, userData) {
+    function ($ionicPopup, userDataService, userData) {
 
         var vm = this;
 
@@ -190,11 +191,17 @@ statracker.controller('CourseListController', [
         vm.showDelete = false;
 
         vm.deleteCourse = function (course) {
-            //TODO: get confirmation
-            //TODO: detect and handle case where course is tied to a round
-            userDataService.deleteCourse(course).then(function (newCourseList) {
-                vm.courses = newCourseList;
-                vm.showDelete = false;
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Delete Course',
+                template: 'Are you sure you want to permanently delete this course?'
+            });
+            confirmPopup.then(function(res) {
+                if(res) {
+                    userDataService.deleteCourse(course).then(function (newCourseList) {
+                        vm.courses = newCourseList;
+                        vm.showDelete = false;
+                    });
+                }
             });
         };
     }
@@ -682,7 +689,7 @@ statracker.factory('userDataService', [
             var deferred = $q.defer();
             var index = clubs.findIndex(function (c) { return c.key === club.key; });
             clubs[index] = club;
-            $http.put(apiUrl + 'users/clubs/' + club.key, club).then(function (response) {
+            $http.put(apiUrl + 'users/clubs/' + club.key, club).then(function () {
                 deferred.resolve(clubs);
             });
             return deferred.promise;
@@ -748,61 +755,6 @@ statracker.factory('userDataService', [
         };
     }
 ]);
-statracker.directive('holesSelect', [
-    '$parse',
-    function($parse){
-        return {
-            restrict: 'EA',
-            replace: true,
-            require: 'ngModel',
-            template: '<div class="holes-container button-bar"><a class="button button-small">9</a><a class="button button-small">18</a></div>',
-            link: function(scope, elem, attrs, ngModelCtrl){
-                var buttons = elem.find('a'),
-                    value = $parse(attrs.ngModel),
-                    updateButtons;
-
-                updateButtons = function (value) {
-                    angular.forEach(buttons, function (btn) {
-                        var b = angular.element(btn);
-                        if (btn.innerText == value) { // jshint ignore: line
-                            if (!b.hasClass('button-assertive')) {
-                                b.addClass('button-assertive');
-                                b.removeClass('button-outline');
-                            }
-                            if (b.hasClass('button-stable')) {
-                                b.removeClass('button-stable');
-                                b.addClass('button-outline');
-                            }
-                        } else {
-                            if (b.hasClass('button-assertive')) {
-                                b.removeClass('button-assertive');
-                                b.addClass('button-outline');
-                            }
-                            if (!b.hasClass('button-stable')) {
-                                b.addClass('button-stable');
-                                b.removeClass('button-outline');
-                            }
-                        }
-                    });
-                };
-
-                elem.bind('click', function () {
-                    if (value === undefined) {
-                        value = 18;
-                    } else if (value === 9) {
-                        value = 18;
-                    } else {
-                        value = 9;
-                    }
-                    ngModelCtrl.$setViewValue(value);
-                    updateButtons(value);
-                });
-
-                updateButtons(value);
-            }
-        };
-    }
-]);
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',
@@ -855,7 +807,8 @@ statracker.config([
     function ($httpProvider) {
 
         //broadcast an event with the start and end of each http call
-        $httpProvider.interceptors.push(function($rootScope, $q) {
+        $httpProvider.interceptors.push(['$rootScope', '$q', '$injector', function($rootScope, $q, $injector) {
+            var toaster;
             return {
                 request: function(config) {
                     $rootScope.$broadcast('loading:show');
@@ -866,19 +819,22 @@ statracker.config([
                     return response;
                 },
                 responseError: function (rejection) {
+                    toaster = toaster || $injector.get('toaster');
                     $rootScope.$broadcast('loading:hide');
-                    //TODO: toast a message
+                    if (rejection.data.message) toaster.toastError(rejection.data.message);
+                    else if (rejection.data.Message) toaster.toastError(rejection.data.Message);
+                    else toaster.toastError(rejection.data);
                     return $q.reject(rejection);
                 }
             };
-        });
+        }]);
     }
 ]);
 
 //register listeners to the http start and end events we configured above
 statracker.run(['$rootScope', '$ionicLoading', function ($rootScope, $ionicLoading) {
     $rootScope.$on('loading:show', function() {
-        $ionicLoading.show({template: 'Loading...', noBackdrop: true}); //TODO: something nicer
+        $ionicLoading.show({template: '<i class="icon ion-loading-b"></i>', noBackdrop: true});
     });
     $rootScope.$on('loading:hide', function() {
         $ionicLoading.hide();
@@ -1136,43 +1092,10 @@ statracker.config([
                 url: '/stats',
                 views: {
                     'stats': {
-                        templateUrl: 'src/stats/stats.html',
-                        controller: 'StatsController'
+                        templateUrl: 'src/stats/stats-page.html'
                     }
                 }
             });
-/*            .state('tab.stats.overall', {
-                url: '/overall',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/overall.html'
-                    }
-                }
-            })
-            .state('tab.stats.teeball', {
-                url: '/teeball',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/teeball.html'
-                    }
-                }
-            })
-            .state('tab.stats.approach', {
-                url: '/approach',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/approach.html'
-                    }
-                }
-            })
-            .state('tab.stats.shortgame', {
-                url: '/shortgame',
-                views: {
-                    'stats-detail': {
-                        templateUrl: 'src/stats/shortgame.html'
-                    }
-                }
-            });*/
 
         // if none of the above states are matched, use this as the fallback
         $urlRouterProvider.otherwise('/login');
@@ -1185,40 +1108,93 @@ statracker.factory('localStore', ['store', function(store) {
 
 statracker.factory('toaster', [
     '$window',
-    '$cordovaToast',
+    '$ionicPopup',
+    '$timeout',
     '$q',
-    function ($window, $cordovaToast, $q) {
-        var isLive = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test($window.navigator.userAgent);
+    function ($window, $ionicPopup, $timeout, $q) {
         return {
             toastSuccess: function (message) {
                 var defer = $q.defer();
-                if (isLive) {
-                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
-                } else {
-                    defer.resolve();
-                }
+                var popup = $ionicPopup.alert({
+                    title: 'Success!',
+                    template: message
+                });
+                popup.then(function(res) {
+                    defer.resolve(message);
+                });
+                $timeout(function() {
+                    popup.close();
+                }, 1500);
                 return defer.promise;
             },
             toastError: function (message) {
                 var defer = $q.defer();
-                console.error(message);
-                if (isLive) {
-                    defer.resolve($cordovaToast.show(message, 'short', 'center'));
-                } else {
-                    defer.resolve();
-                }
+                var popup = $ionicPopup.alert({
+                    title: 'Fail!',
+                    template: message
+                });
+                popup.then(function(res) {
+                    defer.resolve(message);
+                });
+                $timeout(function() {
+                    popup.close();
+                }, 3000);
                 return defer.promise;
             }
         };
     }
 ]);
-statracker.controller('StatsController', [
-    '$scope',
-    '$state',
-    function ($state) {
-        if ($state.is('tab.stats')) {
-            $state.go('.overall');
-        }
+statracker.directive('holesSelect', [
+    '$parse',
+    function($parse){
+        return {
+            restrict: 'EA',
+            replace: true,
+            require: 'ngModel',
+            template: '<div class="holes-container button-bar"><a class="button button-holes button-small">9</a><a class="button button-holes button-small">18</a></div>',
+            link: function(scope, elem, attrs, ngModelCtrl){
+                var buttons = elem.find('a'),
+                    value = $parse(attrs.ngModel)(scope),
+                    updateButtons;
+
+                updateButtons = function (value) {
+                    angular.forEach(buttons, function (btn) {
+                        var b = angular.element(btn);
+                        if (btn.innerText == value) { // jshint ignore: line
+                            if (!b.hasClass('button-calm')) {
+                                b.addClass('button-calm');
+                                b.removeClass('button-outline');
+                            } else {
+                                b.removeClass('button-stable');
+                                b.addClass('button-outline');
+                            }
+                        } else {
+                            if (b.hasClass('button-calm')) {
+                                b.removeClass('button-calm');
+                                b.addClass('button-outline');
+                            } else {
+                                b.addClass('button-stable');
+                                b.removeClass('button-outline');
+                            }
+                        }
+                    });
+                };
+
+                elem.bind('click', function () {
+                    if (value === undefined) {
+                        value = 18;
+                    } else if (value === 9) {
+                        value = 18;
+                    } else {
+                        value = 9;
+                    }
+                    ngModelCtrl.$setViewValue(value);
+                    updateButtons(value);
+                });
+
+                updateButtons(value);
+            }
+        };
     }
 ]);
 statracker.controller('CreateRoundController', [
@@ -1299,6 +1275,16 @@ statracker.controller('CreateRoundController', [
             };
         });
 
+        $scope.$watch('course.holes', function (newValue, oldValue) {
+            if (newValue && newValue !== oldValue) {
+                if (newValue === 18) {
+                    $scope.course.par = 72;
+                } else {
+                    $scope.course.par = 36;
+                }
+            }
+        });
+
         $scope.$on('$destroy', function() {
             vm.modal.remove();
         });
@@ -1310,7 +1296,7 @@ statracker.directive('goto', [
     function ($ionicPopover) {
         return {
             restrict: 'AE',
-            template: '<button class="button button-small button-clear icon-right ion-ios7-flag-outline" ng-click="open($event)"> {{hole}}</button>',
+            template: '<button class="button button-small button-clear" ng-click="open($event)">Hole {{hole}}</button>',
             scope: {
                 hole: '=',
                 holes: '='
@@ -1363,13 +1349,14 @@ statracker.directive('holeNext', [
                         if ($state.is('tab.round-detail-shortgame'))
                         {
                             $ionicViewSwitcher.nextDirection('swap');
-                            var round = roundService.getCurrentRound(),
-                                hole = roundService.getCurrentHole();
-                            if (hole == round.holes) { // jshint ignore:line
-                                roundService.setCurrentHole(1);
-                            } else {
-                                roundService.setCurrentHole(hole + 1);
-                            }
+                            roundService.getCurrentRound().then(function (round) {
+                                var hole = roundService.getCurrentHole();
+                                if (hole == round.holes) { // jshint ignore:line
+                                    roundService.setCurrentHole(1);
+                                } else {
+                                    roundService.setCurrentHole(hole + 1);
+                                }
+                            });
                         }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }
@@ -1400,13 +1387,14 @@ statracker.directive('holePrev', [
                         if ($state.is('tab.round-detail-teeball'))
                         {
                             $ionicViewSwitcher.nextDirection('swap');
-                            var round = roundService.getCurrentRound(),
-                                hole = roundService.getCurrentHole();
-                            if (hole == 1) { // jshint ignore:line
-                                roundService.setCurrentHole(round.holes);
-                            } else {
-                                roundService.setCurrentHole(hole - 1);
-                            }
+                            roundService.getCurrentRound().then(function (round) {
+                                var hole = roundService.getCurrentHole();
+                                if (hole == 1) { // jshint ignore:line
+                                    roundService.setCurrentHole(round.holes);
+                                } else {
+                                    roundService.setCurrentHole(hole - 1);
+                                }
+                            });
                         }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }
@@ -1417,37 +1405,51 @@ statracker.directive('holePrev', [
 ]);
 statracker.controller('ListRoundsController', [
     '$state',
+    '$scope',
     'roundService',
-    function ($state, roundService) {
+    function ($state, $scope, roundService) {
 
         var vm = this;
 
+        vm.rounds = [];
         vm.filter = {
             holes: 18,
             roundsToChart: 10,
             monthsToList: 3
         };
-        vm.rounds = [];
 
-        roundService.getAll().then(function (response) {
-            vm.rounds = response.data;
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.scores = {};
+            roundService.getAll().then(function (response) {
+                vm.rounds = response.data;
+                vm.calculateRecentScores(vm.filter.roundsToChart, vm.filter.holes);
+            });
+        });
 
-            var recent18 = {
-                key: 'Recent 18 hole rounds',
-                values: vm.getRecentScores(vm.rounds, 18, 10)
-            },  recent9 = {
-                key: 'Recent 9 hole rounds',
-                values: vm.getRecentScores(vm.rounds, 9, 10)
-            },  total18 = recent18.values.reduce(function (prev, curr) {
-                return {value: prev.value + curr.value};
-            }, {value: 0}),
-                total9 = recent9.values.reduce(function (prev, curr) {
+        $scope.$watch(angular.bind(vm, function () {
+            return vm.filter.holes;
+        }), function (newValue, oldValue) {
+            if (newValue && newValue !== oldValue) {
+                vm.calculateRecentScores(vm.filter.roundsToChart, vm.filter.holes);
+            }
+        });
+
+        vm.calculateRecentScores = function (numberOfRounds, holes) {
+            var data = {},
+                total = 0;
+
+            if (holes === 9) {
+                data.key = 'Recent 9 hole rounds';
+            } else {
+                data.key = 'Recent 18 hole rounds';
+            }
+            data.values = vm.getRecentScores(vm.rounds, holes, numberOfRounds);
+
+            total = data.values.reduce(function (prev, curr) {
                 return {value: prev.value + curr.value};
             }, {value: 0});
 
-            vm.scores = {};
-            vm.scores.average9 = total9.value / recent9.values.length;
-            vm.scores.average18 = total18.value / recent18.values.length;
+            vm.scores.average = total.value / data.values.length;
             vm.scores.options = {
                 chart: {
                     type: 'discreteBarChart',
@@ -1462,6 +1464,7 @@ statracker.controller('ListRoundsController', [
                         bottom: 10,
                         left: 10
                     },
+                    color: ['#88A65E'],
                     x: function(d){ return d.label; },
                     y: function(d){ return d.value; },
                     showValues: true,
@@ -1481,8 +1484,8 @@ statracker.controller('ListRoundsController', [
                 }
             };
 
-            vm.scores.data = [recent9];
-        });
+            vm.scores.data = [data];
+        };
 
         vm.gotoSummary = function (roundId) {
             roundService.loadRound(roundId).then(function () {
@@ -1644,7 +1647,8 @@ statracker.controller('RoundSummaryController', [
     '$state',
     '$scope',
     'toaster',
-    function (roundService, $state, $scope, toaster) {
+    '$ionicPopup',
+    function (roundService, $state, $scope, toaster, $ionicPopup) {
 
         var vm = this;
 
@@ -1654,31 +1658,31 @@ statracker.controller('RoundSummaryController', [
                 vm.stats = vm.round.calculateStats();
             },
             function () {
-                console.log('failed to get the current round - redirecting to rounds list');
+                toaster.toastError('Failed to get the current round');
                 $state.go('^.rounds');
             });
         });
 
-        vm.saveRound = function (completed) {
-            var isComplete = vm.round.isComplete;
-            vm.round.isComplete = completed;
-            roundService.complete(vm.round).then(function () {
-                toaster.toastSuccess('the round has been saved');
-            },
-            function (error) {
-                toaster.toastError('failure: ' + error);
-                vm.round.isComplete = isComplete;
+        vm.deleteRound = function() {
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Delete Round',
+                template: 'Are you sure you want to permanently delete this round?'
+            });
+            confirmPopup.then(function(res) {
+                if(res) {
+                    roundService.delete(vm.round.key).then(function () {
+                        toaster.toastSuccess('Your round has been deleted').then(function () {
+                            $state.go('^.rounds');
+                        });
+                    });
+                }
             });
         };
 
-        vm.deleteRound = function () {
-            roundService.delete(vm.round.key).then(function () {
-                    toaster.toastSuccess('the round has been deleted').then(function () {
-                    $state.go('^.rounds');
-                });
-            },
-            function (error) {
-                toaster.toastError('failure: ' + error);
+        vm.saveRound = function (completed) {
+            vm.round.isComplete = completed;
+            roundService.complete(vm.round).then(function () {
+                toaster.toastSuccess('Your round has been saved');
             });
         };
 
@@ -1921,6 +1925,12 @@ statracker.controller('RoundSummaryController', [
     st.Round = round;
 
 }(statracker));
+statracker.controller('StatsController', [
+    function () {
+        var vm = this;
+        vm.stats = {};
+    }
+]);
 statracker.directive('approachResultInput', [
     function () {
         return {
@@ -1928,7 +1938,8 @@ statracker.directive('approachResultInput', [
             templateUrl: 'src/rounds/approach/approach-result-input.html',
             replace: true,
             scope: {
-                shot: '='
+                shot: '=',
+                round: '='
             },
             link: function (scope, elem) {
 
@@ -1973,15 +1984,22 @@ statracker.directive('approachResultInput', [
                 };
 
                 scope.$watch('shot', function () {
-                    clearBalls();
-                    if (scope.shot.result != null && scope.shot.result >= 0) {
-                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    console.debug('shot watch');
+                    if (scope.shot) {
+                        console.debug('shot exists');
+                        clearBalls();
+                        if (scope.shot.result != null && scope.shot.result >= 0) {
+                            placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                        }
                     }
                 });
 
                 green.bind('click', function (e) {
+                    if (scope.round && scope.round.isComplete) return;
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    console.debug('green click at ' + scope.shot.result);
+                    scope.$emit('stk.approach', scope.shot.getResultText());
                     if (!scope.shot.coordinates) {
                         scope.shot.coordinates = {x:0,y:0};
                     }
@@ -2067,6 +2085,7 @@ statracker.controller('ApproachShotController', [
             roundService.update(vm.round).then(function () {
                 roundService.setCurrentHole(hole);
                 vm.shot = vm.round.approachShots[hole - 1];
+                vm.shotDescription = vm.shot.getResultText();
             });
         });
 
@@ -2086,15 +2105,17 @@ statracker.controller('ApproachShotController', [
             roundService.getCurrentRound().then(function (round) {
                 vm.round = round;
                 vm.shot = vm.round.approachShots[roundService.getCurrentHole() - 1];
-            },
-            function () {
-                console.log('failed to get the current round - redirecting to rounds list');
-                $state.go('^.rounds');
+                vm.shotDescription = vm.shot.getResultText();
             });
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
             roundService.update(vm.round);
+        });
+
+        $scope.$on('stk.approach', function (e, result) {
+            vm.shotDescription = result;
+            $scope.$apply();
         });
     }
 ]);
@@ -2188,6 +2209,250 @@ statracker.controller('ApproachShotController', [
     st.ApproachShot = shot;
 
 }(statracker));
+statracker.directive('attemptInput', [
+    function () {
+        return {
+            restrict: 'E',
+            templateUrl: 'src/rounds/shortgame/attempt-input.html',
+            replace: true,
+            scope: {
+                flag: '=',
+                round: '='
+            },
+            link: function (scope, elem) {
+
+                var make = angular.element(elem[0].querySelector('#make')),
+                    miss = angular.element(elem[0].querySelector('#miss'));
+
+                var showUndefined = function () {
+                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
+                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
+                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
+                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
+                };
+
+                var showTrue = function() {
+                    if (make.hasClass('attempt-unselected')) make.removeClass('attempt-unselected');
+                    if (!make.hasClass('attempt-selected-make')) make.addClass('attempt-selected-make');
+                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
+                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
+                };
+
+                var showFalse = function () {
+                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
+                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
+                    if (miss.hasClass('attempt-unselected')) miss.removeClass('attempt-unselected');
+                    if (!miss.hasClass('attempt-selected-miss')) miss.addClass('attempt-selected-miss');
+                };
+
+                var bindValue = function () {
+                    if (scope.flag === true) {
+                        showTrue();
+                    } else if (scope.flag === false) {
+                        showFalse();
+                    } else {
+                        showUndefined();
+                    }
+                };
+
+                bindValue();
+
+                scope.$watch('flag', function () {
+                    bindValue();
+                });
+
+                make.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
+                    console.debug('make click');
+                    if (!scope.flag) {
+                        scope.flag = true;
+                        showTrue();
+                    } else {
+                        scope.flag = undefined;
+                        showUndefined();
+                    }
+                });
+
+                miss.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
+                    console.debug('miss click');
+                    if (scope.flag === undefined || scope.flag === true) {
+                        scope.flag = false;
+                        showFalse();
+                    } else {
+                        scope.flag = undefined;
+                        showUndefined();
+                    }
+                });
+            }
+        };
+    }
+]);
+statracker.directive('puttsInput', [
+    function () {
+        return {
+            restrict: 'AE',
+            templateUrl: 'src/rounds/shortgame/putts-input.html',
+            replace: true,
+            scope: {
+                shot: '=',
+                round: '='
+            },
+            link: function (scope, elem) {
+
+                var putts = elem.find('circle'),
+                    puttsText = elem.find('text');
+
+                var clearPutts = function () {
+                    angular.forEach(putts, function (p) {
+                        var putt = angular.element(p);
+                        if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                        if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttText = angular.element(txt);
+                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
+                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
+                    });
+                };
+
+                var showPutt = function(value) {
+                    angular.forEach(putts, function (p) {
+                        var puttValue = parseInt(p.getAttribute(('data-value'))),
+                            putt = angular.element(p);
+                        if (puttValue === value) {
+                            if (!putt.hasClass('putt-selected')) putt.addClass('putt-selected');
+                            if (putt.hasClass('putt-unselected')) putt.removeClass('putt-unselected');
+                        } else {
+                            if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
+                            if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
+                        }
+                    });
+                    angular.forEach(puttsText, function (txt) {
+                        var puttTextValue = parseInt(txt.textContent),
+                            puttText = angular.element(txt);
+                        if (puttTextValue === value) {
+                            if (!puttText.hasClass('putt-selected')) puttText.addClass('putt-selected');
+                            if (puttText.hasClass('putt-unselected')) puttText.removeClass('putt-unselected');
+                        } else {
+                            if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
+                            if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
+                        }
+                    });
+                };
+
+                var bindValue = function () {
+                    if (scope.shot && scope.shot.putts != null) {
+                        showPutt(scope.shot.putts);
+                    } else {
+                        clearPutts();
+                    }
+                };
+
+                bindValue();
+
+                scope.$watch('shot', function () {
+                    bindValue();
+                });
+
+                putts.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
+                    var value = parseInt(this.getAttribute(('data-value')));
+                    scope.shot.putts = value;
+                    bindValue();
+                });
+
+                puttsText.bind('click', function () {
+                    if (scope.round && scope.round.isComplete) return;
+                    var value = parseInt(this.textContent);
+                    scope.shot.putts = value;
+                    bindValue();
+                });
+            }
+        };
+    }
+]);
+statracker.controller('ShortGameController', [
+    '$state',
+    '$scope',
+    'roundService',
+    function ($state, $scope, roundService) {
+
+        var vm = this;
+
+        vm.gotoSummary = function () {
+            $state.go('^.round-summary');
+        };
+
+        $scope.$on('hole_change', function(e, hole) {
+            roundService.update(vm.round).then(function () {
+                roundService.setCurrentHole(hole);
+                vm.shot = vm.round.shortGameShots[hole - 1];
+            });
+        });
+
+        $scope.$on('$ionicView.beforeEnter', function () {
+            roundService.getCurrentRound().then(function (round) {
+                    vm.round = round;
+                    vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
+                },
+                function () {
+                    console.log('failed to get the current round - redirecting to rounds list');
+                    $state.go('^.rounds');
+                });
+        });
+
+        $scope.$on('$ionicView.beforeLeave', function () {
+            roundService.update(vm.round, true); //true: doSynch with server
+        });
+    }
+]);
+
+(function (st) {
+
+    var shortgame = function (hole, api) {
+        if (api) {
+            this.key = api.key;
+            this.hole = api.holeNumber;
+            this.initialPuttLength = api.initialLengthNumber;
+            this.puttMadeLength = api.finalLengthNumber;
+            this.putts = api.puttsCount;
+            this.upAndDown = api.upAndDownFlag;
+            this.sandSave = api.sandSaveFlag;
+            this.holeOut = api.holeOutFlag;
+        } else {
+            this.key = undefined;
+            this.hole = hole;
+            this.initialPuttLength = undefined;
+            this.puttMadeLength = undefined;
+            this.putts = undefined;
+            this.upAndDown = undefined;
+            this.sandSave = undefined;
+            this.holeOut = undefined;
+        }
+    },
+    toApi = function (parentKey) {
+        return {
+            key: this.key,
+            roundKey: parentKey,
+            holeNumber: this.hole,
+            initialLengthNumber: this.initialPuttLength,
+            finalLengthNumber: this.puttMadeLength,
+            puttsCount: this.putts,
+            upAndDownFlag: this.upAndDown,
+            sandSaveFlag: this.sandSave,
+            holeOutFlag: this.holeOut
+        };
+    };
+
+    shortgame.prototype = {
+        constructor: shortgame,
+        toApi: toApi
+    };
+
+    st.ShortGame = shortgame;
+
+}(statracker));
 statracker.directive('teeResultInput', [
     function () {
         return {
@@ -2195,7 +2460,8 @@ statracker.directive('teeResultInput', [
             templateUrl: 'src/rounds/tee/tee-result-input.html',
             replace: true,
             scope: {
-                shot: '='
+                shot: '=',
+                round: '='
             },
             link: function (scope, elem) {
 
@@ -2256,9 +2522,11 @@ statracker.directive('teeResultInput', [
 
                 //TODO: this should be a one-time thing - how to ensure that?
                 scope.$watch('shot', function () {
-                    clearBalls();
-                    if (scope.shot.result != null && scope.shot.result >= 0) {
-                        placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                    if (scope.shot) {
+                        clearBalls();
+                        if (scope.shot.result != null && scope.shot.result >= 0) {
+                            placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
+                        }
                     }
                 });
 
@@ -2271,6 +2539,7 @@ statracker.directive('teeResultInput', [
                 });
 
                 fairway.bind('click', function (e) {
+                    if (scope.round && scope.round.isComplete) return;
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
                     if (!scope.shot.coordinates) {
@@ -2437,241 +2706,5 @@ statracker.controller('TeeShotController', [
     };
 
     st.TeeShot = shot;
-
-}(statracker));
-statracker.directive('attemptInput', [
-    function () {
-        return {
-            restrict: 'E',
-            templateUrl: 'src/rounds/shortgame/attempt-input.html',
-            replace: true,
-            scope: {
-                flag: '='
-            },
-            link: function (scope, elem) {
-
-                var make = angular.element(elem[0].querySelector('#make')),
-                    miss = angular.element(elem[0].querySelector('#miss'));
-
-                var showUndefined = function () {
-                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
-                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
-                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
-                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
-                };
-
-                var showTrue = function() {
-                    if (make.hasClass('attempt-unselected')) make.removeClass('attempt-unselected');
-                    if (!make.hasClass('attempt-selected-make')) make.addClass('attempt-selected-make');
-                    if (!miss.hasClass('attempt-unselected')) miss.addClass('attempt-unselected');
-                    if (miss.hasClass('attempt-selected-miss')) miss.removeClass('attempt-selected-miss');
-                };
-
-                var showFalse = function () {
-                    if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
-                    if (make.hasClass('attempt-selected-make')) make.removeClass('attempt-selected-make');
-                    if (miss.hasClass('attempt-unselected')) miss.removeClass('attempt-unselected');
-                    if (!miss.hasClass('attempt-selected-miss')) miss.addClass('attempt-selected-miss');
-                };
-
-                var bindValue = function () {
-                    if (scope.flag === true) {
-                        showTrue();
-                    } else if (scope.flag === false) {
-                        showFalse();
-                    } else {
-                        showUndefined();
-                    }
-                };
-
-                bindValue();
-
-                scope.$watch('flag', function () {
-                    bindValue();
-                });
-
-                make.bind('click', function () {
-                    if (!scope.flag) {
-                        scope.flag = true;
-                        showTrue();
-                    } else {
-                        scope.flag = undefined;
-                        showUndefined();
-                    }
-                });
-
-                miss.bind('click', function () {
-                    if (scope.flag === undefined || scope.flag === true) {
-                        scope.flag = false;
-                        showFalse();
-                    } else {
-                        scope.flag = undefined;
-                        showUndefined();
-                    }
-                });
-            }
-        };
-    }
-]);
-statracker.directive('puttsInput', [
-    function () {
-        return {
-            restrict: 'AE',
-            templateUrl: 'src/rounds/shortgame/putts-input.html',
-            replace: true,
-            scope: {
-                shot: '='
-            },
-            link: function (scope, elem) {
-
-                var putts = elem.find('circle'),
-                    puttsText = elem.find('text');
-
-                var clearPutts = function () {
-                    angular.forEach(putts, function (p) {
-                        var putt = angular.element(p);
-                        if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
-                        if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
-                    });
-                    angular.forEach(puttsText, function (txt) {
-                        var puttText = angular.element(txt);
-                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
-                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
-                    });
-                };
-
-                var showPutt = function(value) {
-                    angular.forEach(putts, function (p) {
-                        var puttValue = parseInt(p.getAttribute(('data-value'))),
-                            putt = angular.element(p);
-                        if (puttValue === value) {
-                            if (!putt.hasClass('putt-selected')) putt.addClass('putt-selected');
-                            if (putt.hasClass('putt-unselected')) putt.removeClass('putt-unselected');
-                        } else {
-                            if (!putt.hasClass('putt-unselected')) putt.addClass('putt-unselected');
-                            if (putt.hasClass('putt-selected')) putt.removeClass('putt-selected');
-                        }
-                    });
-                    angular.forEach(puttsText, function (txt) {
-                        var puttTextValue = parseInt(txt.textContent),
-                            puttText = angular.element(txt);
-                        if (puttTextValue === value) {
-                            if (!puttText.hasClass('putt-selected')) puttText.addClass('putt-selected');
-                            if (puttText.hasClass('putt-unselected')) puttText.removeClass('putt-unselected');
-                        } else {
-                            if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
-                            if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
-                        }
-                    });
-                };
-
-                var bindValue = function () {
-                    if (scope.shot && scope.shot.putts != null) {
-                        showPutt(scope.shot.putts);
-                    } else {
-                        clearPutts();
-                    }
-                };
-
-                bindValue();
-
-                scope.$watch('shot', function () {
-                    bindValue();
-                });
-
-                putts.bind('click', function () {
-                    var value = parseInt(this.getAttribute(('data-value')));
-                    scope.shot.putts = value;
-                    bindValue();
-                });
-
-                puttsText.bind('click', function () {
-                    var value = parseInt(this.textContent);
-                    scope.shot.putts = value;
-                    bindValue();
-                });
-            }
-        };
-    }
-]);
-statracker.controller('ShortGameController', [
-    '$state',
-    '$scope',
-    'roundService',
-    function ($state, $scope, roundService) {
-
-        var vm = this;
-
-        vm.gotoSummary = function () {
-            $state.go('^.round-summary');
-        };
-
-        $scope.$on('hole_change', function(e, hole) {
-            roundService.update(vm.round).then(function () {
-                roundService.setCurrentHole(hole);
-                vm.shot = vm.round.shortGameShots[hole - 1];
-            });
-        });
-
-        $scope.$on('$ionicView.beforeEnter', function () {
-            roundService.getCurrentRound().then(function (round) {
-                    vm.round = round;
-                    vm.shot = vm.round.shortGameShots[roundService.getCurrentHole() - 1];
-                },
-                function () {
-                    console.log('failed to get the current round - redirecting to rounds list');
-                    $state.go('^.rounds');
-                });
-        });
-
-        $scope.$on('$ionicView.beforeLeave', function () {
-            roundService.update(vm.round);
-        });
-    }
-]);
-
-(function (st) {
-
-    var shortgame = function (hole, api) {
-        if (api) {
-            this.key = api.key;
-            this.hole = api.holeNumber;
-            this.initialPuttLength = api.initialLengthNumber;
-            this.puttMadeLength = api.finalLengthNumber;
-            this.putts = api.puttsCount;
-            this.upAndDown = api.upAndDownFlag;
-            this.sandSave = api.sandSaveFlag;
-            this.holeOut = api.holeOutFlag;
-        } else {
-            this.key = undefined;
-            this.hole = hole;
-            this.initialPuttLength = undefined;
-            this.puttMadeLength = undefined;
-            this.putts = undefined;
-            this.upAndDown = undefined;
-            this.sandSave = undefined;
-            this.holeOut = undefined;
-        }
-    },
-    toApi = function (parentKey) {
-        return {
-            key: this.key,
-            roundKey: parentKey,
-            holeNumber: this.hole,
-            initialLengthNumber: this.initialPuttLength,
-            finalLengthNumber: this.puttMadeLength,
-            puttsCount: this.putts,
-            upAndDownFlag: this.upAndDown,
-            sandSaveFlag: this.sandSave,
-            holeOutFlag: this.holeOut
-        };
-    };
-
-    shortgame.prototype = {
-        constructor: shortgame,
-        toApi: toApi
-    };
-
-    st.ShortGame = shortgame;
 
 }(statracker));

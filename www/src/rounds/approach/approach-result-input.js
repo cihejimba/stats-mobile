@@ -51,7 +51,9 @@ statracker.directive('approachResultInput', [
                 };
 
                 scope.$watch('shot', function () {
+                    console.debug('shot watch');
                     if (scope.shot) {
+                        console.debug('shot exists');
                         clearBalls();
                         if (scope.shot.result != null && scope.shot.result >= 0) {
                             placeBall(scope.shot.coordinates.x, scope.shot.coordinates.y, true);
@@ -63,6 +65,8 @@ statracker.directive('approachResultInput', [
                     if (scope.round && scope.round.isComplete) return;
                     var cp = cursorPoint(e);
                     scope.shot.result = parseInt(this.getAttribute(('data-location')));
+                    console.debug('green click at ' + scope.shot.result);
+                    scope.$emit('stk.approach', scope.shot.getResultText());
                     if (!scope.shot.coordinates) {
                         scope.shot.coordinates = {x:0,y:0};
                     }

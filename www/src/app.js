@@ -6,4 +6,4 @@ angular.module('constants', [])
     .constant('tokenUrl', '@@tokenUrl')
     .constant('clientId', '@@clientId');
 
-var statracker = angular.module('statracker', ['ionic', 'angular-storage', 'angular-jwt', 'ngMessages', 'ngCordova', 'nvd3', 'constants']);
+var statracker = angular.module('statracker', ['ionic', 'angular-storage', 'angular-jwt', 'ngMessages', 'nvd3', 'constants']);

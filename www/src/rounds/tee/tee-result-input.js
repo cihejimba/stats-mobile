@@ -8,7 +8,7 @@ statracker.directive('teeResultInput', [
                 shot: '=',
                 round: '='
             },
-            link: function (scope, elem, attrs) {
+            link: function (scope, elem) {
 
                 var fairway = elem.find('rect'),
                     svg = elem[0].querySelector('svg'),

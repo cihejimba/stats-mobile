@@ -7,24 +7,26 @@ statracker.controller('ListRoundsController', [
         var vm = this;
 
         vm.rounds = [];
-        vm.scores = {};
         vm.filter = {
             holes: 18,
             roundsToChart: 10,
             monthsToList: 3
         };
 
-        $scope.$watch(angular.bind(vm, function (filter) {
+        $scope.$on('$ionicView.beforeEnter', function () {
+            vm.scores = {};
+            roundService.getAll().then(function (response) {
+                vm.rounds = response.data;
+                vm.calculateRecentScores(vm.filter.roundsToChart, vm.filter.holes);
+            });
+        });
+
+        $scope.$watch(angular.bind(vm, function () {
             return vm.filter.holes;
         }), function (newValue, oldValue) {
             if (newValue && newValue !== oldValue) {
                 vm.calculateRecentScores(vm.filter.roundsToChart, vm.filter.holes);
             }
-        });
-
-        roundService.getAll().then(function (response) {
-            vm.rounds = response.data;
-            vm.calculateRecentScores(vm.filter.roundsToChart, vm.filter.holes);
         });
 
         vm.calculateRecentScores = function (numberOfRounds, holes) {

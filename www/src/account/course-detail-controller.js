@@ -7,7 +7,7 @@ statracker.controller('CourseDetailController', [
         var vm = this;
 
         $scope.$on('$ionicView.beforeEnter', function () {
-            userDataService.getCourse( $state.params.key).then(function (response) {
+            userDataService.getCourse($state.params.key).then(function (response) {
                 vm.course = response.data;
             });
         });

@@ -19,13 +19,14 @@ statracker.directive('holePrev', [
                         if ($state.is('tab.round-detail-teeball'))
                         {
                             $ionicViewSwitcher.nextDirection('swap');
-                            var round = roundService.getCurrentRound(),
-                                hole = roundService.getCurrentHole();
-                            if (hole == 1) { // jshint ignore:line
-                                roundService.setCurrentHole(round.holes);
-                            } else {
-                                roundService.setCurrentHole(hole - 1);
-                            }
+                            roundService.getCurrentRound().then(function (round) {
+                                var hole = roundService.getCurrentHole();
+                                if (hole == 1) { // jshint ignore:line
+                                    roundService.setCurrentHole(round.holes);
+                                } else {
+                                    roundService.setCurrentHole(hole - 1);
+                                }
+                            });
                         }
                         $state.go(destination, $state.params, {location: 'replace'});
                     }
