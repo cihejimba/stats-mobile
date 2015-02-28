@@ -26,7 +26,7 @@ statracker.directive('approachResultInput', [
 
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
-                        //log warning
+                        console.warn('x or y is null');
                         return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
@@ -43,9 +43,8 @@ statracker.directive('approachResultInput', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };

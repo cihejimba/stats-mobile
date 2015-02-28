@@ -9,15 +9,15 @@
         <ion-list>
             <label class="item item-input">
                 <span class="input-label">Starting distance:</span>
-                <input type="tel" ng-model="ctrl.shot.initialPuttLength" ng-disabled="ctrl.round.isComplete" />
+                <input type="number" step="0.1" ng-model="ctrl.shot.initialPuttLength" ng-disabled="ctrl.round.isComplete" />
             </label>
             <label class="item item-input">
                 <span class="input-label">Final putt length:</span>
-                <input type="tel" ng-model="ctrl.shot.puttMadeLength" ng-disabled="ctrl.round.isComplete" />
+                <input type="number" step="0.1" ng-model="ctrl.shot.puttMadeLength" ng-disabled="ctrl.round.isComplete" />
             </label>
             <div class="item row">
                 <div class="col col-25">
-                    <span class="input-label">Putts:</span>
+                    <span class="input-label nudge-right">Putts:</span>
                 </div>
                 <div class="col col-75">
                     <putts-input shot="ctrl.shot" round="ctrl.round"></putts-input>
@@ -25,7 +25,7 @@
             </div>
             <div class="item row">
                 <div class="col">
-                    <span class="input-label">Up and down:</span>
+                    <span class="input-label nudge-right">Up and down:</span>
                 </div>
                 <div class="col">
                     <attempt-input flag="ctrl.shot.upAndDown" round="ctrl.round"></attempt-input>
@@ -33,7 +33,7 @@
             </div>
             <div class="item row">
                 <div class="col">
-                    <span class="input-label">Sand save:</span>
+                    <span class="input-label nudge-right">Sand save:</span>
                 </div>
                 <div class="col">
                     <attempt-input flag="ctrl.shot.sandSave" round="ctrl.round"></attempt-input>

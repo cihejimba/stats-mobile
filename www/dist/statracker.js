@@ -755,6 +755,59 @@ statracker.factory('userDataService', [
         };
     }
 ]);
+statracker.directive('holesSelect', [
+    '$parse',
+    function($parse){
+        return {
+            restrict: 'EA',
+            replace: true,
+            require: 'ngModel',
+            template: '<div class="holes-container button-bar"><a class="button button-holes button-small">9</a><a class="button button-holes button-small">18</a></div>',
+            link: function(scope, elem, attrs, ngModelCtrl){
+                var buttons = elem.find('a'),
+                    value = $parse(attrs.ngModel)(scope),
+                    updateButtons;
+
+                updateButtons = function (value) {
+                    angular.forEach(buttons, function (btn) {
+                        var b = angular.element(btn);
+                        if (btn.innerText == value) { // jshint ignore: line
+                            if (!b.hasClass('button-calm')) {
+                                b.addClass('button-calm');
+                                b.removeClass('button-outline');
+                            } else {
+                                b.removeClass('button-stable');
+                                b.addClass('button-outline');
+                            }
+                        } else {
+                            if (b.hasClass('button-calm')) {
+                                b.removeClass('button-calm');
+                                b.addClass('button-outline');
+                            } else {
+                                b.addClass('button-stable');
+                                b.removeClass('button-outline');
+                            }
+                        }
+                    });
+                };
+
+                elem.bind('click', function () {
+                    if (value === undefined) {
+                        value = 18;
+                    } else if (value === 9) {
+                        value = 18;
+                    } else {
+                        value = 9;
+                    }
+                    ngModelCtrl.$setViewValue(value);
+                    updateButtons(value);
+                });
+
+                updateButtons(value);
+            }
+        };
+    }
+]);
 statracker.config([
     '$httpProvider',
     'jwtInterceptorProvider',
@@ -1098,7 +1151,7 @@ statracker.config([
             });
 
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/login');
+        $urlRouterProvider.otherwise('/tab/rounds');
     }
 ]);
 
@@ -1140,59 +1193,6 @@ statracker.factory('toaster', [
                     popup.close();
                 }, 3000);
                 return defer.promise;
-            }
-        };
-    }
-]);
-statracker.directive('holesSelect', [
-    '$parse',
-    function($parse){
-        return {
-            restrict: 'EA',
-            replace: true,
-            require: 'ngModel',
-            template: '<div class="holes-container button-bar"><a class="button button-holes button-small">9</a><a class="button button-holes button-small">18</a></div>',
-            link: function(scope, elem, attrs, ngModelCtrl){
-                var buttons = elem.find('a'),
-                    value = $parse(attrs.ngModel)(scope),
-                    updateButtons;
-
-                updateButtons = function (value) {
-                    angular.forEach(buttons, function (btn) {
-                        var b = angular.element(btn);
-                        if (btn.innerText == value) { // jshint ignore: line
-                            if (!b.hasClass('button-calm')) {
-                                b.addClass('button-calm');
-                                b.removeClass('button-outline');
-                            } else {
-                                b.removeClass('button-stable');
-                                b.addClass('button-outline');
-                            }
-                        } else {
-                            if (b.hasClass('button-calm')) {
-                                b.removeClass('button-calm');
-                                b.addClass('button-outline');
-                            } else {
-                                b.addClass('button-stable');
-                                b.removeClass('button-outline');
-                            }
-                        }
-                    });
-                };
-
-                elem.bind('click', function () {
-                    if (value === undefined) {
-                        value = 18;
-                    } else if (value === 9) {
-                        value = 18;
-                    } else {
-                        value = 9;
-                    }
-                    ngModelCtrl.$setViewValue(value);
-                    updateButtons(value);
-                });
-
-                updateButtons(value);
             }
         };
     }
@@ -1722,7 +1722,7 @@ statracker.controller('RoundSummaryController', [
 
 (function (st) {
 
-    var importRound, exportRound, round, averageDrivingDistance, calculateStats,
+    var importRound, exportRound, round, fairwayStats, calculateStats,
         puttingStats, approachStats, upAndDownStats, sandSaveStats;
 
     importRound = function (self, r) {
@@ -1809,16 +1809,22 @@ statracker.controller('RoundSummaryController', [
         return outbound;
     };
 
-    averageDrivingDistance = function (self) {
-        var shots = 0, distance = 0;
+    fairwayStats = function (self) {
+        var shots = 0, distance = 0, fairways = 0;
         self.teeShots.forEach(function (shot) {
             if (shot.distance) {
                 distance += shot.distance;
                 shots += 1;
+                if (shot.result % 10 === 0) {
+                    fairways += 1;
+                }
             }
         });
         if (shots === 0) return 0;
-        return distance / shots;
+        return {
+            averageDistance: distance / shots,
+            fairwaysHit: fairways
+        };
     };
 
     approachStats = function (self) {
@@ -1842,7 +1848,8 @@ statracker.controller('RoundSummaryController', [
         });
         return {
             averageYardage: (shots === 0) ? 0 : yardage / shots,
-            averageLeave: (shots === 0) ? 0 : distance / greens
+            averageLeave: (shots === 0) ? 0 : distance / greens,
+            greensHit: greens
         };
     };
 
@@ -1902,7 +1909,7 @@ statracker.controller('RoundSummaryController', [
     };
 
     calculateStats = function () {
-        var dd = averageDrivingDistance(this),
+        var dd = fairwayStats(this),
             app = approachStats(this),
             p = puttingStats(this),
             uad = upAndDownStats(this),
@@ -1959,7 +1966,7 @@ statracker.directive('approachResultInput', [
 
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
-                        //log warning
+                        console.warn('x or y is null');
                         return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
@@ -1976,9 +1983,8 @@ statracker.directive('approachResultInput', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };
@@ -2046,9 +2052,8 @@ statracker.directive('approachResultSummary', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };
@@ -2222,7 +2227,11 @@ statracker.directive('attemptInput', [
             link: function (scope, elem) {
 
                 var make = angular.element(elem[0].querySelector('#make')),
-                    miss = angular.element(elem[0].querySelector('#miss'));
+                    miss = angular.element(elem[0].querySelector('#miss')),
+                    makeLines = make.find('line'),
+                    makeCircle = make.find('circle'),
+                    missLines = miss.find('line'),
+                    missCircle = miss.find('circle');
 
                 var showUndefined = function () {
                     if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
@@ -2255,14 +2264,9 @@ statracker.directive('attemptInput', [
                     }
                 };
 
-                bindValue();
-
-                scope.$watch('flag', function () {
-                    bindValue();
-                });
-
-                make.bind('click', function () {
+                var handleMakeClick = function (e) {
                     if (scope.round && scope.round.isComplete) return;
+                    e.stopPropagation();
                     console.debug('make click');
                     if (!scope.flag) {
                         scope.flag = true;
@@ -2271,10 +2275,11 @@ statracker.directive('attemptInput', [
                         scope.flag = undefined;
                         showUndefined();
                     }
-                });
+                };
 
-                miss.bind('click', function () {
+                var handleMissClick = function (e) {
                     if (scope.round && scope.round.isComplete) return;
+                    e.stopPropagation();
                     console.debug('miss click');
                     if (scope.flag === undefined || scope.flag === true) {
                         scope.flag = false;
@@ -2283,7 +2288,19 @@ statracker.directive('attemptInput', [
                         scope.flag = undefined;
                         showUndefined();
                     }
+                };
+
+                scope.$watch('flag', function () {
+                    bindValue();
                 });
+
+                make.bind('click', handleMakeClick);
+                makeLines.bind('click', handleMakeClick);
+                makeCircle.bind('click', handleMakeClick);
+
+                miss.bind('click', handleMissClick);
+                missLines.bind('click', handleMissClick);
+                missCircle.bind('click', handleMissClick);
             }
         };
     }
@@ -2311,8 +2328,8 @@ statracker.directive('puttsInput', [
                     });
                     angular.forEach(puttsText, function (txt) {
                         var puttText = angular.element(txt);
-                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
-                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
+                        if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
+                        if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
                     });
                 };
 
@@ -2349,10 +2366,12 @@ statracker.directive('puttsInput', [
                     }
                 };
 
-                bindValue();
-
-                scope.$watch('shot', function () {
-                    bindValue();
+                scope.$watch('shot.putts', function (nv, ov) {
+                    if (nv) {
+                        bindValue();
+                    } else {
+                        clearPutts();
+                    }
                 });
 
                 putts.bind('click', function () {
@@ -2403,7 +2422,7 @@ statracker.controller('ShortGameController', [
         });
 
         $scope.$on('$ionicView.beforeLeave', function () {
-            roundService.update(vm.round, true); //true: doSynch with server
+            roundService.update(vm.round, false); //true: doSynch with server
         });
     }
 ]);
@@ -2481,7 +2500,7 @@ statracker.directive('teeResultInput', [
 
                 var placeBall = function (x, y, clear) {
                     if (x == null || y == null) {
-                        //log warning
+                        console.warn('x or y is null');
                         return;
                     }
                     var use = document.createElementNS(xmlns, 'use'),
@@ -2498,9 +2517,8 @@ statracker.directive('teeResultInput', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };
@@ -2589,9 +2607,8 @@ statracker.directive('teeResultSummary', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };

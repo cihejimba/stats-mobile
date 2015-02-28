@@ -1,6 +1,6 @@
 (function (st) {
 
-    var importRound, exportRound, round, averageDrivingDistance, calculateStats,
+    var importRound, exportRound, round, fairwayStats, calculateStats,
         puttingStats, approachStats, upAndDownStats, sandSaveStats;
 
     importRound = function (self, r) {
@@ -87,16 +87,22 @@
         return outbound;
     };
 
-    averageDrivingDistance = function (self) {
-        var shots = 0, distance = 0;
+    fairwayStats = function (self) {
+        var shots = 0, distance = 0, fairways = 0;
         self.teeShots.forEach(function (shot) {
             if (shot.distance) {
                 distance += shot.distance;
                 shots += 1;
+                if (shot.result % 10 === 0) {
+                    fairways += 1;
+                }
             }
         });
         if (shots === 0) return 0;
-        return distance / shots;
+        return {
+            averageDistance: distance / shots,
+            fairwaysHit: fairways
+        };
     };
 
     approachStats = function (self) {
@@ -120,7 +126,8 @@
         });
         return {
             averageYardage: (shots === 0) ? 0 : yardage / shots,
-            averageLeave: (shots === 0) ? 0 : distance / greens
+            averageLeave: (shots === 0) ? 0 : distance / greens,
+            greensHit: greens
         };
     };
 
@@ -180,7 +187,7 @@
     };
 
     calculateStats = function () {
-        var dd = averageDrivingDistance(this),
+        var dd = fairwayStats(this),
             app = approachStats(this),
             p = puttingStats(this),
             uad = upAndDownStats(this),

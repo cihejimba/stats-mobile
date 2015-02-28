@@ -42,7 +42,7 @@ text.putt-unselected  {
     fill: #b8b8b8;
 }
 .attempt-container {
-     width: 100px;
+     width: 110px;
  }
 .attempt-unselected circle {
     stroke: #b8b8b8;
@@ -98,4 +98,17 @@ text.putt-unselected  {
 
 .round-stat {
     font-weight: 400;
+}
+
+.smaller {
+    font-size: .9em;
+}
+.no-margin {
+    margin: 0;
+}
+.small-margin {
+    margin: 5px;
+}
+.nudge-right {
+    margin-left: 7px;
 }

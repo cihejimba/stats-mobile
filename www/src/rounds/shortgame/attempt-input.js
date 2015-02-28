@@ -11,7 +11,11 @@ statracker.directive('attemptInput', [
             link: function (scope, elem) {
 
                 var make = angular.element(elem[0].querySelector('#make')),
-                    miss = angular.element(elem[0].querySelector('#miss'));
+                    miss = angular.element(elem[0].querySelector('#miss')),
+                    makeLines = make.find('line'),
+                    makeCircle = make.find('circle'),
+                    missLines = miss.find('line'),
+                    missCircle = miss.find('circle');
 
                 var showUndefined = function () {
                     if (!make.hasClass('attempt-unselected')) make.addClass('attempt-unselected');
@@ -44,14 +48,9 @@ statracker.directive('attemptInput', [
                     }
                 };
 
-                bindValue();
-
-                scope.$watch('flag', function () {
-                    bindValue();
-                });
-
-                make.bind('click', function () {
+                var handleMakeClick = function (e) {
                     if (scope.round && scope.round.isComplete) return;
+                    e.stopPropagation();
                     console.debug('make click');
                     if (!scope.flag) {
                         scope.flag = true;
@@ -60,10 +59,11 @@ statracker.directive('attemptInput', [
                         scope.flag = undefined;
                         showUndefined();
                     }
-                });
+                };
 
-                miss.bind('click', function () {
+                var handleMissClick = function (e) {
                     if (scope.round && scope.round.isComplete) return;
+                    e.stopPropagation();
                     console.debug('miss click');
                     if (scope.flag === undefined || scope.flag === true) {
                         scope.flag = false;
@@ -72,7 +72,19 @@ statracker.directive('attemptInput', [
                         scope.flag = undefined;
                         showUndefined();
                     }
+                };
+
+                scope.$watch('flag', function () {
+                    bindValue();
                 });
+
+                make.bind('click', handleMakeClick);
+                makeLines.bind('click', handleMakeClick);
+                makeCircle.bind('click', handleMakeClick);
+
+                miss.bind('click', handleMissClick);
+                missLines.bind('click', handleMissClick);
+                missCircle.bind('click', handleMissClick);
             }
         };
     }

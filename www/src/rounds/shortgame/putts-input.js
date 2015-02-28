@@ -21,8 +21,8 @@ statracker.directive('puttsInput', [
                     });
                     angular.forEach(puttsText, function (txt) {
                         var puttText = angular.element(txt);
-                        if (!puttText.hasClass('putt-unselected-text')) puttText.addClass('putt-unselected-text');
-                        if (puttText.hasClass('putt-selected-text')) puttText.removeClass('putt-selected-text');
+                        if (!puttText.hasClass('putt-unselected')) puttText.addClass('putt-unselected');
+                        if (puttText.hasClass('putt-selected')) puttText.removeClass('putt-selected');
                     });
                 };
 
@@ -59,10 +59,12 @@ statracker.directive('puttsInput', [
                     }
                 };
 
-                bindValue();
-
-                scope.$watch('shot', function () {
-                    bindValue();
+                scope.$watch('shot.putts', function (nv, ov) {
+                    if (nv) {
+                        bindValue();
+                    } else {
+                        clearPutts();
+                    }
                 });
 
                 putts.bind('click', function () {

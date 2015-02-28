@@ -26,6 +26,7 @@
                         Club
                     </div>
                     <select ng-model="ctrl.shot.clubKey" ng-options="club.key as club.name for club in ctrl.clubs" ng-disabled="ctrl.round.isComplete">
+                        <option value="" selected disabled> Club </option>
                     </select>
                 </label>
             </div>

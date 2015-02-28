@@ -32,9 +32,8 @@ statracker.directive('teeResultSummary', [
 
                 var clearBalls = function () {
                     if (shots.hasChildNodes()) {
-                        var i, balls = shots.children;
-                        for(i = 0; i < balls.length; i++) {
-                            shots.removeChild(balls[i]);
+                        while(shots.firstChild) {
+                            shots.removeChild(shots.firstChild);
                         }
                     }
                 };
